@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b71b115f34c62a842b37aa450fbe6c44, type: 3}
+  m_Name: Harvestable Tree
+  m_EditorClassIdentifier: 
+  displayName: Placeholder Harvestable
+  description: PLACEHOLDER - swap sprites, particles and sounds with final art.
+  maxUsesPerDay: 3
+  interactionRange: 2
+  harvestDuration: 1.5
+  lootTable:
+  - pickupPrefab: {fileID: 1768544347340343859, guid: b63ac3ac3aacbd048a4daf47582e04b1, type: 3}
+    weight: 1
+    chance: 50%
+  - pickupPrefab: {fileID: 1768544347340343859, guid: ced455dd92788e4498d1907f2d7fabfc, type: 3}
+    weight: 1
+    chance: 50%
+  lootScatterForce: 3
+  animatorController: {fileID: 22100000, guid: 64c2e71986ac4fbb891f81cf33d21ccf, type: 2}
+  harvestingParticles: {fileID: 8184296318486604401, guid: d76fc3d7a42a9b442ab148cc5df611e2, type: 3}
+  harvestedParticles: {fileID: 5616090614877505374, guid: 6e9097bb7cee85a47b445307b352b9a6, type: 3}
+  depletedParticles: {fileID: 5616090614877505374, guid: 6e9097bb7cee85a47b445307b352b9a6, type: 3}
+  regrowParticles: {fileID: 8921908033265245887, guid: 46c67c9655e1b244c957359dba845f8d, type: 3}
+  particleLifetime: 3
+  harvestingSound:
+    clips:
+    - {fileID: 8300000, guid: 4f4ef55d513bb15479c9281d654d3c02, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  harvestedSound:
+    clips:
+    - {fileID: 8300000, guid: 4f4ef55d513bb15479c9281d654d3c02, type: 3}
+    volume: 1
+    pitch: 1.25
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  depletedSound:
+    clips:
+    - {fileID: 8300000, guid: 4f4ef55d513bb15479c9281d654d3c02, type: 3}
+    volume: 1
+    pitch: 0.7
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  regrowSound:
+    clips:
+    - {fileID: 8300000, guid: 03b91fa3ae1b42c45b2331cbfc7771b2, type: 3}
+    volume: 1
+    pitch: 0.8
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  highlightColor: {r: 1, g: 1, b: 0.75, a: 1}
+  harvestingColor: {r: 0.85, g: 1, b: 0.85, a: 1}

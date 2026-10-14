@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8489d19cee3c9134ea421acc03cf5431, type: 3}
+  m_Name: Ice Thorn
+  m_EditorClassIdentifier: 
+  upgradeLineId: 
+  plantName: Frost Thorn
+  plantPrefab: {fileID: 6736001113723686055, guid: 7ffe7863eb5fa3a439d4f853ad3b704b, type: 3}
+  plantIcon: {fileID: -1990512455, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
+  fullyGrownSprite: {fileID: 430904352, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
+  daysToGrow: 1
+  description: <u>Defensive plant</u>. Shoots at enemies within range.
+  seedType: 14
+  slotIndex: 0
+  hasDeathAnimation: 1
+  spriteFacesLeft: 1

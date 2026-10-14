@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b71b115f34c62a842b37aa450fbe6c44, type: 3}
-  m_Name: Placeholder Harvestable
+  m_Name: Harvestable Bush
   m_EditorClassIdentifier: 
   displayName: Placeholder Harvestable
   description: PLACEHOLDER - swap sprites, particles and sounds with final art.

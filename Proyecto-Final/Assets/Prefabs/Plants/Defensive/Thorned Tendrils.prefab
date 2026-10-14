@@ -158,7 +158,6 @@ MonoBehaviour:
   dropScatterDistance: 0.5
   explosionForce: 0
   dotSoundCooldown: 0.2
-  isRespawning: 0
   isEnemy: 0
   isPlayer: 0
   isPlant: 1

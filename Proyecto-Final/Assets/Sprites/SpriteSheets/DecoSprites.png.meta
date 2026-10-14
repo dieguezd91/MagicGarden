@@ -3,7 +3,7 @@ guid: d5879276d50f47440a06b03dcf0a46db
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
-  serializedVersion: 12
+  serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -2249,6 +2249,237 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: DecoSprites_57
+      rect:
+        serializedVersion: 2
+        x: 291
+        y: 310
+        width: 54
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b7eb3e9869a7e3d4dbf3c64cd676266b
+      internalID: -863004827
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DecoSprites_58
+      rect:
+        serializedVersion: 2
+        x: 361
+        y: 310
+        width: 41
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2126b0b0d5a515444bf7af1e86b9c517
+      internalID: -950523237
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DecoSprites_59
+      rect:
+        serializedVersion: 2
+        x: 418
+        y: 309
+        width: 56
+        height: 56
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4ad29b7942c4ef540b856634f6397b6a
+      internalID: -1029077137
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DecoSprites_60
+      rect:
+        serializedVersion: 2
+        x: 290
+        y: 256
+        width: 29
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4e1a991bc3e518e4aa6e67098230ae82
+      internalID: -1175880302
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DecoSprites_61
+      rect:
+        serializedVersion: 2
+        x: 322
+        y: 256
+        width: 29
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 175bf130abd47bb44869e76c83482645
+      internalID: -724536853
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DecoSprites_62
+      rect:
+        serializedVersion: 2
+        x: 417
+        y: 255
+        width: 31
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: de7f1efd6093f5f41bfc689f15b4dd9e
+      internalID: -1675037541
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DecoSprites_63
+      rect:
+        serializedVersion: 2
+        x: 279
+        y: 195
+        width: 55
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c83dfebec8998b745af1f0b315972086
+      internalID: -1197558880
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DecoSprites_64
+      rect:
+        serializedVersion: 2
+        x: 343
+        y: 195
+        width: 55
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9d7222ff9d34a114daa1e5f9ca51060b
+      internalID: -1600034783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DecoSprites_65
+      rect:
+        serializedVersion: 2
+        x: 406
+        y: 194
+        width: 57
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f58caaaf244518349ba4bfa78940b427
+      internalID: 1859610636
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DecoSprites_66
+      rect:
+        serializedVersion: 2
+        x: 258
+        y: 130
+        width: 5
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ad20e2ebe5478894dabffebb95c16754
+      internalID: -1454370460
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DecoSprites_67
+      rect:
+        serializedVersion: 2
+        x: 264
+        y: 130
+        width: 5
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 442b77c669d5e9f41858554bd3d47971
+      internalID: 911920898
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -2341,7 +2572,18 @@ TextureImporter:
       DecoSprites_54: 350904914
       DecoSprites_55: -1361138709
       DecoSprites_56: -295428929
+      DecoSprites_57: -863004827
+      DecoSprites_58: -950523237
+      DecoSprites_59: -1029077137
       DecoSprites_6: -28200335
+      DecoSprites_60: -1175880302
+      DecoSprites_61: -724536853
+      DecoSprites_62: -1675037541
+      DecoSprites_63: -1197558880
+      DecoSprites_64: -1600034783
+      DecoSprites_65: 1859610636
+      DecoSprites_66: -1454370460
+      DecoSprites_67: 911920898
       DecoSprites_7: -6405655
       DecoSprites_8: 521314461
       DecoSprites_9: 1275317391

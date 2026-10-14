@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e98a760f6b0f417da10f71ab8f5267ca, type: 3}
   m_Name: Spell_Hammer
   m_EditorClassIdentifier: 
+  upgradeTargetId: 
   slotIndex: 4
   spellType: 2
   spellName: Hammer
-  spellIcon: {fileID: -777051087, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
+  spellIcon: {fileID: -1492165293, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   spellPrefab: {fileID: 2902349897744729807, guid: 2c2fcb7dbf92a5e46a2ab55fc0d58326, type: 3}
   manaCost: 40
   cooldown: 6

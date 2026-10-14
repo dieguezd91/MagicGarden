@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e98a760f6b0f417da10f71ab8f5267ca, type: 3}
   m_Name: Spell_Piercing
   m_EditorClassIdentifier: 
+  upgradeTargetId: 
   slotIndex: 3
   spellType: 1
   spellName: Piercing
-  spellIcon: {fileID: -1175123755, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
+  spellIcon: {fileID: -41850664, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   spellPrefab: {fileID: 8215708087478250761, guid: 3b9180702bfcda742b6293d70ad62d1c, type: 3}
   manaCost: 30
   cooldown: 4

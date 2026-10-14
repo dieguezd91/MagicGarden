@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e98a760f6b0f417da10f71ab8f5267ca, type: 3}
   m_Name: Spell_Fire
   m_EditorClassIdentifier: 
+  upgradeTargetId: 
   slotIndex: 5
   spellType: 3
   spellName: Fire
-  spellIcon: {fileID: 1807988885, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
+  spellIcon: {fileID: -1568987587, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   spellPrefab: {fileID: 7107417348711863447, guid: 45756f3c990763f4c8abc997c4e78a89, type: 3}
   manaCost: 60
   cooldown: 4

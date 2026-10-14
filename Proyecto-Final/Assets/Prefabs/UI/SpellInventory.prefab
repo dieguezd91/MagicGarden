@@ -45,7 +45,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spellSlots:
-  - spellType: 1
+  - upgradeTargetId: 
+    spellType: 1
     spellName: Range
     spellIcon: {fileID: 444491412, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
     spellPrefab: {fileID: 8215708087478250761, guid: f0abee687d5f1c04b86aae092aa223b6, type: 3}
@@ -53,7 +54,8 @@ MonoBehaviour:
     cooldown: 1
     currentCooldown: 0
     isUnlocked: 0
-  - spellType: 2
+  - upgradeTargetId: 
+    spellType: 2
     spellName: Melee
     spellIcon: {fileID: -876388959, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
     spellPrefab: {fileID: 2902349897744729807, guid: b8606dfc9b6d8b04a9e71e284b373b0a, type: 3}
@@ -61,7 +63,8 @@ MonoBehaviour:
     cooldown: 1
     currentCooldown: 0
     isUnlocked: 0
-  - spellType: 3
+  - upgradeTargetId: 
+    spellType: 3
     spellName: Area
     spellIcon: {fileID: -64543203, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
     spellPrefab: {fileID: 2376951640795662106, guid: 06700ad62ffa5c84c97e0cfe70009e4a, type: 3}
@@ -69,31 +72,35 @@ MonoBehaviour:
     cooldown: 7
     currentCooldown: 0
     isUnlocked: 0
-  - spellType: 1
+  - upgradeTargetId: 
+    spellType: 1
     spellName: Piercing
-    spellIcon: {fileID: -1175123755, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
+    spellIcon: {fileID: -41850664, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
     spellPrefab: {fileID: 8215708087478250761, guid: 3b9180702bfcda742b6293d70ad62d1c, type: 3}
     manaCost: 30
     cooldown: 4
     currentCooldown: 0
     isUnlocked: 0
-  - spellType: 2
+  - upgradeTargetId: 
+    spellType: 2
     spellName: Hammer
-    spellIcon: {fileID: -777051087, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
+    spellIcon: {fileID: -1492165293, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
     spellPrefab: {fileID: 2902349897744729807, guid: 2c2fcb7dbf92a5e46a2ab55fc0d58326, type: 3}
     manaCost: 40
     cooldown: 6
     currentCooldown: 0
     isUnlocked: 0
-  - spellType: 3
+  - upgradeTargetId: 
+    spellType: 3
     spellName: Fire
-    spellIcon: {fileID: 1807988885, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
+    spellIcon: {fileID: -1568987587, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
     spellPrefab: {fileID: 7107417348711863447, guid: 45756f3c990763f4c8abc997c4e78a89, type: 3}
     manaCost: 60
     cooldown: 4
     currentCooldown: 0
     isUnlocked: 0
-  - spellType: 0
+  - upgradeTargetId: 
+    spellType: 0
     spellName: 
     spellIcon: {fileID: 0}
     spellPrefab: {fileID: 0}

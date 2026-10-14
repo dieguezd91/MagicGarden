@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class ElectricPlantAura : MonoBehaviour
+public class ElectricPlantAura : Plant
 {
     [Header("Area Settings")]
     [SerializeField] private float radius = 2.5f;

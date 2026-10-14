@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 7172601819118766056}
   - component: {fileID: 2368198259439412712}
   m_Layer: 0
-  m_Name: Harvestable Placeholder
+  m_Name: Harvestable Tree
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -78,7 +78,7 @@ SpriteRenderer:
   m_SortingLayerID: 1972390401
   m_SortingLayer: 3
   m_SortingOrder: 5
-  m_Sprite: {fileID: 9214212256102650397, guid: a5a909586357f6c4da4844032ce4a1a9, type: 3}
+  m_Sprite: {fileID: -863004827, guid: d5879276d50f47440a06b03dcf0a46db, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -126,8 +126,10 @@ MonoBehaviour:
   rangeTrigger: {fileID: 2368198259439412712}
   clickCollider: {fileID: 7172601819118766056}
   spriteRenderer: {fileID: 5385503036615207912}
-  animator: {fileID: 4418293746201936512}
   effectsAnchor: {fileID: 1787359053170011112}
+  normalSprite: {fileID: -863004827, guid: d5879276d50f47440a06b03dcf0a46db, type: 3}
+  interactableSprite: {fileID: -1029077137, guid: d5879276d50f47440a06b03dcf0a46db, type: 3}
+  depletedSprite: {fileID: -950523237, guid: d5879276d50f47440a06b03dcf0a46db, type: 3}
   onHarvestStarted:
     m_PersistentCalls:
       m_Calls: []
@@ -175,8 +177,8 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 0.15}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0}
-    oldSize: {x: 2, y: 2}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 3.375, y: 3.375}
     newSize: {x: 2, y: 2}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
