@@ -44,7 +44,8 @@ public class SpellInventory : MonoBehaviour
     [Header("Spell Slots Configuration")]
     [SerializeField] public SpellSlot[] spellSlots = new SpellSlot[7];
 
-    private int selectedSlotIndex = 0;
+    [SerializeField] private DailyLoadoutController loadout;
+    public DailyLoadoutController Loadout => loadout != null ? loadout : (loadout = FindObjectOfType<DailyLoadoutController>());
     private float[] previousEffectiveCooldowns;
 
     public event Action<int> onSpellSlotSelected;
@@ -108,18 +109,19 @@ public class SpellInventory : MonoBehaviour
         if (UpgradeRuntime.GameplayBlocked) return;
         if (index < 0 || index >= spellSlots.Length) return;
 
-        selectedSlotIndex = index;
-        onSpellSlotSelected?.Invoke(selectedSlotIndex);
+        var slot = GetSpellSlot(index);
+        if (slot == null || Loadout == null || !Loadout.TrySelect(true, slot.UpgradeId(index))) return;
+        onSpellSlotSelected?.Invoke(index);
     }
 
     public int GetSelectedSlotIndex()
     {
-        return selectedSlotIndex;
+        return Loadout != null ? Loadout.SelectedSpellIndex : -1;
     }
 
     public SpellSlot GetSelectedSpellSlot()
     {
-        return GetSpellSlot(selectedSlotIndex);
+        return GetSpellSlot(GetSelectedSlotIndex());
     }
 
     public SpellSlot GetSpellSlot(int index)
@@ -130,7 +132,7 @@ public class SpellInventory : MonoBehaviour
 
     public bool CanCastSelectedSpell()
     {
-        if (UpgradeRuntime.GameplayBlocked) return false;
+        if (UpgradeRuntime.GameplayBlocked || Loadout == null || !Loadout.CanUse(true, Loadout.SelectedSpellId)) return false;
         var slot = GetSelectedSpellSlot();
         if (slot == null || !slot.isUnlocked || slot.spellType == SpellType.None || slot.spellPrefab == null) return false;
         if (slot.currentCooldown > 0f) return false;
@@ -269,9 +271,12 @@ public class SpellInventory : MonoBehaviour
 
         for (int i = 1; i <= totalSlots; i++)
         {
-            int candidateIndex = (selectedSlotIndex + (i * step) % totalSlots + totalSlots) % totalSlots;
+            int selectedIndex = GetSelectedSlotIndex();
+            if (selectedIndex < 0) selectedIndex = step > 0 ? -1 : 0;
+            int candidateIndex = (selectedIndex + (i * step) % totalSlots + totalSlots) % totalSlots;
             var slot = spellSlots[candidateIndex];
-            if (slot != null && slot.isUnlocked && slot.spellType != SpellType.None && slot.spellPrefab != null)
+            if (slot != null && slot.isUnlocked && slot.spellType != SpellType.None && slot.spellPrefab != null &&
+                Loadout != null && Loadout.CanUse(true, slot.UpgradeId(candidateIndex)))
             {
                 SelectSlot(candidateIndex);
                 return;

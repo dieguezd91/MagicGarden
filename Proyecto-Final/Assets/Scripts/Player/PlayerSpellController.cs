@@ -101,6 +101,8 @@ public class PlayerSpellController : MonoBehaviour
 
     private void HandleAttack()
     {
+        if (UnityEngine.EventSystems.EventSystem.current != null &&
+            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
         if (GameFlowController.Instance.CurrentPhase != GamePhase.Night) return;
         if (playerController != null && !playerController.CanAct()) return;
         if (playerAbilitySystem != null && playerAbilitySystem.IsBusy()) return;
@@ -119,7 +121,7 @@ public class PlayerSpellController : MonoBehaviour
 
     private void CastSpell()
     {
-        if (UpgradeRuntime.GameplayBlocked) return;
+        if (!CanCastSpell()) return;
         WorldTransitionAnimator worldTransitionCheck = FindObjectOfType<WorldTransitionAnimator>();
         if (worldTransitionCheck != null && worldTransitionCheck.IsInInterior)
         {
@@ -129,7 +131,7 @@ public class PlayerSpellController : MonoBehaviour
         int selectedSlotIndex = SpellInventory.Instance.GetSelectedSlotIndex();
         SpellSlot selectedSpell = SpellInventory.Instance.GetSelectedSpellSlot();
 
-        manaSystem.UseMana(selectedSpell.manaCost);
+        if (manaSystem != null && !manaSystem.UseMana(selectedSpell.manaCost)) return;
 
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(input != null ? (Vector3)input.MouseScreenPosition : Input.mousePosition);
         mousePos.z = 0f;
@@ -168,7 +170,8 @@ public class PlayerSpellController : MonoBehaviour
 
     private bool CanCastSpell()
     {
-        if (UpgradeRuntime.GameplayBlocked) return false;
+        if (UpgradeRuntime.GameplayBlocked || SpellInventory.Instance == null ||
+            !SpellInventory.Instance.CanCastSelectedSpell()) return false;
 
         if (fireSpellActive)
             return false;

@@ -41,6 +41,7 @@ public class SpellSlotsUIController : UIControllerBase
 
     public override void HandleUpdate()
     {
+        if (!isActiveAndEnabled) return;
         HandleSpellSlotInput();
 
         if (LevelManager.Instance != null &&

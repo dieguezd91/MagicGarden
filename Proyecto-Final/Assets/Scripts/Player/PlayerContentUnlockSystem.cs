@@ -11,6 +11,8 @@ public class PlayerContentUnlockSystem : MonoBehaviour
 
     private readonly HashSet<SeedsEnum> unlockedPlants = new HashSet<SeedsEnum>();
     private readonly HashSet<SpellDataSO> unlockedSpells = new HashSet<SpellDataSO>();
+    private readonly Dictionary<SeedsEnum, PlantDataSO> unlockedPlantData = new Dictionary<SeedsEnum, PlantDataSO>();
+    public bool TryGetUnlockedPlant(SeedsEnum seed, out PlantDataSO data) => unlockedPlantData.TryGetValue(seed, out data);
     private readonly HashSet<SeedsEnum> deliveredSeeds = new HashSet<SeedsEnum>();
     private readonly List<PlantDataSO> pendingSeeds = new List<PlantDataSO>();
     private SeedInventory seedInventory;
@@ -124,6 +126,7 @@ public class PlayerContentUnlockSystem : MonoBehaviour
         EnsureSpellInventory();
 
         unlockedPlants.Clear();
+        unlockedPlantData.Clear();
         unlockedSpells.Clear();
 
         if (spellInventory != null)
@@ -152,6 +155,7 @@ public class PlayerContentUnlockSystem : MonoBehaviour
                     if (plant != null && plant.seedType != SeedsEnum.None)
                     {
                         unlockedPlants.Add(plant.seedType);
+                        unlockedPlantData[plant.seedType] = plant;
                         QueueSeeds(plant);
                     }
                 }
@@ -205,6 +209,7 @@ public class PlayerContentUnlockSystem : MonoBehaviour
                 {
                     if (unlockedPlants.Add(plant.seedType))
                     {
+                        unlockedPlantData[plant.seedType] = plant;
                         QueueSeeds(plant);
                         DeliverPendingSeeds();
                         OnPlantUnlocked?.Invoke(plant);

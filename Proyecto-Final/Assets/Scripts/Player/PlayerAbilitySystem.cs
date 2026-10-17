@@ -69,11 +69,10 @@ public class PlayerAbilitySystem : MonoBehaviour
 
     [SerializeField] private GameObject digAnimationPrefab;
 
-    private bool initialized = false;
-
     private bool _cancelDiggingRequested = false;
 
     public PlayerAbility CurrentAbility => currentAbility;
+    public float PlantManaCost => plantManaCost;
 
     private void OnEnable()
     {
@@ -240,12 +239,6 @@ public class PlayerAbilitySystem : MonoBehaviour
 
     private void OnSeedSlotSelected(int slotIndex)
     {
-        if (!initialized)
-        {
-            initialized = true;
-            return;
-        }
-
         if (GameFlowController.Instance.CurrentPhase == GamePhase.Night)
             return;
 
@@ -272,6 +265,8 @@ public class PlayerAbilitySystem : MonoBehaviour
 
     private void HandlePlanting()
     {
+        if (seedInventory == null || seedInventory.Loadout == null ||
+            !seedInventory.Loadout.CanUse(false, seedInventory.Loadout.SelectedPlantId)) return;
         if (!isPlayingInteractionAnimation)
         {
             Vector3 mouseWorld = GetMouseWorldPosition();
@@ -313,8 +308,9 @@ public class PlayerAbilitySystem : MonoBehaviour
                 return;
             }
 
+            // Charge at the validated planting commit, not before the animation.
             if (manaSystem != null &&
-                !manaSystem.UseMana(plantManaCost))
+                manaSystem.GetCurrentMana() < plantManaCost)
             {
                 warningBubble?.ShowMessage(
                     "Not enough mana to plant!"
@@ -342,16 +338,21 @@ public class PlayerAbilitySystem : MonoBehaviour
 
     private IEnumerator PlantWithAnimation(Vector3Int cellPos, GameObject selectedPlant)
     {
+        var loadout = seedInventory.Loadout;
+        string plantId = loadout.SelectedPlantId;
+        int day = loadout.Day;
         isPlayingInteractionAnimation = true;
         PlayInteractionAnimation();
 
         yield return new WaitForSeconds(interactionAnimationDuration * 0.4f);
 
-        bool planted = TilePlantingSystem.Instance.TryPlant(cellPos, selectedPlant, out string reason);
+        string reason = "Planting cancelled: equipment or day changed.";
+        bool planted = loadout.Day == day && loadout.SelectedPlantId == plantId &&
+            loadout.CanUse(false, plantId) &&
+            TilePlantingSystem.Instance.TryPlant(cellPos, selectedPlant, out reason);
 
         if (planted)
         {
-            seedInventory.ConsumeSeedInSelectedSlot();
             SoundManager.Instance.Play("Plant");
 
             dayTimerController?.ConsumeAction(DayTimerController.DayActionType.Plant);
@@ -743,7 +744,8 @@ public class PlayerAbilitySystem : MonoBehaviour
     private bool IsAbilityGameState()
     {
         var phase = GameFlowController.Instance.CurrentPhase;
-        return !UpgradeRuntime.GameplayBlocked && phase == GamePhase.Day;
+        return !UpgradeRuntime.GameplayBlocked && phase == GamePhase.Day &&
+            (UIManager.Instance == null || UIManager.Instance.Flow == null || !UIManager.Instance.Flow.HasOpenModal);
     }
 
     public bool IsBusy()

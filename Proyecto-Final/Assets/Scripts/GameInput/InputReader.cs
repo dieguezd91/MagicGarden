@@ -13,6 +13,7 @@ public class InputReader : MonoBehaviour
     [Header("UI Keys")]
     [SerializeField] private KeyCode inventoryKey1  = KeyCode.Tab;
     [SerializeField] private KeyCode inventoryKey2  = KeyCode.I;
+    [SerializeField] private KeyCode loadoutKey = KeyCode.O;
 
     [Header("Input Settings")]
     [Tooltip("Umbral mínimo del scroll para considerarlo intencional")]
@@ -37,6 +38,7 @@ public class InputReader : MonoBehaviour
     public event Action OnConfirmPressed;
 
     public event Action OnInventoryToggled;
+    public event Action OnLoadoutToggled;
 
     public event Action<int> OnSlotSelected;
 
@@ -115,6 +117,7 @@ public class InputReader : MonoBehaviour
 
         if (Input.GetKeyDown(inventoryKey1) || Input.GetKeyDown(inventoryKey2))
             OnInventoryToggled?.Invoke();
+        if (Input.GetKeyDown(loadoutKey)) OnLoadoutToggled?.Invoke();
     }
 
     private void ReadSlotKeys()

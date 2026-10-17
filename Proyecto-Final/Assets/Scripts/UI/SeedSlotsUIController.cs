@@ -67,6 +67,7 @@ public class SeedSlotsUIController : UIControllerBase
 
     public override void HandleUpdate()
     {
+        if (!isActiveAndEnabled) return;
         HandleSeedSlotInput();
     }
 

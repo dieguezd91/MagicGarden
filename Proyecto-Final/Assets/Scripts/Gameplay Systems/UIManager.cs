@@ -51,10 +51,12 @@ public class UIManager : MonoBehaviour
     public RitualUIController Ritual => ritualUI;
     public TeleportAbilityUI TeleportAbility => teleportAbilityUI;
     public UIFlowController Flow => uiFlowController;
+    private bool usesDailyLoadout;
 
     private void Awake() { if (uiFlowController == null) uiFlowController = GetComponent<UIFlowController>(); if (uiFlowController == null) uiFlowController = gameObject.AddComponent<UIFlowController>();
         if (Instance == null)
         {
+            usesDailyLoadout = FindObjectOfType<DailyLoadoutUI>() != null;
             Instance = this;
             InitializeModules();
         }
@@ -76,8 +78,11 @@ public class UIManager : MonoBehaviour
         tooltipUI?.HandleUpdate();
         feedbackUI?.HandleUpdate();
         inventoryUIController?.HandleUpdate();
-        seedSlotsUI?.HandleUpdate();
-        spellSlotsUI?.HandleUpdate();
+        if (!usesDailyLoadout)
+        {
+            seedSlotsUI?.HandleUpdate();
+            spellSlotsUI?.HandleUpdate();
+        }
         teleportAbilityUI?.HandleUpdate();
     }
 
@@ -101,11 +106,11 @@ public class UIManager : MonoBehaviour
         healthUI?.Initialize();
         manaUI?.Initialize();
         inventoryUIController?.Initialize();
-        seedSlotsUI?.Initialize();
+        if (!usesDailyLoadout) seedSlotsUI?.Initialize();
         gameStateUI?.Initialize();
         feedbackUI?.Initialize();
         tooltipUI?.Initialize();
-        spellSlotsUI?.Initialize();
+        if (!usesDailyLoadout) spellSlotsUI?.Initialize();
         ritualUI?.Initialize();
         teleportAbilityUI?.Initialize();
     }
@@ -122,11 +127,11 @@ public class UIManager : MonoBehaviour
         healthUI?.Setup();
         manaUI?.Setup();
         inventoryUIController?.Setup();
-        seedSlotsUI?.Setup();
+        if (!usesDailyLoadout) seedSlotsUI?.Setup();
         gameStateUI?.Setup();
         feedbackUI?.Setup();
         tooltipUI?.Setup();
-        spellSlotsUI?.Setup();
+        if (!usesDailyLoadout) spellSlotsUI?.Setup();
         ritualUI?.Setup();
         teleportAbilityUI?.Setup();
 

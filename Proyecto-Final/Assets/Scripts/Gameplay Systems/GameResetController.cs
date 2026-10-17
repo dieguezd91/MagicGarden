@@ -53,6 +53,10 @@ public class GameResetController : MonoBehaviour
                 UIManager.Instance.gameOverPanel.SetActive(false);
         }
 
+        // Clear equipment before inventory/unlock callbacks can observe a new run.
+        if (DayCycleController.Instance != null)
+            DayCycleController.Instance.ResetDayCount();
+
         if (SeedInventory.Instance != null)
         {
             for (int i = 0; i < SeedInventory.Instance.PlantSlotsCount; i++)
@@ -67,11 +71,6 @@ public class GameResetController : MonoBehaviour
             InventoryManager.Instance.SetGold(0);
         }
         
-        if (DayCycleController.Instance != null)
-        {
-            DayCycleController.Instance.ResetDayCount();
-        }
-
         if (playerLife != null)
         {
             playerLife.currentHealth = playerLife.maxHealth;

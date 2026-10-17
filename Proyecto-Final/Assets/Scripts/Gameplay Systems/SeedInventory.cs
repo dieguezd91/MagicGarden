@@ -24,7 +24,9 @@ public class SeedInventory : MonoBehaviour
 
     [Header("SEED INVENTORY")]
     [SerializeField] private PlantSlot[] plantSlots = new PlantSlot[9];
-    [SerializeField] private int selectedSlotIndex = 0;
+    [SerializeField] private DailyLoadoutController loadout;
+    public DailyLoadoutController Loadout => loadout != null ? loadout : (loadout = FindObjectOfType<DailyLoadoutController>());
+    private int selectedSlotIndex => Loadout != null ? Loadout.SelectedSeedIndex : -1;
 
     [Header("UI EVENTS")]
     public Action<int> onSlotSelected;
@@ -86,6 +88,7 @@ public class SeedInventory : MonoBehaviour
             plantSlots[slotIndex].plantIcon = null;
             plantSlots[slotIndex].daysToGrow = 0;
             plantSlots[slotIndex].description = "";
+            plantSlots[slotIndex].data = null;
             plantSlots[slotIndex].seedCount = 0;
 
             Debug.Log($"Slot {slotIndex + 1} vaciado");
@@ -98,8 +101,8 @@ public class SeedInventory : MonoBehaviour
         if (UpgradeRuntime.GameplayBlocked) return;
         if (slotIndex >= 0 && slotIndex < plantSlots.Length)
         {
-            selectedSlotIndex = slotIndex;
-            onSlotSelected?.Invoke(selectedSlotIndex);
+            if (Loadout == null || !Loadout.TrySelect(false, DailyLoadoutController.PlantId(plantSlots[slotIndex]))) return;
+            onSlotSelected?.Invoke(slotIndex);
         }
     }
 
@@ -145,23 +148,20 @@ public class SeedInventory : MonoBehaviour
 
     public void ConsumeSeedInSelectedSlot()
     {
-        if (UpgradeRuntime.GameplayBlocked) return;
-        var slot = GetSelectedPlantSlot();
-        if (slot != null && slot.seedCount > 0)
-        {
-            slot.seedCount--;
-            //Debug.Log($"Semillas restantes de {slot.plantName}: {slot.seedCount}");
+        if (Loadout == null) return;
+        TryConsumeSeed(Loadout.SelectedPlantId);
+    }
 
-            if (slot.seedCount <= 0)
-            {
-                int index = selectedSlotIndex;
-                RemoveSeedFromSlot(index);
-            }
-            else
-            {
-                NotifyInventoryChanged();
-            }
-        }
+    public bool TryConsumeSeed(string plantId)
+    {
+        if (UpgradeRuntime.GameplayBlocked || Loadout == null || !Loadout.CanUse(false, plantId)) return false;
+        int index = Loadout.FindSeed(plantId);
+        var slot = GetPlantSlot(index);
+        if (slot == null || slot.seedCount <= 0) return false;
+        slot.seedCount--;
+        if (slot.seedCount == 0) RemoveSeedFromSlot(index);
+        else NotifyInventoryChanged();
+        return true;
     }
 
     // New plant unlocks remain usable after the cauldron stops producing seeds.

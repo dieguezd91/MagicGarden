@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 3456789012345678901}
   - component: {fileID: 4567890123456789012}
   - component: {fileID: 5678901234567890123}
+  - component: {fileID: 6789012345678901234}
   m_Layer: 0
   m_Name: LevelManager
   m_TagString: Untagged
@@ -136,3 +137,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
 
 
+
+--- !u!114 &6789012345678901234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 993218346133697943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d602f7ed694b8a4ebab0c8091ffbd91, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  spells: {fileID: 0}
+  seeds: {fileID: 0}
+  unlocks: {fileID: 0}
+  days: {fileID: 2345678901234567890}
+  flow: {fileID: 1234567890123456789}
+  player: {fileID: 0}
+  pause: {fileID: 5678901234567890123}

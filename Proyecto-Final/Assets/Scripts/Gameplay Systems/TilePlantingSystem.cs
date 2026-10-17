@@ -12,6 +12,11 @@ public class TilePlantingSystem : MonoBehaviour
     public Tilemap PlantingTilemap => plantingTilemap;
 
     private Dictionary<Vector3Int, Plant> plantedTiles = new();
+    private DailyLoadoutController loadout;
+    private PlayerAbilitySystem abilities;
+    private ManaSystem mana;
+    private PlantQuantitySystem quantity;
+    private bool committingPlant;
 
     private void Awake()
     {
@@ -21,6 +26,10 @@ public class TilePlantingSystem : MonoBehaviour
             return;
         }
         Instance = this;
+        loadout = FindObjectOfType<DailyLoadoutController>();
+        abilities = FindObjectOfType<PlayerAbilitySystem>();
+        mana = abilities != null ? abilities.GetComponent<ManaSystem>() : null;
+        quantity = FindObjectOfType<PlantQuantitySystem>();
     }
 
     public bool CanPlantAt(Vector3Int cellPos)
@@ -31,7 +40,20 @@ public class TilePlantingSystem : MonoBehaviour
 
     public bool TryPlant(Vector3Int cellPos, GameObject plantPrefab, out string failureReason)
     {
-        failureReason = "";
+        failureReason = "Planting requires an equipped seed during the day.";
+        if (committingPlant || loadout == null || !loadout.CanPlant(plantPrefab)) return false;
+        if (plantingTilemap == null || plantPrefab == null || plantPrefab.GetComponent<Plant>() == null) return false;
+        if (abilities != null && Vector2.Distance(abilities.transform.position,
+            plantingTilemap.GetCellCenterWorld(cellPos)) > abilities.interactionDistance)
+        {
+            failureReason = "Too far to plant.";
+            return false;
+        }
+        if (quantity != null && !quantity.CanPlant())
+        {
+            failureReason = "You reached the plant limit.";
+            return false;
+        }
 
         TileBase currentTile = plantingTilemap.GetTile(cellPos);
 
@@ -47,17 +69,31 @@ public class TilePlantingSystem : MonoBehaviour
             return false;
         }
 
-        Vector3 worldPos = plantingTilemap.GetCellCenterWorld(cellPos);
-        GameObject plantGO = Instantiate(plantPrefab, worldPos, Quaternion.identity);
-        Plant plant = plantGO.GetComponent<Plant>();
-        plant.tilePosition = cellPos;
-
-        plantedTiles[cellPos] = plant;
-        PlantManager.Instance.RegisterPlant(plant);
-
-        InvokePlantEventByType(plant);
-
-        return true;
+        float cost = abilities != null ? abilities.PlantManaCost : 0f;
+        failureReason = "Not enough mana to plant!";
+        if (mana != null && mana.GetCurrentMana() < cost) return false;
+        string id = loadout.SelectedPlantId;
+        committingPlant = true;
+        try
+        {
+            if (mana != null && !mana.UseMana(cost)) return false;
+            if (!loadout.Seeds.TryConsumeSeed(id))
+            {
+                if (mana != null) mana.SetMana(mana.GetCurrentMana() + cost);
+                failureReason = "No seeds left.";
+                return false;
+            }
+            Vector3 worldPos = plantingTilemap.GetCellCenterWorld(cellPos);
+            GameObject plantGO = Instantiate(plantPrefab, worldPos, Quaternion.identity);
+            Plant plant = plantGO.GetComponent<Plant>();
+            plant.tilePosition = cellPos;
+            plantedTiles[cellPos] = plant;
+            PlantManager.Instance.RegisterPlant(plant);
+            InvokePlantEventByType(plant);
+            failureReason = "";
+            return true;
+        }
+        finally { committingPlant = false; }
     }
 
     private void InvokePlantEventByType(Plant plant)
