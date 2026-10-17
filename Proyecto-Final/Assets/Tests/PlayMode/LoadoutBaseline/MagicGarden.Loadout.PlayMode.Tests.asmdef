@@ -1,0 +1,4 @@
+{
+  "name": "MagicGarden.Loadout.PlayMode.Tests",
+  "optionalUnityReferences": ["TestAssemblies"]
+}

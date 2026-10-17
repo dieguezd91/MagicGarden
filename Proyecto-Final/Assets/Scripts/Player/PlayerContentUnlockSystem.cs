@@ -20,6 +20,10 @@ public class PlayerContentUnlockSystem : MonoBehaviour
     public event Action<SpellDataSO> OnSpellUnlocked;
     public event Action OnUnlockStateRebuilt;
 
+    // Additive equipment boundary; unlock membership remains owned here.
+    public bool HasInitializedUnlockState { get; private set; }
+    public DailyLoadoutSession Loadout { get; private set; }
+
     public IReadOnlyCollection<SeedsEnum> UnlockedPlants => unlockedPlants;
     public IReadOnlyCollection<SpellDataSO> UnlockedSpells => unlockedSpells;
 
@@ -52,10 +56,13 @@ public class PlayerContentUnlockSystem : MonoBehaviour
     {
         seedInventory = SeedInventory.Instance;
         if (seedInventory != null) seedInventory.onInventoryChanged += DeliverPendingSeeds;
+        Loadout = new DailyLoadoutSession(this, playerExperienceSystem, seedInventory, spellInventory,
+            DayCycleController.Instance, GameFlowController.Instance);
         InitializeUnlocks();
     }
     private void OnDestroy()
     {
+        Loadout?.Dispose();
         if (seedInventory != null) seedInventory.onInventoryChanged -= DeliverPendingSeeds;
     }
     private void QueueSeeds(PlantDataSO plant)
@@ -120,6 +127,7 @@ public class PlayerContentUnlockSystem : MonoBehaviour
 
     public void RebuildUnlocksUpToLevel(int targetLevel)
     {
+        HasInitializedUnlockState = false;
         EnsurePlayerExperienceSystem();
         EnsureSpellInventory();
 
@@ -176,6 +184,7 @@ public class PlayerContentUnlockSystem : MonoBehaviour
         }
 
         DeliverPendingSeeds();
+        HasInitializedUnlockState = true;
         OnUnlockStateRebuilt?.Invoke();
     }
 

@@ -1,0 +1,6 @@
+{
+  "name": "MagicGarden.Loadout.Tests",
+  "references": ["MagicGarden.Loadout"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

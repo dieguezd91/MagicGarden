@@ -119,5 +119,10 @@ public class GameResetController : MonoBehaviour
         {
             manaSystem.SetMana(manaSystem.GetBaseMaxMana());
         }
+
+        // A completed full-run reset, not an ordinary progression rebuild, starts
+        // a new equipment session. Preserve every existing reset operation/order.
+        if (player != null)
+            player.GetComponent<PlayerContentUnlockSystem>()?.Loadout?.ResetForNewRun();
     }
 }
