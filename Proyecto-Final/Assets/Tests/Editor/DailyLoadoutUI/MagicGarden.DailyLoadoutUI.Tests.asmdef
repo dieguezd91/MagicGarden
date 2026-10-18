@@ -1,6 +1,6 @@
 {
     "name": "MagicGarden.DailyLoadoutUI.Tests",
-    "references": ["Unity.TextMeshPro", "Unity.ugui"],
+    "references": ["Unity.TextMeshPro", "Unity.ugui", "MagicGarden.DailyLoadoutUI.TestSupport"],
     "includePlatforms": ["Editor"],
     "optionalUnityReferences": ["TestAssemblies"]
 }

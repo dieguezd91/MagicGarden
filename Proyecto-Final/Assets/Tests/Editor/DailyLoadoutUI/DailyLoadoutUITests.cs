@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
@@ -153,11 +154,28 @@ public sealed class DailyLoadoutUITests
             var view = View(root, "DailyLoadoutPanelView");
             var content = (RectTransform)Ref(view, "optionContent");
             var prefab = (Component)Ref(view, "optionPrefab");
-            for (int i = 0; i < 24; i++)
+            var options = new List<RectTransform>();
+            var pool = new SerializedObject(view).FindProperty("optionViews");
+            // Exercise every authored pool entry on this unsaved instance. Inactive
+            // pooled transforms are not grid participants until they become visible.
+            for (int i = 0; i < pool.arraySize; i++)
+            {
+                var option = (Component)pool.GetArrayElementAtIndex(i).objectReferenceValue;
+                Assert.That(option, Is.Not.Null, "Authored option " + i);
+                Assert.That(option.transform.parent, Is.SameAs(content));
+                option.gameObject.SetActive(true);
+                Call(option, "SetContent", null, "Authored option " + i);
+                options.Add((RectTransform)option.transform);
+            }
+            while (options.Count < 24)
             {
                 var option = Object.Instantiate(prefab.gameObject, content);
-                Call(View(option, "LoadoutOptionView"), "SetContent", null, "Option " + i);
+                option.SetActive(true);
+                Call(View(option, "LoadoutOptionView"), "SetContent", null, "Overflow option " + options.Count);
+                options.Add((RectTransform)option.transform);
             }
+            Assert.That(options.Count, Is.GreaterThanOrEqualTo(24));
+            Assert.That(options.Distinct().Count(), Is.EqualTo(options.Count));
             Call(view, "SetOptionsEmpty", false);
             LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)root.transform);
             Canvas.ForceUpdateCanvases();
@@ -166,15 +184,18 @@ public sealed class DailyLoadoutUITests
             Assert.That(content.rect.height, Is.GreaterThan(scroll.viewport.rect.height));
             Assert.That(scroll.viewport.GetComponent<RectMask2D>(), Is.Not.Null);
             Assert.That(scroll.vertical, Is.True); Assert.That(scroll.horizontal, Is.False);
-            foreach (RectTransform child in content)
+            foreach (var child in options)
             {
+                Assert.That(child.gameObject.activeInHierarchy, Is.True, child.name);
+                Assert.That(child.GetComponents<ILayoutIgnorer>().Any(item => item.ignoreLayout), Is.False, child.name);
                 var bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(content, child);
-                Assert.That(bounds.min.x, Is.GreaterThanOrEqualTo(content.rect.xMin - 1));
-                Assert.That(bounds.max.x, Is.LessThanOrEqualTo(content.rect.xMax + 1));
+                Assert.That(bounds.min.x, Is.GreaterThanOrEqualTo(content.rect.xMin - 1), child.name);
+                Assert.That(bounds.max.x, Is.LessThanOrEqualTo(content.rect.xMax + 1), child.name);
             }
+            scroll.Rebuild(CanvasUpdate.PostLayout);
             scroll.verticalNormalizedPosition = 0;
             Canvas.ForceUpdateCanvases();
-            var last = (RectTransform)content.GetChild(content.childCount - 1);
+            var last = options[options.Count - 1];
             var lastBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(scroll.viewport, last);
             Assert.That(lastBounds.min.y, Is.GreaterThanOrEqualTo(scroll.viewport.rect.yMin - 1));
             Assert.That(lastBounds.max.y, Is.LessThanOrEqualTo(scroll.viewport.rect.yMax + 1));

@@ -7,7 +7,8 @@ public enum UIModal
     Inventory,
     Crafting,
     Restoration,
-    LevelUp
+    LevelUp,
+    DailyLoadout
 }
 
 public sealed class UIFlowController : MonoBehaviour

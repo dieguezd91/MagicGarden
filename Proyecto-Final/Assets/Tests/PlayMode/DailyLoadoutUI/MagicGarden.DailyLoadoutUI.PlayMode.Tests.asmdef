@@ -1,0 +1,5 @@
+{
+  "name": "MagicGarden.DailyLoadoutUI.PlayMode.Tests",
+  "references": ["MagicGarden.DailyLoadoutUI.TestSupport", "Unity.TextMeshPro", "Unity.ugui"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

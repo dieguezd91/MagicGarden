@@ -39,8 +39,16 @@ namespace MagicGarden.LoadoutUI
         public void SetSelected(bool value) { selected = value; Refresh(); }
         public void SetHighlighted(bool value) { highlighted = value; Refresh(); }
         public void SetInvalidDropTarget(bool value) { invalid = value; Refresh(); }
-        public void SetReadOnly(bool value) { readOnly = value; ResetPointer(); Refresh(); }
-        protected void SetLockedState(bool value) { locked = value; ResetPointer(); Refresh(); }
+        public void SetReadOnly(bool value)
+        {
+            if (readOnly != value) ResetPointer();
+            readOnly = value; Refresh();
+        }
+        protected void SetLockedState(bool value)
+        {
+            if (locked != value) ResetPointer();
+            locked = value; Refresh();
+        }
         protected virtual bool AllowEmptySelection => true;
 
         public void OnPointerEnter(PointerEventData data) { hovered = true; Refresh(); }

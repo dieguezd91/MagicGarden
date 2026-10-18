@@ -1,8 +1,8 @@
 # Author and inspect the Daily Loadout UI
 
-Stage 4A supplies presentation components and a native, explicit prefab generator. **The prefabs do not exist until you run the menu below.** This workflow never modifies the Game scene, restoration panel, HUD, equipment state or admission rules.
+Stage 4A prefabs already exist and contain user-reviewed visual adjustments. **Do not regenerate them.** Stage 4B adds a session-backed presenter and additive option-pool authoring; see [functional integration](Stage4B.md). Neither workflow modifies the Game scene, restoration panel, HUD or admission rules.
 
-## Generate once
+## Generate once (new projects only; not required for these existing assets)
 
 1. Let Unity 2022.3.62f3 refresh and compile the new scripts. Resolve any Console compilation errors before proceeding.
 2. Select **Tools → Magic Garden → Daily Loadout → Create UI prefabs (once)**.
@@ -42,7 +42,7 @@ LoadoutSlot / LoadoutOption [Image, Button, view]
 └── Position [TMP; slots only]
 ```
 
-Options are **not** populated from gameplay. The empty panel is intentional. Content is a responsive three-column grid with vertical overflow handled by the scroll viewport, not additional rows extending outside the panel. The option prefab is a serialized asset reference ready for a future presenter. No preview items are saved into the production panel.
+Stage 4A authored an empty option content area. Stage 4B's explicit **Bind functional UI (preserve visuals)** command adds a reusable pool of six inactive nested option instances there, plus the presenter component. It does not recreate the panel or edit layout, art or existing slot references. At runtime the presenter fills these instances from the progression catalog and unlock membership; it never instantiates UI. The three-column grid and scrolling remain unchanged.
 
 ## Presentation surface
 
@@ -56,7 +56,7 @@ Options are **not** populated from gameplay. The empty panel is intentional. Con
 
 Content and assignment are separate presentation inputs: assigning a sprite/name does not equip it. Selection uses a blue tint and text; invalid targets use a red tint and text; disabled/read-only/locked items are dimmed and labeled; hover and press use the existing alternative stone sprites. Empty slots remain selectable; empty options do not. Pointer and keyboard focus supply transient highlighting without changing assignment. Long names/state labels use TMP autosizing and ellipsis instead of spilling onto adjacent controls.
 
-Confirm and Clear start disabled. Close has no callback. No button mutates data, consumes the daily allowance, closes the panel, or reports successful confirmation. A future presenter must bind intents, supply allowance/read-only state, populate options, and explicitly enable actions. There are no drag/drop handlers or equipment rules in these views.
+Confirm and Clear start disabled and persistent Button callbacks remain empty. The Stage 4B presenter binds runtime listeners, enables actions from the session, and unbinds only its own listeners on close/disable/destroy. Views remain presentation-only; there are no drag/drop handlers or equipment rules in them.
 
 ## Reused assets
 
@@ -104,8 +104,8 @@ Use an **isolated, unsaved test scene**, not the Game scene. Add a Screen Space 
 - [ ] Allowance text accommodates both available and consumed messages.
 - [ ] Verify the restoration panel, Restore folder, HUD prefabs and Game scene have no diff.
 
-**Current verification status:** No Unity compilation, prefab generation, EditMode/PlayMode execution or visual inspection has been performed by the coding session. An active Editor without a callable control bridge prevents those checks here. Static checks alone do not establish completion of Stage 4A.
+**Verification:** Stage 4A assets are present and were visually reviewed by the user. Stage 4B verification is recorded separately in [Stage4B.md](Stage4B.md); do not treat historical results as proof of the new integration.
 
 ## Next step
 
-Generate and inspect the three assets, run the tests, and retain the resulting prefabs/metadata. Stage 4B presenter/gameplay wiring, interactable replacement, scene integration, equipment admission, confirmation handling and daily allowance consumption remain out of scope.
+Use the additive [Stage 4B binding and isolated harness](Stage4B.md), then run the listed tests. Actual altar interaction, Game-scene wiring and HUD adaptation remain deferred; do not start the next integration stage.
