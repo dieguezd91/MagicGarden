@@ -93,6 +93,14 @@ public class SeedInventory : MonoBehaviour
         }
     }
 
+    /// <summary>Deselect without changing storage; used by empty equipment positions.</summary>
+    public void ClearSelection()
+    {
+        if (UpgradeRuntime.GameplayBlocked) return;
+        selectedSlotIndex = -1;
+        onSlotSelected?.Invoke(selectedSlotIndex);
+    }
+
     public void SelectSlot(int slotIndex)
     {
         if (UpgradeRuntime.GameplayBlocked) return;

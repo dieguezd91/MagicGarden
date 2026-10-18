@@ -7,19 +7,18 @@ Stage 4B supplies a focused `DailyLoadoutPresenter`, deterministic asset catalog
 The current local panel already contains the presenter and six serialized option references. Preserve that user-authored state; diagnosing the reported test failures does not require rebinding or regenerating it.
 
 1. Allow Unity **2022.3.62f3** to refresh and compile; resolve compilation errors first.
-2. Run **Tools → Magic Garden → Daily Loadout → Bind functional UI (preserve visuals)** once. This loads the existing panel and adds only a presenter and six inactive nested `LoadoutOption` instances under the existing Content transform. It leaves slot instances, layout, art, fonts and persistent Button callbacks untouched. Repeated binding does not add duplicate presenters/options. Do **not** run the Stage 4A generator.
+2. Run **Tools → Magic Garden → Daily Loadout → Bind functional UI (preserve visuals)** once. This loads the existing panel and adds only a presenter and six inactive nested `LoadoutOption` instances under the existing Content transform. It leaves slot instances, layout, art, fonts and persistent Button callbacks untouched. Repeated binding does not add duplicate presenters/options. The obsolete Stage 4A generator has been removed; never regenerate the existing assets.
 3. Review the resulting panel prefab diff before saving unrelated work. Only additive component/pool references are expected.
 4. Run the tests below and the existing regression suites. Native binding and Unity test execution have **not** been performed by this coding session; source/structural checks are not a substitute.
 
 `DailyLoadoutPanelView.OptionViews` is the explicit serialized pool. Six is the current maximum number of distinct assets in either category of the production progression catalog. Both categories reuse it, never simultaneously. If the catalog grows, author additional nested options in Prefab Mode and extend this array (or deliberately raise the authoring capacity). Runtime overflow fails closed with a visible capacity message; it does not silently truncate or create GameObjects.
 
-## Isolated PlayMode harness
+## Isolated test fixtures
 
-Run **Tools → Magic Garden → Daily Loadout → Open isolated functional harness** outside Play Mode. The menu offers to save existing unsaved scenes, then creates a new **unsaved empty scene** with a Canvas, EventSystem, prefab instance, normal progression owner, real session lifecycle, day cycle and modal owner. It never opens/saves Game, instantiates an altar or changes an interactable. Cancel the native save prompt to abort without replacing the current scene.
-
-Enter Play Mode. The panel opens after the progression owner's `Start`. Use the six slot buttons, category options, Clear, Confirm and Close. Harness-only controls can reopen the panel, begin night/day, grant XP to inspect later catalog entries, or reset the isolated run. These controls are not gameplay numeric input routing and are never installed in Game. No seed/spell inventories are created by this manual harness.
-
-**Begin genuine next day** only opens a new allowance after **Begin night**; repeating daytime must not replenish confirmation. Closing without confirming restores committed assignments. Confirmation consumes the allowance even when the draft is unchanged.
+The temporary manual harness and its creation menu have been removed. Automated
+EditMode/PlayMode fixtures still compose isolated sessions and use the retained
+`DailyLoadoutUIIntegrationAuthoring.Configure` helper on unsaved test instances.
+For actual world/HUD acceptance, use the Game.unity checklist in [Stage4D.md](Stage4D.md).
 
 ## Runtime composition
 
@@ -63,4 +62,4 @@ New-Item -ItemType Directory -Path $out | Out-Null
 
 Inspect XML and logs, including skipped tests, rather than inferring success from process launch. Static Roslyn compilation against the project's existing Unity references passed for the runtime, Editor tooling, support fixture and both test assemblies. Independent source review verified all three existing prefabs are byte-identical to `c35d0984` and excluded systems are untouched. These checks do not prove native import or runtime behavior.
 
-No agent-executed Unity test results are claimed here: the active Editor has no connected CLI Pipeline instance. The owner has supplied a cleanup failure and three layout failures; the test fixtures have been corrected in source, but their Unity reruns remain unexecuted by the agent. Current local prefab references show native binding is present; do not repeat binding merely to address these failures. A passing full Unity suite, natural startup/discovery and visual harness checks are still unverified. Stage 4B is **not complete** until the applicable automated Unity tests pass.
+No agent-executed Unity test results are claimed here: the active Editor has no connected CLI Pipeline instance. The owner has supplied a cleanup failure and three layout failures; the test fixtures have been corrected in source, but their Unity reruns remain unexecuted by the agent. Current local prefab references show native binding is present; do not repeat binding merely to address these failures. A passing full Unity suite, natural startup/discovery and manual Game checks are still unverified. Stage 4B is **not complete** until the applicable automated Unity tests pass.

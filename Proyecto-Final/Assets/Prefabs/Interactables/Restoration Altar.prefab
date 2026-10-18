@@ -298,7 +298,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 587c19e305e42874b98e60d6b2568965, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventToFire: 2
+  eventToFire: 4
   fireOnce: 1
 --- !u!1001 &6890359847020170950
 PrefabInstance:

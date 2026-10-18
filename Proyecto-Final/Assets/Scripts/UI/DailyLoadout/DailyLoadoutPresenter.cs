@@ -22,6 +22,7 @@ namespace MagicGarden.LoadoutUI
         private bool plantCategory = true, ownsModal, lastConfirmed;
         private int selectedPosition = -1;
         private string feedback;
+        public event System.Action Closed;
         public bool IsOpen { get; private set; }
         public int SelectedPosition => selectedPosition;
         public bool IsPlantCategory => plantCategory;
@@ -69,7 +70,7 @@ namespace MagicGarden.LoadoutUI
             }
             activeSession = session; ownsModal = true; IsOpen = true;
             lastConfirmed = session.HasConfirmedToday;
-            selectedPosition = -1; plantCategory = true; feedback = null;
+            selectedPosition = 0; plantCategory = true; feedback = null;
             Bind();
             flow.OnPhaseChanged += HandlePhaseChanged;
             modals.ModalChanged += HandleModalChanged;
@@ -119,7 +120,20 @@ namespace MagicGarden.LoadoutUI
 
         // Session has no UI change event. Poll only while open, including upgrade overlays,
         // disposal and run reset; never introduce a second equipment snapshot or counter.
-        private void Update() { if (IsOpen) Refresh(); }
+        private void Update()
+        {
+            if (!IsOpen) return;
+            if (Input.GetKeyDown(KeyCode.Escape) && TryCloseFromEscape()) return;
+            Refresh();
+        }
+
+        public bool TryCloseFromEscape()
+        {
+            if (!IsOpen || InputConsumptionManager.IsEscapeConsumed) return false;
+            InputConsumptionManager.ConsumeEscape();
+            Close();
+            return true;
+        }
         private void HandlePhaseChanged(GamePhase phase)
         {
             if (phase != GamePhase.Day) Close();
@@ -138,7 +152,7 @@ namespace MagicGarden.LoadoutUI
             }
             if (lastConfirmed != activeSession.HasConfirmedToday)
             {
-                selectedPosition = -1; feedback = null;
+                feedback = null;
                 lastConfirmed = activeSession.HasConfirmedToday;
             }
             catalog.Refresh(experience.ProgressionData, unlocks);
@@ -159,6 +173,8 @@ namespace MagicGarden.LoadoutUI
                 plantView.SetSelected(plantCategory && selectedPosition == i);
                 spellView.SetSelected(!plantCategory && selectedPosition == i);
                 plantView.SetReadOnly(!editable); spellView.SetReadOnly(!editable);
+                // Category/position browsing remains available after daily confirmation.
+                plantView.SelectButton.interactable = true; spellView.SelectButton.interactable = true;
             }
             int count = selectedPosition < 0 ? 0 : plantCategory ? catalog.Plants.Count : catalog.Spells.Count;
             for (int i = 0; i < view.OptionCapacity; i++)
@@ -173,9 +189,9 @@ namespace MagicGarden.LoadoutUI
                     plantCategory ? plant.plantName : spell.SpellName);
                 bool assigned = false;
                 for (int slot = 0; slot < 3; slot++)
-                    assigned |= plantCategory
+                    assigned |= (plantCategory
                         ? activeSession.GetDraftPlant(slot).HasValue && activeSession.GetDraftPlant(slot).Identity == plant.seedType
-                        : activeSession.GetDraftSpell(slot).HasValue && activeSession.GetDraftSpell(slot).Identity == spell;
+                        : activeSession.GetDraftSpell(slot).HasValue && activeSession.GetDraftSpell(slot).Identity == spell);
                 option.SetAssigned(assigned); option.SetSelected(false); option.SetReadOnly(!editable);
                 option.SetInvalidDropTarget(false); option.SetLocked(false);
             }
@@ -186,13 +202,14 @@ namespace MagicGarden.LoadoutUI
                 : activeSession.CanConfigure ? "Daily configuration allowance: available."
                 : "Daily configuration allowance: unavailable — read-only.";
             StatusMessage = !capacityOk ? "Loadout option capacity exceeded. Configure the prefab option pool in the Editor."
-                : allowance + (string.IsNullOrEmpty(feedback) ? "" : " " + feedback);
+                : (plantCategory ? "Plant " : "Spell ") + (selectedPosition + 1) + " selected. " +
+                    allowance + (string.IsNullOrEmpty(feedback) ? "" : " " + feedback);
             view.SetAllowanceMessage(StatusMessage);
         }
 
         public void SelectPosition(bool plants, int position)
         {
-            if (!CanEdit() || position < 0 || position >= 3) return;
+            if (!IsOpen || position < 0 || position >= 3) return;
             plantCategory = plants; selectedPosition = position; feedback = null;
             if (view.OptionsScroll != null) view.OptionsScroll.verticalNormalizedPosition = 1;
             Refresh();
@@ -239,7 +256,6 @@ namespace MagicGarden.LoadoutUI
             bool confirmed = activeSession.TryConfirm();
             feedback = confirmed ? "Loadout confirmed." : "Confirmation rejected. Draft and daily allowance unchanged.";
             lastConfirmed = activeSession.HasConfirmedToday;
-            if (confirmed) selectedPosition = -1;
             Refresh();
         }
 
@@ -255,6 +271,7 @@ namespace MagicGarden.LoadoutUI
 
         public void Close()
         {
+            bool wasOpen = IsOpen;
             if (IsOpen)
             {
                 IsOpen = false;
@@ -277,6 +294,8 @@ namespace MagicGarden.LoadoutUI
                 foreach (var slot in view.SpellSlots) if (slot != null) { slot.SetSelected(false); slot.SetReadOnly(true); }
             }
             if (gameObject.activeSelf) gameObject.SetActive(false);
+            // Notify after release/deactivation, exactly once despite OnDisable reentrancy.
+            if (wasOpen) Closed?.Invoke();
         }
 
         private void OnDisable() { Close(); }

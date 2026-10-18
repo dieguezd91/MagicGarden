@@ -31,6 +31,11 @@ public static class TutorialEvents
     public static event Action OnTeleportCasted;
     public static event Action OnAbilityChanged;
 
+    public static event Action OnDailyLoadoutOpened;
+    public static event Action OnDailyLoadoutProximity;
+    public static void InvokeDailyLoadoutOpened() => OnDailyLoadoutOpened?.Invoke();
+    public static void InvokeDailyLoadoutProximity() => OnDailyLoadoutProximity?.Invoke();
+
     private static bool hasFiredFirstPlantReady = false;
 
     public static void InvokeTutorialStarted() => OnTutorialStarted?.Invoke();

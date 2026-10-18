@@ -199,6 +199,8 @@ public class TutorialManager : MonoBehaviour
         TutorialEvents.OnHouseEntered += CheckObjective_HouseEntered;
         TutorialEvents.OnCraftingClosed += CheckObjective_CraftingOpened;
         TutorialEvents.OnRestorationClosed += CheckObjective_RestorationOpened;
+        TutorialEvents.OnDailyLoadoutOpened += CheckObjective_DailyLoadoutOpened;
+        TutorialEvents.OnDailyLoadoutProximity += CheckObjective_DailyLoadoutProximity;
         TutorialEvents.OnRitualAltarUsed += CheckObjective_RitualAltarUsed;
         TutorialEvents.OnSeedTooltipDisplayed += CheckObjective_SeedTooltipDisplayed;
 
@@ -245,6 +247,8 @@ public class TutorialManager : MonoBehaviour
         TutorialEvents.OnHouseEntered -= CheckObjective_HouseEntered;
         TutorialEvents.OnCraftingClosed -= CheckObjective_CraftingOpened;
         TutorialEvents.OnRestorationClosed -= CheckObjective_RestorationOpened;
+        TutorialEvents.OnDailyLoadoutOpened -= CheckObjective_DailyLoadoutOpened;
+        TutorialEvents.OnDailyLoadoutProximity -= CheckObjective_DailyLoadoutProximity;
         TutorialEvents.OnRitualAltarUsed -= CheckObjective_RitualAltarUsed;
         TutorialEvents.OnSeedTooltipDisplayed -= CheckObjective_SeedTooltipDisplayed;
 
@@ -584,6 +588,8 @@ public class TutorialManager : MonoBehaviour
     private void CheckObjective_HouseEntered() => CheckObjective(TutorialObjectiveType.EnterHouse);
     private void CheckObjective_CraftingOpened() => CheckObjective(TutorialObjectiveType.OpenCrafting);
     private void CheckObjective_RestorationOpened() => CheckObjective(TutorialObjectiveType.OpenRestoration);
+    private void CheckObjective_DailyLoadoutOpened() => CheckObjective(TutorialObjectiveType.OpenDailyLoadout);
+    private void CheckObjective_DailyLoadoutProximity() => CheckObjective(TutorialObjectiveType.DailyLoadoutProximity);
     private void CheckObjective_RitualAltarUsed() => CheckObjective(TutorialObjectiveType.UseRitualAltar);
     private void CheckObjective_ProductionPlantPlanted() => CheckObjective(TutorialObjectiveType.PlantProduction);
     private void CheckObjective_DefensivePlantPlanted() => CheckObjective(TutorialObjectiveType.PlantDefensive);

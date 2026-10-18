@@ -100,6 +100,8 @@ public sealed class DailyLoadoutUIFixture : IDisposable
         var icon = (Sprite)Field(Property(View, "OptionPrefab"), "normalSprite");
         foreach (var plant in new[] { FirstPlant, SecondPlant, LaterPlant }) Set(plant, "plantIcon", icon);
         foreach (var spell in new[] { FirstSpell, SecondSpell, LaterSpell }) Set(spell, "spellIcon", icon);
+        // Keep authored spell metadata and its real inventory owner coherent after fixture art setup.
+        Call(Unlocks, "RebuildUnlocksUpToLevel", 1);
         // Native Editor authoring, on an unsaved isolated instance only. Never alter the user's prefab in tests.
         var authoring = AppDomain.CurrentDomain.GetAssemblies().Single(a => a.GetName().Name == "Assembly-CSharp-Editor")
             .GetType("DailyLoadoutUIIntegrationAuthoring", true);
@@ -108,6 +110,36 @@ public sealed class DailyLoadoutUIFixture : IDisposable
         Call(Presenter, "Initialize", Session, Unlocks, Experience, Flow, Modals);
         holder.SetActive(true);
     }
+
+    // Explicit opt-in for regressions that require previously committed equipment.
+    // New-run fixtures intentionally remain empty.
+    public void EquipInitial()
+    {
+        Call(Session, "TrySetDraftPlant", 0, Seed(7));
+        Call(Session, "TrySetDraftPlant", 1, Seed(3));
+        Call(Session, "TrySetDraftSpell", 0, FirstSpell);
+        Call(Session, "TrySetDraftSpell", 1, SecondSpell);
+        Assert.That(Call(Session, "TryConfirm"), Is.True);
+        Call(Days, "StartNight"); Call(Days, "StartDay");
+    }
+
+    public Component Hud(bool plants)
+    {
+        var holder = Object("HUD parent");
+        string path = "Assets/Prefabs/UI/Canvas/Game/HUD/HUD " + (plants ? "Seed" : "Spell") + " Slots.prefab";
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+        Assert.That(prefab, Is.Not.Null);
+        var clone = UnityEngine.Object.Instantiate(prefab, holder.transform); owned.Add(clone);
+        var controller = clone.GetComponent(Production(plants ? "SeedSlotsUIController" : "SpellSlotsUIController"));
+        holder.SetActive(true);
+        if (!plants && !Application.isPlaying)
+            foreach (var slot in clone.GetComponentsInChildren(Production("SpellSlotUI"), true)) Call(slot, "Awake");
+        Call(controller, "Initialize"); Call(controller, "Setup");
+        return controller;
+    }
+
+    public static Component HudSlot(Component hud, bool plants, int position)
+        => (Component)((IList)Field(hud, plants ? "seedSlots" : "spellSlotUIs"))[position];
 
     public bool Open() => (bool)Call(Presenter, "Open");
     public void Refresh() => Call(Presenter, "Refresh");
@@ -139,6 +171,8 @@ public sealed class DailyLoadoutUIFixture : IDisposable
     private ScriptableObject Spell(int index, string name)
     {
         var value = Data("SpellDataSO"); Set(value, "slotIndex", index); Set(value, "spellName", name);
+        Set(value, "spellType", Enum.ToObject(Production("SpellType"), 1));
+        Set(value, "cooldown", 10f);
         Set(value, "spellPrefab", Object(name)); return value;
     }
     public void Dispose()

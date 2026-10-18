@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: FindRestorationAltar
   stepOrder: 11
-  instructionText: Battle will leave its scars. Now, seek the Restoration Altar.
+  instructionText: Seek the Sacred Tree to prepare your daily loadout.
   stepImage: {fileID: 1439159968, guid: d5879276d50f47440a06b03dcf0a46db, type: 3}
-  objectiveType: 20
+  objectiveType: 29
   requiredCount: 1
   isGatedStep: 0
   waitDuration: 1

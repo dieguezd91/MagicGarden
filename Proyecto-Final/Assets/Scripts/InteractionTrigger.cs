@@ -13,10 +13,12 @@ public class InteractionTrigger : MonoBehaviour
     private bool isPlayerNear = false;
     private bool isInteracting = false;
     private IInteractable interactable;
+    private IInteractionLifecycle lifecycle;
 
     private void Awake()
     {
         interactable = GetComponent<IInteractable>();
+        lifecycle = interactable as IInteractionLifecycle;
 
         if (interactable == null)
         {
@@ -27,14 +29,29 @@ public class InteractionTrigger : MonoBehaviour
 
     private void OnEnable()
     {
-        UIEvents.OnCraftingUIClosed += OnInteractionComplete;
-        UIEvents.OnRestorationAltarUIClosed += OnInteractionComplete;
+        if (lifecycle != null) lifecycle.InteractionCompleted += OnInteractionComplete;
+        else
+        {
+            UIEvents.OnCraftingUIClosed += OnInteractionComplete;
+            UIEvents.OnRestorationAltarUIClosed += OnInteractionComplete;
+        }
     }
 
     private void OnDisable()
     {
-        UIEvents.OnCraftingUIClosed -= OnInteractionComplete;
-        UIEvents.OnRestorationAltarUIClosed -= OnInteractionComplete;
+        if (lifecycle != null)
+        {
+            lifecycle.InteractionCompleted -= OnInteractionComplete;
+            lifecycle.CancelInteraction();
+            isInteracting = false;
+            isPlayerNear = false;
+            if (interactionPromptCanvas != null) interactionPromptCanvas.SetActive(false);
+        }
+        else
+        {
+            UIEvents.OnCraftingUIClosed -= OnInteractionComplete;
+            UIEvents.OnRestorationAltarUIClosed -= OnInteractionComplete;
+        }
     }
 
     private void Start()
@@ -45,11 +62,28 @@ public class InteractionTrigger : MonoBehaviour
 
     private void Update()
     {
-        if (isPlayerNear &&
-            !isInteracting &&
-            Input.GetKeyDown(interactionKey) &&
-            interactable.CanInteract() &&
-            (TutorialManager.Instance == null || TutorialManager.Instance.CanAcceptPlayerInput()))
+        if (Input.GetKeyDown(interactionKey)) TryInteract();
+        UpdatePromptVisibility();
+    }
+
+    // The same entry point is used by F and integration tests; no alternate opening path.
+    public bool TryInteract()
+    {
+        if (!isPlayerNear || isInteracting || interactable == null || !interactable.CanInteract() ||
+            (TutorialManager.Instance != null && !TutorialManager.Instance.CanAcceptPlayerInput())) return false;
+        if (lifecycle != null)
+        {
+            isInteracting = true;
+            if (!lifecycle.TryInteract())
+            {
+                isInteracting = false;
+                UpdatePromptVisibility();
+                return false;
+            }
+            UpdatePromptVisibility();
+            PlayInteractionSound();
+        }
+        else
         {
             if (hidePromptDuringInteraction)
             {
@@ -58,17 +92,19 @@ public class InteractionTrigger : MonoBehaviour
                     interactionPromptCanvas.SetActive(false);
             }
 
-            // Play interaction sound globally through SoundManager
-            if (interactSound != null && interactSound.CanPlay())
-            {
-                SoundManager.Instance.PlayClip(interactSound);
-                interactSound.SetLastPlayTime();
-            }
-
+            PlayInteractionSound();
             interactable.Interact();
         }
+        return true;
+    }
 
-        UpdatePromptVisibility();
+    private void PlayInteractionSound()
+    {
+        if (interactSound != null && interactSound.CanPlay())
+        {
+            SoundManager.Instance.PlayClip(interactSound);
+            interactSound.SetLastPlayTime();
+        }
     }
 
     private void UpdatePromptVisibility()
@@ -77,7 +113,7 @@ public class InteractionTrigger : MonoBehaviour
 
         bool shouldShow = isPlayerNear &&
                          !isInteracting &&
-                         interactable.CanInteract() &&
+                         interactable != null && interactable.CanInteract() &&
                          (TutorialManager.Instance == null || TutorialManager.Instance.CanAcceptPlayerInput());
 
         interactionPromptCanvas.SetActive(shouldShow);

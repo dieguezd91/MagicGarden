@@ -1,493 +1,150 @@
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using TMPro;
 using System.Collections;
-using System.Collections.Generic;
+using MagicGarden.LoadoutUI;
 
+/// <summary>Existing seed HUD, projected from committed equipment, never storage order.</summary>
 public class SeedSlotsUIController : UIControllerBase
 {
     [Header("Seed Slots")]
-    [SerializeField] private SeedSlot[] seedSlots = new SeedSlot[9];
+    [SerializeField] private SeedSlot[] seedSlots = new SeedSlot[3];
     [SerializeField] private CanvasGroup seedSlotsCanvasGroup;
-
-    private int hoveredSlotIndex = -1;
-    private Coroutine fadeCoroutine;
-
-    private GameObject dragIcon;
-    private int dragSourceIndex = -1;
-
     private SeedInventory seedInventory;
     private PlayerAbilitySystem abilitySystem;
     private GameFlowController gameFlowController;
+    private PlayerContentUnlockSystem unlocks;
+    private DailyLoadoutSession session;
+    private readonly DailyLoadoutCatalog catalog = new DailyLoadoutCatalog();
+    private Coroutine fadeCoroutine;
+    private bool listening;
 
+    protected override void CacheReferences() { }
     protected override void SetupEventListeners()
     {
-        if (seedInventory != null)
-        {
-            seedInventory.onSlotSelected += UpdateSelectedSlotUI;
-            seedInventory.onInventoryChanged += UpdateSeedCounts;
-        }
-
-        if (abilitySystem != null)
-        {
-            abilitySystem.OnAbilityChanged += OnAbilityChanged;
-        }
-
-        if (gameFlowController != null)
-        {
-            gameFlowController.OnPhaseChanged += OnPhaseChanged;
-        }
-
-        SetupSlotEventListeners();
-    }
-
-    protected override void ConfigureInitialState()
-    {
-        InitializeSlots();
-
-        if (gameFlowController != null)
-        {
-            UpdateVisibilityBasedOnPhase(gameFlowController.CurrentPhase);
-        }
-        else
-        {
-            if (abilitySystem?.CurrentAbility != PlayerAbility.Planting && seedSlotsCanvasGroup != null)
-            {
-                seedSlotsCanvasGroup.alpha = 0.1f;
-            }
-        }
-    }
-
-    public override void HandleUpdate()
-    {
-        // Numeric gameplay selection is routed once through InputReader.
-    }
-
-    private void OnPhaseChanged(GamePhase newPhase)
-    {
-        UpdateVisibilityBasedOnPhase(newPhase);
-    }
-
-    private void UpdateVisibilityBasedOnPhase(GamePhase phase)
-    {
-        if (seedSlotsCanvasGroup == null) return;
-
-        if (phase == GamePhase.Night)
-        {
-            if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
-
-            seedSlotsCanvasGroup.alpha = 0f;
-            seedSlotsCanvasGroup.interactable = false;
-            seedSlotsCanvasGroup.blocksRaycasts = false;
-        }
-        else if (IsDayPhase(phase))
-        {
-            bool shouldShow = abilitySystem?.CurrentAbility == PlayerAbility.Planting;
-
-            if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
-
-            float targetAlpha = shouldShow ? 1f : 0.1f;
-
-            if (gameObject.activeInHierarchy)
-            {
-                fadeCoroutine = StartCoroutine(FadeToAlpha(targetAlpha, 0.35f, shouldShow));
-            }
-            else
-            {
-                seedSlotsCanvasGroup.alpha = targetAlpha;
-                seedSlotsCanvasGroup.interactable = shouldShow;
-                seedSlotsCanvasGroup.blocksRaycasts = shouldShow;
-            }
-        }
-    }
-
-    private bool IsDayPhase(GamePhase phase)
-    {
-        return phase == GamePhase.Day;
-    }
-
-    private void SetupSlotEventListeners()
-    {
+        if (listening) return;
+        listening = true;
         for (int i = 0; i < seedSlots.Length; i++)
         {
             if (seedSlots[i] == null) continue;
-
-            var slot = seedSlots[i];
-            slot.OnSlotClicked += OnSlotClicked;
-            slot.OnDragStarted += BeginDragIcon;
-            slot.OnSlotDragged += OnDragIcon;
-            slot.OnDragEnded += EndDragIcon;
-            slot.OnSlotHovered += OnSlotHovered;
-            slot.OnSlotUnhovered += OnSlotUnhovered;
+            seedSlots[i].gameObject.SetActive(i < 3);
+            if (i >= 3) continue;
+            seedSlots[i].InitializeEquipment(i);
+            seedSlots[i].OnSlotClicked += OnSlotClicked;
         }
+        BindOwners();
     }
+    protected override void ConfigureInitialState() { RefreshAllSlots(); ApplyPhase(false); }
+    private void OnEnable() { if (isSetup) { SetupEventListeners(); RefreshAllSlots(); } }
+    private void OnDisable() => CleanupEventListeners();
+    public override void HandleUpdate() { if (isSetup && listening) BindOwners(); }
 
-    public void InitializeSlots()
+    private void BindOwners()
     {
-        for (int i = 0; i < seedSlots.Length; i++)
-        {
-            if (seedSlots[i] == null) continue;
-
-            seedSlots[i].Initialize(i);
-            UpdateSlotDisplay(i);
-        }
-
-        if (seedInventory != null)
-            UpdateSelectedSlotUI(seedInventory.GetSelectedSlotIndex());
-    }
-
-    private void UpdateSlotDisplay(int slotIndex)
-    {
-        if (slotIndex < 0 || slotIndex >= seedSlots.Length || seedSlots[slotIndex] == null) return;
-
-        PlantSlot plantSlot = seedInventory?.GetPlantSlot(slotIndex);
-        seedSlots[slotIndex].UpdateSlotDisplay(plantSlot);
-    }
-
-    public void UpdateSeedCounts()
-    {
-        for (int i = 0; i < seedSlots.Length; i++)
-        {
-            UpdateSlotDisplay(i);
-        }
-    }
-
-    private void UpdateSelectedSlotUI(int selectedIndex)
-    {
-        for (int i = 0; i < seedSlots.Length; i++)
-        {
-            if (seedSlots[i] == null) continue;
-
-            bool isSelected = (i == selectedIndex);
-            seedSlots[i].SetSelected(isSelected);
-        }
-    }
-
-    private void OnAbilityChanged(PlayerAbility newAbility)
-    {
-        if (seedSlotsCanvasGroup == null || !isActiveAndEnabled) return;
-
-        if (gameFlowController != null && gameFlowController.CurrentPhase == GamePhase.Night)
-        {
+        var owner = EquipmentGameplaySelection.ResolveOwner(unlocks);
+        var nextSession = owner != null ? owner.Loadout : null;
+        var inventory = SeedInventory.Instance;
+        var flow = GameFlowController.Instance;
+        if (ReferenceEquals(session, nextSession) && seedInventory == inventory && gameFlowController == flow && unlocks == owner)
             return;
-        }
-
-        bool shouldShow = newAbility == PlayerAbility.Planting;
-        if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
-
-        float targetAlpha = shouldShow ? 1f : 0.1f;
-        fadeCoroutine = StartCoroutine(FadeToAlpha(targetAlpha, 0.35f, shouldShow));
-    }
-
-    private IEnumerator FadeToAlpha(float targetAlpha, float duration, bool makeInteractable)
-    {
-        if (seedSlotsCanvasGroup == null) yield break;
-
-        float startAlpha = seedSlotsCanvasGroup.alpha;
-        float time = 0f;
-
-        while (time < duration)
-        {
-            time += Time.deltaTime;
-            float t = time / duration;
-            seedSlotsCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
-            yield return null;
-        }
-
-        seedSlotsCanvasGroup.alpha = targetAlpha;
-
-        seedSlotsCanvasGroup.interactable = makeInteractable;
-        seedSlotsCanvasGroup.blocksRaycasts = makeInteractable;
-    }
-
-    private void OnSlotClicked(int slotIndex)
-    {
-        SelectSlotInternal(slotIndex);
-
-        abilitySystem?.SetAbility(PlayerAbility.Planting);
-
-        UIManager.Instance.InterfaceSounds?.PlaySound(InterfaceSoundType.MenuButtonHover);
-    }
-
-    private void OnSlotHovered(int slotIndex)
-    {
-        // Handle slot hover if needed
-    }
-
-    private void OnSlotUnhovered(int slotIndex)
-    {
-        // Handle slot unhover if needed
-    }
-
-    private bool HasSlot(int slotIndex)
-    {
-        return slotIndex >= 0 && slotIndex < seedSlots.Length && seedSlots[slotIndex] != null;
-    }
-
-    private void BeginDragIcon(int slotIndex)
-    {
-        if (dragSourceIndex >= 0 || !HasSlot(slotIndex) || !seedSlots[slotIndex].CanStartDrag()) return;
-
-        InitializeDrag(slotIndex);
-        ActivatePlantingAbility();
-    }
-
-    private void InitializeDrag(int slotIndex)
-    {
-        dragSourceIndex = slotIndex;
-        CreateDragIcon(slotIndex);
-        seedSlots[slotIndex].SetDragSource(true);
-    }
-
-    private void ActivatePlantingAbility()
-    {
-        abilitySystem?.SetAbility(PlayerAbility.Planting);
-    }
-
-    private void CreateDragIcon(int slotIndex)
-    {
-        dragIcon = new GameObject("DragIcon");
-        SetupDragIconTransform(slotIndex);
-        SetupDragIconImage(slotIndex);
-    }
-
-    private void SetupDragIconTransform(int slotIndex)
-    {
-        var rt = dragIcon.AddComponent<RectTransform>();
-        rt.SetParent(transform.root, false);
-        rt.sizeDelta = seedSlots[slotIndex].GetComponent<RectTransform>().sizeDelta;
-    }
-
-    private void SetupDragIconImage(int slotIndex)
-    {
-        var img = dragIcon.AddComponent<Image>();
-        img.raycastTarget = false;
-        img.sprite = seedSlots[slotIndex].GetSlotIcon();
-        img.color = new Color(1f, 1f, 1f, 0.6f);
-    }
-
-    private void OnDragIcon(int slotIndex, PointerEventData data)
-    {
-        if (dragIcon == null || slotIndex != dragSourceIndex || data == null || EventSystem.current == null) return;
-
-        var rt = dragIcon.GetComponent<RectTransform>();
-        rt.position = data.position;
-
-        var results = new List<RaycastResult>();
-        EventSystem.current.RaycastAll(data, results);
-        int newHoverIndex = GetHoveredSlotIndex(results);
-
-        if (newHoverIndex != hoveredSlotIndex)
-        {
-            ClearSlotHighlight();
-            if (newHoverIndex >= 0 && newHoverIndex != dragSourceIndex)
-            {
-                hoveredSlotIndex = newHoverIndex;
-                HighlightSlot(newHoverIndex, true);
-            }
-        }
-    }
-
-    private int GetHoveredSlotIndex(List<RaycastResult> results)
-    {
-        foreach (var result in results)
-        {
-            var slot = result.gameObject.GetComponent<SeedSlot>();
-            if (slot != null) return slot.SlotIndex;
-
-            slot = result.gameObject.GetComponentInParent<SeedSlot>();
-            if (slot != null) return slot.SlotIndex;
-        }
-        return -1;
-    }
-
-    private void EndDragIcon(int slotIndex, PointerEventData data)
-    {
-        // Unity may send end-drag even when the begin was rejected.
-        if (!HasSlot(dragSourceIndex) || slotIndex != dragSourceIndex) return;
-        try
-        {
-            var results = new List<RaycastResult>();
-            if (data != null && EventSystem.current != null)
-                EventSystem.current.RaycastAll(data, results);
-            ProcessDragResult(GetHoveredSlotIndex(results));
-        }
-        finally
-        {
-            CleanupDrag();
-        }
-    }
-
-    private void DestroyDragIcon()
-    {
-        if (dragIcon != null)
-        {
-            Destroy(dragIcon);
-            dragIcon = null;
-        }
-    }
-
-    private void ProcessDragResult(int hitIndex)
-    {
-        if (hitIndex != dragSourceIndex && hitIndex >= 0)
-            ExecuteDragSwap(hitIndex);
-    }
-
-    private void ExecuteDragSwap(int targetIndex)
-    {
-        if (seedInventory != null && seedInventory.SwapSlots(dragSourceIndex, targetIndex))
-        {
-            RefreshSlotsAfterSwap(targetIndex);
-        }
-    }
-
-    private void RefreshSlotsAfterSwap(int newSelectedSlot)
-    {
-        ForceLayoutRebuild();
-        SelectNewSlotAfterSwap(newSelectedSlot);
-    }
-
-    private void ForceLayoutRebuild()
-    {
-        var seedSlotsParent = GameObject.Find("SeedSlots")?.GetComponent<RectTransform>();
-        if (seedSlotsParent != null)
-            LayoutRebuilder.ForceRebuildLayoutImmediate(seedSlotsParent);
-    }
-
-    private void SelectNewSlotAfterSwap(int slotIndex)
-    {
-        seedInventory?.SelectSlot(slotIndex);
-    }
-
-    private void CleanupDrag()
-    {
-        DestroyDragIcon();
-        if (HasSlot(dragSourceIndex))
-            seedSlots[dragSourceIndex].SetDragSource(false);
-        // Swap notifications run synchronously while the source is hidden.
-        // Render from the current storage entries after clearing that state,
-        // including rejected/cancelled swaps which emitted no notification.
-        UpdateSeedCounts();
-        ClearSlotHighlight();
-        dragSourceIndex = -1;
-    }
-
-    private void OnDisable()
-    {
-        if (dragSourceIndex >= 0) CleanupDrag();
-    }
-
-    private void HighlightSlot(int slotIndex, bool highlight)
-    {
-        if (slotIndex < 0 || slotIndex >= seedSlots.Length || seedSlots[slotIndex] == null) return;
-        seedSlots[slotIndex].SetHighlighted(highlight);
-    }
-
-    private void ClearSlotHighlight()
-    {
-        if (HasSlot(hoveredSlotIndex))
-        {
-            seedSlots[hoveredSlotIndex].SetHighlighted(false);
-            hoveredSlotIndex = -1;
-        }
-    }
-
-    private void SelectSlotInternal(int slotIndex)
-    {
-        seedInventory?.SelectSlot(slotIndex);
-        UIManager.Instance.InterfaceSounds?.PlaySound(InterfaceSoundType.OnSeedSelect);
-    }
-
-    public void SelectSlot(int slotIndex)
-    {
+        UnbindOwners();
+        unlocks = owner; session = nextSession; seedInventory = inventory; gameFlowController = flow;
+        abilitySystem = owner != null ? owner.GetComponent<PlayerAbilitySystem>() : null;
+        if (session != null) session.CommittedChanged += RefreshAllSlots;
         if (seedInventory != null)
         {
-            seedInventory.SelectSlot(slotIndex);
+            seedInventory.onInventoryChanged += UpdateSeedCounts;
+            seedInventory.onSlotSelected += UpdateSelectedSlotUI;
         }
+        if (gameFlowController != null) gameFlowController.OnPhaseChanged += OnPhaseChanged;
+        RefreshAllSlots();
+        ApplyPhase(false);
     }
-
-    public int GetSelectedSlotIndex()
+    private void UnbindOwners()
     {
-        return seedInventory?.GetSelectedSlotIndex() ?? 0;
+        if (session != null) session.CommittedChanged -= RefreshAllSlots;
+        if (seedInventory != null)
+        {
+            seedInventory.onInventoryChanged -= UpdateSeedCounts;
+            seedInventory.onSlotSelected -= UpdateSelectedSlotUI;
+        }
+        if (gameFlowController != null) gameFlowController.OnPhaseChanged -= OnPhaseChanged;
     }
-
-    public void RefreshSlotDisplay(int slotIndex)
-    {
-        UpdateSlotDisplay(slotIndex);
-    }
-
+    public void InitializeSlots() => RefreshAllSlots();
     public void RefreshAllSlots()
     {
-        InitializeSlots();
+        var experience = unlocks != null ? unlocks.GetComponent<PlayerExperienceSystem>() : null;
+        catalog.Refresh(experience != null ? experience.ProgressionData : null, unlocks);
+        UpdateSeedCounts();
     }
-
-    public bool IsSlotEmpty(int slotIndex)
+    public void UpdateSeedCounts()
     {
-        if (slotIndex < 0 || slotIndex >= seedSlots.Length) return true;
-
-        PlantSlot slot = seedInventory?.GetPlantSlot(slotIndex);
-        return slot == null || slot.seedCount <= 0;
+        for (int i = 0; i < seedSlots.Length && i < 3; i++) RefreshSlotDisplay(i);
+        UpdateSelectedSlotUI(-1);
     }
-
-    public PlantSlot GetSlotData(int slotIndex)
+    public void RefreshSlotDisplay(int position)
     {
-        return seedInventory?.GetPlantSlot(slotIndex);
+        if (position < 0 || position >= 3 || position >= seedSlots.Length || seedSlots[position] == null) return;
+        var assignment = session != null && session.IsReady ? session.GetCommittedPlant(position) : default;
+        var data = assignment.HasValue ? catalog.FindPlant(assignment.Identity) : null;
+        var resolution = assignment.HasValue ? session.ResolvePlant(assignment.Identity) : default;
+        seedSlots[position].UpdateEquipmentDisplay(data, resolution.Slot != null ? resolution.Slot.seedCount : 0,
+            resolution.InventoryIndex);
     }
-
+    private void UpdateSelectedSlotUI(int ignored)
+    {
+        int selected = GetSelectedSlotIndex();
+        for (int i = 0; i < seedSlots.Length && i < 3; i++)
+            if (seedSlots[i] != null) seedSlots[i].SetSelected(i == selected);
+    }
+    public int GetSelectedSlotIndex() => new EquipmentGameplaySelection(session, seedInventory, null).GetSelectedPosition(true);
+    public PlantSlot GetSlotData(int position)
+    {
+        if (session == null || !session.IsReady || position < 0 || position >= 3) return null;
+        var assignment = session.GetCommittedPlant(position);
+        return assignment.HasValue ? session.ResolvePlant(assignment.Identity).Slot : null;
+    }
+    public bool IsSlotEmpty(int position) => session == null || !session.IsReady || position < 0 || position >= 3 ||
+        !session.GetCommittedPlant(position).HasValue;
+    public void SelectSlot(int position) => OnSlotClicked(position);
+    private void OnSlotClicked(int position)
+    {
+        if (gameFlowController == null || gameFlowController.CurrentPhase != GamePhase.Day) return;
+        if (abilitySystem != null) abilitySystem.TrySelectEquipmentPosition(position);
+        else new EquipmentGameplaySelection(session, seedInventory, null).TrySelectPosition(position);
+    }
+    private void OnPhaseChanged(GamePhase phase) { ApplyPhase(true); UpdateSelectedSlotUI(-1); }
+    private void ApplyPhase(bool animate)
+    {
+        if (seedSlotsCanvasGroup == null) return;
+        bool active = gameFlowController != null && gameFlowController.CurrentPhase == GamePhase.Day;
+        // Disable interaction immediately, not when the visual fade finishes.
+        seedSlotsCanvasGroup.interactable = active;
+        seedSlotsCanvasGroup.blocksRaycasts = active;
+        if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
+        fadeCoroutine = null;
+        // Hide the outgoing bar immediately; cross-fading would overlap both categories.
+        if (!active) { seedSlotsCanvasGroup.alpha = 0f; return; }
+        if (animate && Application.isPlaying && isActiveAndEnabled)
+            fadeCoroutine = StartCoroutine(FadeToAlpha(1f));
+        else seedSlotsCanvasGroup.alpha = 1f;
+    }
+    private IEnumerator FadeToAlpha(float target)
+    {
+        float start = seedSlotsCanvasGroup.alpha;
+        for (float time = 0; time < .35f; time += Time.deltaTime)
+        {
+            seedSlotsCanvasGroup.alpha = Mathf.Lerp(start, target, time / .35f);
+            yield return null;
+        }
+        seedSlotsCanvasGroup.alpha = target; fadeCoroutine = null;
+    }
     protected override void CleanupEventListeners()
     {
-        if (seedInventory != null)
-        {
-            seedInventory.onSlotSelected -= UpdateSelectedSlotUI;
-            seedInventory.onInventoryChanged -= UpdateSeedCounts;
-        }
-
-        if (abilitySystem != null)
-        {
-            abilitySystem.OnAbilityChanged -= OnAbilityChanged;
-        }
-
-        if (gameFlowController != null)
-        {
-            gameFlowController.OnPhaseChanged -= OnPhaseChanged;
-        }
-
-        for (int i = 0; i < seedSlots.Length; i++)
-        {
-            if (seedSlots[i] == null) continue;
-
-            var slot = seedSlots[i];
-            slot.OnSlotClicked -= OnSlotClicked;
-            slot.OnDragStarted -= BeginDragIcon;
-            slot.OnSlotDragged -= OnDragIcon;
-            slot.OnDragEnded -= EndDragIcon;
-            slot.OnSlotHovered -= OnSlotHovered;
-            slot.OnSlotUnhovered -= OnSlotUnhovered;
-        }
-
-        if (fadeCoroutine != null)
-        {
-            StopCoroutine(fadeCoroutine);
-            fadeCoroutine = null;
-        }
-
-        if (dragSourceIndex >= 0) CleanupDrag();
-        else DestroyDragIcon();
-    }
-
-    protected override void CacheReferences()
-    {
-        seedInventory = SeedInventory.Instance;
-
-        if (seedInventory == null)
-            seedInventory = FindObjectOfType<SeedInventory>();
-
-        abilitySystem = FindObjectOfType<PlayerAbilitySystem>();
-
-        gameFlowController = GameFlowController.Instance;
-
-        if (gameFlowController == null)
-            gameFlowController = FindObjectOfType<GameFlowController>();
+        if (!listening) return;
+        listening = false;
+        UnbindOwners();
+        session = null; seedInventory = null; gameFlowController = null; unlocks = null; abilitySystem = null;
+        foreach (var slot in seedSlots) if (slot != null) slot.OnSlotClicked -= OnSlotClicked;
+        if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
+        fadeCoroutine = null;
     }
 }

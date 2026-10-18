@@ -14,10 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: OpenRestoration
   stepOrder: 12
-  instructionText: This is a hallowed place. Here you may offer resources to heal
-    the heart of the Sacred Tree.
+  instructionText: Press F at the Sacred Tree to inspect and configure your daily
+    loadout. Confirm once per day, or close without confirming. You can inspect your
+    confirmed loadout again.
   stepImage: {fileID: 0}
-  objectiveType: 13
+  objectiveType: 28
   requiredCount: 1
   isGatedStep: 1
   waitDuration: 1

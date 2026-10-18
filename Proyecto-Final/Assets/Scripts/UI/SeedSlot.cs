@@ -32,6 +32,33 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
     private PlantSlotTooltipHandler tooltipHandler;
     private bool isDragSource = false;
     private PlantSlot displayedSlot;
+    private bool equipmentMode;
+    private bool selected;
+    private int inventoryIndex = -1;
+
+    public void InitializeEquipment(int position)
+    {
+        equipmentMode = true;
+        SlotIndex = position;
+        tooltipHandler = GetComponent<PlantSlotTooltipHandler>();
+        if (tooltipHandler != null) { tooltipHandler.equipmentMode = true; tooltipHandler.slotIndex = -1; }
+        SetSlotNumber();
+        SetupButtonEvents();
+    }
+
+    public void UpdateEquipmentDisplay(PlantDataSO data, int count, int storageIndex)
+    {
+        inventoryIndex = storageIndex;
+        if (tooltipHandler != null) tooltipHandler.slotIndex = storageIndex;
+        if (data == null) { HideSlotContent(); return; }
+        if (slotIcon != null)
+        {
+            slotIcon.sprite = data.plantIcon;
+            slotIcon.preserveAspect = true;
+            slotIcon.gameObject.SetActive(true);
+        }
+        if (seedCountText != null) { seedCountText.text = count.ToString(); seedCountText.enabled = true; }
+    }
 
     public void Initialize(int slotIndex)
     {
@@ -68,7 +95,8 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
         OnHover.RemoveAllListeners();
         OnHover.AddListener(() => {
             OnSlotHovered?.Invoke(SlotIndex);
-            UIEvents.TriggerTooltipRequested(SlotIndex);
+            int index = equipmentMode ? inventoryIndex : SlotIndex;
+            if (index >= 0) UIEvents.TriggerTooltipRequested(index);
         });
     }
 
@@ -134,6 +162,7 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
 
     public void SetSelected(bool selected)
     {
+        this.selected = selected;
         if (slotBackground == null) return;
 
         slotBackground.color = selected ? selectedColor : normalColor;
@@ -152,7 +181,7 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
         else
         {
             // Restore to selected or normal state
-            bool isSelected = SeedInventory.Instance?.GetSelectedSlotIndex() == SlotIndex;
+            bool isSelected = equipmentMode ? selected : SeedInventory.Instance?.GetSelectedSlotIndex() == SlotIndex;
             slotBackground.color = isSelected ? selectedColor : normalColor;
         }
     }
@@ -165,6 +194,7 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
 
     public bool CanStartDrag()
     {
+        if (equipmentMode) return false;
         PlantSlot slot = SeedInventory.Instance?.GetPlantSlot(SlotIndex);
         return slot != null && slot.data != null && slot.seedCount > 0;
     }

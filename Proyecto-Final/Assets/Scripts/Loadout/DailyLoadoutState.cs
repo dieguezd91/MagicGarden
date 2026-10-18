@@ -24,7 +24,7 @@ namespace MagicGarden.Loadout
 
     /// <summary>
     /// Equipment state only. Callers supply stable identities, validated unlocks,
-    /// deterministic content order and a monotonic day token scoped to this run.
+    /// and a monotonic day token scoped to this run. Initialization never equips content.
     /// No inventory, selection, cooldown, gameplay or Unity lifecycle is owned here.
     /// </summary>
     public sealed class DailyLoadoutState<TPlant, TSpell>
@@ -47,18 +47,12 @@ namespace MagicGarden.Loadout
         public EquipmentAssignment<TSpell> GetDraftSpell(int index) => draftSpells[index];
 
         /// <summary>
-        /// Once per run, choose the first three distinct identities in each supplied
-        /// ordered unlock list. Empty lists are valid. Does not open a day or spend
-        /// its confirmation. Both categories are validated before either is changed.
+        /// Initialize six empty positions once per run. Unlocks are catalog membership,
+        /// never default assignments. Does not open a day or spend its confirmation.
         /// </summary>
-        public bool TryBootstrap(IReadOnlyList<TPlant> orderedPlants, IReadOnlyList<TSpell> orderedSpells)
+        public bool TryInitialize()
         {
             if (IsInitialized) return false;
-            if (!TryInitialAssignments(orderedPlants, out var plants) ||
-                !TryInitialAssignments(orderedSpells, out var spells)) return false;
-
-            Array.Copy(plants, committedPlants, SlotsPerCategory);
-            Array.Copy(spells, committedSpells, SlotsPerCategory);
             IsInitialized = true;
             DiscardDraft();
             return true;
@@ -141,20 +135,5 @@ namespace MagicGarden.Loadout
             return true;
         }
 
-        private static bool TryInitialAssignments<T>(IReadOnlyList<T> orderedIdentities, out EquipmentAssignment<T>[] assignments)
-        {
-            assignments = new EquipmentAssignment<T>[SlotsPerCategory];
-            if (orderedIdentities == null) return false;
-            var seen = new HashSet<T>();
-            int count = 0;
-            for (int i = 0; i < orderedIdentities.Count; i++)
-            {
-                T identity = orderedIdentities[i];
-                if (identity is null) return false;
-                if (seen.Add(identity) && count < SlotsPerCategory)
-                    assignments[count++] = EquipmentAssignment<T>.For(identity);
-            }
-            return true;
-        }
     }
 }

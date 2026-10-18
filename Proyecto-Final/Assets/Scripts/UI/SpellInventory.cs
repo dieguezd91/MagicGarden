@@ -103,6 +103,14 @@ public class SpellInventory : MonoBehaviour
         }
     }
 
+    /// <summary>Deselect without changing storage or cooldowns.</summary>
+    public void ClearSelection()
+    {
+        if (UpgradeRuntime.GameplayBlocked) return;
+        selectedSlotIndex = -1;
+        onSpellSlotSelected?.Invoke(selectedSlotIndex);
+    }
+
     public void SelectSlot(int index)
     {
         if (UpgradeRuntime.GameplayBlocked) return;

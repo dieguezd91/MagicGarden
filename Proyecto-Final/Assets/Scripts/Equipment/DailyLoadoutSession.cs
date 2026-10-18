@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using MagicGarden.Loadout;
 
 /// <summary>
@@ -16,6 +15,8 @@ public sealed class DailyLoadoutSession : IDisposable
     private readonly EquipmentInventoryResolver resolver;
     private bool disposed;
 
+    /// <summary>Assignments changed after initialization, successful confirmation or full reset; never draft edits.</summary>
+    public event Action CommittedChanged;
     public bool IsInitialized => !disposed && state.IsInitialized;
     public bool IsReady => IsInitialized && unlocks != null && unlocks.HasInitializedUnlockState;
     public EquipmentAdmissionPolicy Admission { get; }
@@ -74,7 +75,9 @@ public sealed class DailyLoadoutSession : IDisposable
             if (plant.HasValue && !unlocks.IsPlantUnlocked(plant.Identity)) return false;
             if (spell.HasValue && (spell.Identity == null || !unlocks.IsSpellUnlocked(spell.Identity))) return false;
         }
-        return state.TryConfirm();
+        if (!state.TryConfirm()) return false;
+        CommittedChanged?.Invoke();
+        return true;
     }
 
     public void DiscardDraft()
@@ -97,24 +100,10 @@ public sealed class DailyLoadoutSession : IDisposable
         if (disposed || state.IsInitialized || unlocks == null || !unlocks.HasInitializedUnlockState ||
             experience == null || experience.ProgressionData == null) return;
 
-        var plants = new List<SeedsEnum>();
-        var spells = new List<SpellDataSO>();
-        var progression = experience.ProgressionData;
-        // Ordered catalog traversal, membership-only authority. Never enumerate
-        // unlock HashSets to choose equipment, or invoke unlock/grant APIs here.
-        int lastLevel = Math.Min(experience.CurrentLevel, progression.LevelRequirements?.Count ?? 0);
-        for (int level = 1; level <= lastLevel; level++)
-        {
-            var content = progression.GetLevelData(level);
-            if (content == null) continue;
-            foreach (var plant in content.PlantUnlocks)
-                if (plant != null && plant.seedType != SeedsEnum.None && unlocks.IsPlantUnlocked(plant.seedType))
-                    plants.Add(plant.seedType);
-            foreach (var spell in content.SpellUnlocks)
-                if (spell != null && unlocks.IsSpellUnlocked(spell)) spells.Add(spell);
-        }
-        if (state.TryBootstrap(plants, spells) && flow != null && flow.WorldPhase == GamePhase.Day)
+        if (!state.TryInitialize()) return;
+        if (flow != null && flow.WorldPhase == GamePhase.Day)
             HandleNewDay(0); // Reconcile a real Day established before owner.Start; argument is not a key.
+        CommittedChanged?.Invoke();
     }
 
     private void HandleNewDay(int displayedDay)
@@ -137,5 +126,6 @@ public sealed class DailyLoadoutSession : IDisposable
         if (unlocks != null) unlocks.OnUnlockStateRebuilt -= HandleUnlockStateRebuilt;
         if (days != null) days.OnNewDay.RemoveListener(HandleNewDay);
         if (flow != null) flow.OnPhaseChanged -= HandlePhaseChanged;
+        CommittedChanged = null;
     }
 }

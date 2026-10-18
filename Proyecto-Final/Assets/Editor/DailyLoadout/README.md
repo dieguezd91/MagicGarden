@@ -2,17 +2,21 @@
 
 Stage 4A prefabs already exist and contain user-reviewed visual adjustments. **Do not regenerate them.** Stage 4B adds a session-backed presenter and additive option-pool authoring; see [functional integration](Stage4B.md). Neither workflow modifies the Game scene, restoration panel, HUD or admission rules.
 
-## Generate once (new projects only; not required for these existing assets)
+## Maintain the existing assets
 
-1. Let Unity 2022.3.62f3 refresh and compile the new scripts. Resolve any Console compilation errors before proceeding.
-2. Select **Tools → Magic Garden → Daily Loadout → Create UI prefabs (once)**.
-3. Confirm these persistent assets, their `.meta` files and all serialized references exist:
-   - `Assets/Prefabs/UI/DailyLoadout/LoadoutSlot.prefab`
-   - `Assets/Prefabs/UI/DailyLoadout/LoadoutOption.prefab`
-   - `Assets/Prefabs/UI/DailyLoadout/DailyLoadoutPanel.prefab`
-4. Open the panel in Prefab Mode. There must be three Plant positions and three Spell positions, with separate category headings.
+The one-off Stage 4A generator and manual isolated-harness menu have been retired.
+Edit the existing prefabs in Unity Prefab Mode; do not regenerate or replace their
+GUIDs, layout or approved art. The additive Stage 4B binding helper remains because
+isolated tests use its Configure method. Stage 4C/4D wiring and validation tools
+remain while native installation/regression checks are pending.
 
-The generator resolves existing art by GUID/local sprite ID only in Editor code. Runtime views use serialized references exclusively. A second invocation refuses to overwrite existing prefabs; customize generated assets in Prefab Mode. Existing importer settings and assets are never changed. Unity generates metadata natively during refresh/save; retain those `.meta` files with the assets. If generation fails, only this invocation's new prefabs are rolled back.
+Existing assets:
+- `Assets/Prefabs/UI/DailyLoadout/LoadoutSlot.prefab`
+- `Assets/Prefabs/UI/DailyLoadout/LoadoutOption.prefab`
+- `Assets/Prefabs/UI/DailyLoadout/DailyLoadoutPanel.prefab`
+
+See [Stage4C.md](Stage4C.md) for Sacred Tree wiring and
+[Stage4D.md](Stage4D.md) for committed HUD installation and current acceptance.
 
 ## Generated hierarchy
 
@@ -54,13 +58,13 @@ Stage 4A authored an empty option content area. Stage 4B's explicit **Bind funct
 | Panel | `PlantSlots`, `SpellSlots`, `OptionPrefab`, `OptionContent`, `OptionsScroll`, `ConfirmButton`, `CancelButton`, `ClearButton` |
 | Panel | `SetAllowanceMessage`, `SetOptionsEmpty`, `SetActionAvailability` |
 
-Content and assignment are separate presentation inputs: assigning a sprite/name does not equip it. Selection uses a blue tint and text; invalid targets use a red tint and text; disabled/read-only/locked items are dimmed and labeled; hover and press use the existing alternative stone sprites. Empty slots remain selectable; empty options do not. Pointer and keyboard focus supply transient highlighting without changing assignment. Long names/state labels use TMP autosizing and ellipsis instead of spilling onto adjacent controls.
+Content and assignment are separate presentation inputs: assigning a sprite/name does not equip it. Selection uses a blue tint and text; invalid targets use a red tint and text; disabled/read-only/locked items are dimmed and labeled; hover and press use the existing alternative stone sprites. Empty slots remain selectable; empty options do not. Pointer and keyboard focus supply transient visual highlighting without changing assignment. Populated catalog option text shows only Available or Selected; detailed state suffixes remain specific to equipment positions. Long names/state labels use TMP autosizing and ellipsis instead of spilling onto adjacent controls.
 
 Confirm and Clear start disabled and persistent Button callbacks remain empty. The Stage 4B presenter binds runtime listeners, enables actions from the session, and unbinds only its own listeners on close/disable/destroy. Views remain presentation-only; there are no drag/drop handlers or equipment rules in them.
 
 ## Reused assets
 
-All sprites come from existing `UISprites.png` (GUID `6b876b38e4597704b84b5e76e54d27a1`). The builder validates Point filtering without altering import settings.
+All sprites come from existing `UISprites.png` (GUID `6b876b38e4597704b84b5e76e54d27a1`). Keep Point filtering and the existing sprite identities when editing assets.
 
 | Use | Existing local sprite IDs |
 |---|---|
@@ -74,7 +78,7 @@ No new art, materials, fonts, packages, singleton, inventory or restoration scri
 
 ## Verify in Unity
 
-Run **Window → General → Test Runner → EditMode → DailyLoadoutUITests** after generation. Missing prefabs deliberately fail rather than skip. Tests cover serialized references, six positions, callback isolation, state transitions, original art identity and grid overflow geometry.
+Run **Window → General → Test Runner → EditMode → DailyLoadoutUITests** against the existing prefabs. Missing prefabs deliberately fail rather than skip. Tests cover serialized references, six positions, callback isolation, state transitions, original art identity and grid overflow geometry.
 
 Then run the existing EditMode suite and the existing Daily Loadout PlayMode tests. Do not treat earlier Stage 1–3 results as verification of these changes. Batch-mode testing requires closing the project in the interactive Editor first; do not launch another Editor on the same open project.
 
@@ -108,4 +112,4 @@ Use an **isolated, unsaved test scene**, not the Game scene. Add a Screen Space 
 
 ## Next step
 
-Use the additive [Stage 4B binding and isolated harness](Stage4B.md), then run the listed tests. Actual altar interaction, Game-scene wiring and HUD adaptation remain deferred; do not start the next integration stage.
+Use the retained [Stage 4B binding/test support](Stage4B.md) when needed. Current altar/HUD wiring, tests and manual acceptance are documented in [Stage4C.md](Stage4C.md) and [Stage4D.md](Stage4D.md).

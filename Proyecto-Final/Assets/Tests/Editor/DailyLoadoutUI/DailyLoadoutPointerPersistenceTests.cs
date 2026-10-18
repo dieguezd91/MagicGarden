@@ -15,9 +15,11 @@ public sealed class DailyLoadoutPointerPersistenceTests
             var target = equipmentSlot ? f.Slot(true, 0) : f.Option(0);
             var pointer = new PointerEventData(null) { button = PointerEventData.InputButton.Left };
             F.Call(target, "OnPointerEnter", pointer);
-            Assert.That(F.State(target), Does.Contain("Highlighted"));
+            if (equipmentSlot) Assert.That(F.State(target), Does.Contain("Highlighted"));
+            else Assert.That(F.State(target), Is.EqualTo("Available"));
             f.Refresh();
-            Assert.That(F.State(target), Does.Contain("Highlighted"));
+            if (equipmentSlot) Assert.That(F.State(target), Does.Contain("Highlighted"));
+            else Assert.That(F.State(target), Is.EqualTo("Available"));
             Assert.That(((Image)F.Field(target, "background")).sprite, Is.SameAs(F.Field(target, "hoverSprite")));
             F.Call(target, "OnPointerDown", pointer); f.Refresh();
             Assert.That(((Image)F.Field(target, "background")).sprite, Is.SameAs(F.Field(target, "pressedSprite")));

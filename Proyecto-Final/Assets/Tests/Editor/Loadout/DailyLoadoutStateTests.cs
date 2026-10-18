@@ -8,7 +8,12 @@ public sealed class DailyLoadoutStateTests
     private static DailyLoadoutState<string, string> Initialized()
     {
         var state = new DailyLoadoutState<string, string>();
-        Assert.That(state.TryBootstrap(new[] { "plant-a", "plant-b" }, new[] { "spell-a", "spell-b" }), Is.True);
+        Assert.That(state.TryInitialize(), Is.True);
+        state.TryBeginDay(0);
+        state.TrySetDraftPlant(0, Item("plant-a")); state.TrySetDraftPlant(1, Item("plant-b"));
+        state.TrySetDraftSpell(0, Item("spell-a")); state.TrySetDraftSpell(1, Item("spell-b"));
+        Assert.That(state.TryConfirm(), Is.True);
+        state.BeginNight();
         return state;
     }
 
@@ -41,38 +46,34 @@ public sealed class DailyLoadoutStateTests
     }
 
     [Test]
-    public void BootstrapUsesFirstThreeDistinctIdentitiesInSuppliedContentOrder()
+    public void InitializationHasSixEmptyPositionsAndDoesNotChooseCatalogDefaults()
     {
         var state = new DailyLoadoutState<string, string>();
-        Assert.That(state.TryBootstrap(new[] { "c", "a", "c", "b", "d" },
-            new[] { "z", "z", "x", "y", "w" }), Is.True);
-        AssertEquipment(state, new[] { "c", "a", "b" }, new[] { "z", "x", "y" });
-        AssertEquipment(state, new[] { "c", "a", "b" }, new[] { "z", "x", "y" }, draft: true);
+        Assert.That(state.TryInitialize(), Is.True);
+        AssertEquipment(state, new string[3], new string[3]);
+        AssertEquipment(state, new string[3], new string[3], draft: true);
         Assert.That(state.IsInitialized, Is.True);
         Assert.That(state.HasConfirmedToday, Is.False);
         Assert.That(state.IsDay, Is.False);
     }
 
     [Test]
-    public void BootstrapCanLeaveEmptyPositionsAndCannotOverwriteAnInitializedRun()
+    public void InitializationCannotOverwriteAnEstablishedRun()
     {
-        var state = new DailyLoadoutState<string, string>();
-        Assert.That(state.TryBootstrap(new[] { "a" }, Array.Empty<string>()), Is.True);
-        Assert.That(state.TryBootstrap(new[] { "b" }, new[] { "x" }), Is.False);
-        AssertEquipment(state, new[] { "a", null, null }, new string[3]);
+        var state = Initialized();
+        Assert.That(state.TryInitialize(), Is.False);
+        AssertEquipment(state, new[] { "plant-a", "plant-b", null }, new[] { "spell-a", "spell-b", null });
     }
 
     [Test]
-    public void BootstrapRejectsInvalidInputWithoutPartiallyInitializingEitherCategory()
+    public void OnePlantAndOneSpellCanBeConfirmedWithoutFillingOtherPositions()
     {
-        var state = new DailyLoadoutState<string, string>();
-        Assert.That(state.TryBootstrap(new[] { "a" }, new string[] { null }), Is.False);
-        Assert.That(state.TryBootstrap(null, Array.Empty<string>()), Is.False);
-        Assert.That(state.TryBootstrap(Array.Empty<string>(), null), Is.False);
-        Assert.That(state.IsInitialized, Is.False);
-        Assert.That(state.HasConfirmedToday, Is.False);
+        var state = new DailyLoadoutState<string, string>(); state.TryInitialize(); state.TryBeginDay(1);
+        state.TrySetDraftPlant(1, Item("a")); state.TrySetDraftSpell(2, Item("x"));
         AssertEquipment(state, new string[3], new string[3]);
-        AssertEquipment(state, new string[3], new string[3], draft: true);
+        Assert.That(state.TryConfirm(), Is.True);
+        AssertEquipment(state, new[] { null, "a", null }, new[] { null, null, "x" });
+        Assert.That(state.HasConfirmedToday, Is.True);
     }
 
     [Test]
@@ -80,7 +81,7 @@ public sealed class DailyLoadoutStateTests
     {
         var state = new DailyLoadoutState<string, string>();
         Assert.That(state.TryBeginDay(10), Is.True);
-        Assert.That(state.TryBootstrap(new[] { "a" }, new[] { "x" }), Is.True);
+        Assert.That(state.TryInitialize(), Is.True);
         Assert.That(state.HasConfirmedToday, Is.False);
         Assert.That(state.TryConfirm(), Is.True);
         Assert.That(state.HasConfirmedToday, Is.True);
@@ -166,14 +167,16 @@ public sealed class DailyLoadoutStateTests
         Assert.That(state.TrySetDraftSpell(0, Item("x")), Is.False);
         Assert.That(state.TryConfirm(), Is.False);
         Assert.That(state.HasConfirmedToday, Is.False);
-        state.TryBootstrap(new[] { "a" }, new[] { "x" });
+        state.TryInitialize();
+        state.TrySetDraftPlant(0, Item("a")); state.TrySetDraftSpell(0, Item("x"));
+        Assert.That(state.TryConfirm(), Is.True);
         state.BeginNight();
         Assert.That(state.TrySetDraftPlant(0, Item("b")), Is.False);
         Assert.That(state.TrySetDraftSpell(0, Item("y")), Is.False);
         Assert.That(state.TryConfirm(), Is.False);
         AssertEquipment(state, new[] { "a", null, null }, new[] { "x", null, null });
         AssertEquipment(state, new[] { "a", null, null }, new[] { "x", null, null }, draft: true);
-        Assert.That(state.HasConfirmedToday, Is.False);
+        Assert.That(state.HasConfirmedToday, Is.True);
     }
 
     [Test]
@@ -268,10 +271,10 @@ public sealed class DailyLoadoutStateTests
         Assert.That(state.CurrentDayToken, Is.Null);
         AssertEquipment(state, new string[3], new string[3]);
         AssertEquipment(state, new string[3], new string[3], draft: true);
-        Assert.That(state.TryBootstrap(Array.Empty<string>(), new[] { "new-spell" }), Is.True);
+        Assert.That(state.TryInitialize(), Is.True);
         Assert.That(state.TryBeginDay(7), Is.True);
         Assert.That(state.TryConfirm(), Is.True);
-        AssertEquipment(state, new string[3], new[] { "new-spell", null, null });
+        AssertEquipment(state, new string[3], new string[3]);
     }
 
     [Test]
@@ -282,9 +285,9 @@ public sealed class DailyLoadoutStateTests
         var quantities = new[] { 1, 4 };
         var cooldowns = new[] { 8f };
         var state = new DailyLoadoutState<string, string>();
-        state.TryBootstrap(plants, spells);
-        state.TryBeginDay(1);
-        state.TryConfirm();
+        state.TryInitialize(); state.TryBeginDay(1);
+        state.TrySetDraftPlant(0, Item(plants[0])); state.TrySetDraftPlant(1, Item(plants[1]));
+        state.TrySetDraftSpell(0, Item(spells[0])); state.TryConfirm();
         Assert.That(quantities, Is.EqualTo(new[] { 1, 4 }));
         Assert.That(cooldowns, Is.EqualTo(new[] { 8f }));
         quantities[0] = 0;
@@ -303,7 +306,9 @@ public sealed class DailyLoadoutStateTests
     {
         var spell = new SpellIdentity();
         var state = new DailyLoadoutState<PlantIdentity, SpellIdentity>();
-        Assert.That(state.TryBootstrap(new[] { PlantIdentity.MoonTear }, new[] { spell }), Is.True);
+        Assert.That(state.TryInitialize(), Is.True); state.TryBeginDay(0);
+        state.TrySetDraftPlant(0, EquipmentAssignment<PlantIdentity>.For(PlantIdentity.MoonTear));
+        state.TrySetDraftSpell(0, EquipmentAssignment<SpellIdentity>.For(spell)); state.TryConfirm(); state.BeginNight();
         Assert.That(state.GetCommittedPlant(0).Identity, Is.EqualTo(PlantIdentity.MoonTear));
         Assert.That(state.GetCommittedSpell(0).Identity, Is.SameAs(spell));
         Assert.That(state.GetCommittedPlant(1).HasValue, Is.False);

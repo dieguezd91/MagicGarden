@@ -7,7 +7,8 @@ public class TutorialProximityTrigger : MonoBehaviour
         None,
         CraftingProximity,
         RestorationProximity,
-        RitualAltarProximity
+        RitualAltarProximity,
+        DailyLoadoutProximity = 4
     }
 
     [SerializeField]
@@ -32,6 +33,9 @@ public class TutorialProximityTrigger : MonoBehaviour
                 break;
             case TutorialProximityEvent.RitualAltarProximity:
                 TutorialEvents.InvokeRitualAltarProximity();
+                break;
+            case TutorialProximityEvent.DailyLoadoutProximity:
+                TutorialEvents.InvokeDailyLoadoutProximity();
                 break;
         }
 

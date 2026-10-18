@@ -216,29 +216,20 @@ public class PlayerAbilitySystem : MonoBehaviour
         CycleAbility(direction);
     }
 
-    private void HandleEquipmentSlotInput(int position)
+    private void HandleEquipmentSlotInput(int position) => TrySelectEquipmentPosition(position);
+
+    // Shared by number keys and existing equipment HUD clicks, with identical action gates.
+    public bool TrySelectEquipmentPosition(int position)
     {
         var player = GetComponent<PlayerController>();
-        if (UpgradeRuntime.GameplayBlocked || (player != null && !player.CanAct())) return;
-        if (pauseController != null && pauseController.IsPaused) return;
-        if (isDigging || isHarvesting) return;
+        if (UpgradeRuntime.GameplayBlocked || (player != null && !player.CanAct())) return false;
+        if (pauseController != null && pauseController.IsPaused) return false;
+        if (isDigging || isHarvesting) return false;
 
         var flow = GameFlowController.Instance;
-        if (flow == null) return;
-        bool selected;
-        if (flow.CurrentPhase == GamePhase.Day)
-        {
-            // Seed numbers address storage, not equipment. Planting admission
-            // remains at execution, even for empty or unequipped selections.
-            if (seedInventory == null || position < 0 || position >= seedInventory.PlantSlotsCount) return;
-            seedInventory.SelectSlot(position);
-            selected = true;
-        }
-        else
-        {
-            var selection = new EquipmentGameplaySelection(Loadout, seedInventory, SpellInventory.Instance);
-            selected = selection.TrySelectPosition(position);
-        }
+        if (flow == null) return false;
+        var selection = new EquipmentGameplaySelection(Loadout, seedInventory, SpellInventory.Instance);
+        bool selected = selection.TrySelectPosition(position);
         if (selected)
         {
             // Keep the first-event bootstrap contract in OnSeedSlotSelected, but
@@ -247,6 +238,7 @@ public class PlayerAbilitySystem : MonoBehaviour
                 SetAbility(PlayerAbility.Planting);
             UIManager.Instance?.InterfaceSounds?.PlaySound(InterfaceSoundType.OnSeedSelect);
         }
+        return selected;
     }
 
     private void HandleScrollInput(float scrollDelta)

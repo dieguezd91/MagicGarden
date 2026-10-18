@@ -48,6 +48,7 @@ public class GameResetController : MonoBehaviour
 
         if (UIManager.Instance != null)
         {
+            UIManager.Instance.CloseDailyLoadout();
             UIManager.Instance.CloseInventory();
             if (UIManager.Instance.gameOverPanel != null)
                 UIManager.Instance.gameOverPanel.SetActive(false);

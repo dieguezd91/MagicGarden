@@ -26,6 +26,28 @@ public class SpellSlotUI : ImprovedUIButton, IPointerEnterHandler, IPointerExitH
     public int SlotIndex { get; private set; }
 
     public event Action<int> OnSlotClicked;
+    private SpellSlot displayedSlot;
+    private SpellInventory cooldownOwner;
+    private int inventoryIndex = -1;
+    private bool equipmentMode;
+    private bool hasAssignment;
+
+    public void UpdateEquipmentDisplay(SpellDataSO identity, SpellSlot slot, SpellInventory owner, int index)
+    {
+        equipmentMode = true;
+        hasAssignment = identity != null;
+        displayedSlot = slot;
+        cooldownOwner = owner;
+        inventoryIndex = index;
+        if (!hasAssignment) { ShowLockedSlot(); return; }
+        if (slotIcon != null)
+        {
+            slotIcon.sprite = identity.SpellIcon;
+            slotIcon.preserveAspect = true;
+            slotIcon.gameObject.SetActive(true);
+        }
+        UpdateCooldownDisplay(slot);
+    }
 
     private void Awake()
     {
@@ -113,16 +135,16 @@ public class SpellSlotUI : ImprovedUIButton, IPointerEnterHandler, IPointerExitH
 
     public void UpdateCooldownDisplay(SpellSlot spellSlot)
     {
-        if (spellSlot == null || !spellSlot.isUnlocked) return;
-
-        bool onCooldown = spellSlot.currentCooldown > 0f;
+        bool onCooldown = spellSlot != null && spellSlot.isUnlocked && spellSlot.currentCooldown > 0f;
 
         if (cooldownOverlay != null)
         {
             if (onCooldown)
             {
-                float progress = spellSlot.currentCooldown / spellSlot.cooldown;
-                cooldownOverlay.fillAmount = progress;
+                float progress = equipmentMode
+                    ? (cooldownOwner != null && inventoryIndex >= 0 ? cooldownOwner.GetCooldownProgress(inventoryIndex) : 0f)
+                    : (spellSlot.cooldown > 0f ? spellSlot.currentCooldown / spellSlot.cooldown : 0f);
+                cooldownOverlay.fillAmount = Mathf.Clamp01(progress);
             }
             else
             {
@@ -144,7 +166,7 @@ public class SpellSlotUI : ImprovedUIButton, IPointerEnterHandler, IPointerExitH
     {
         if (slotBackground == null) return;
 
-        bool isLocked = SpellInventory.Instance?.GetSpellSlot(SlotIndex)?.isUnlocked == false;
+        bool isLocked = equipmentMode ? !hasAssignment : SpellInventory.Instance?.GetSpellSlot(SlotIndex)?.isUnlocked == false;
 
         if (isLocked)
         {
@@ -160,7 +182,7 @@ public class SpellSlotUI : ImprovedUIButton, IPointerEnterHandler, IPointerExitH
     }
     public void OnPointerEnter(PointerEventData eventData)
     {
-        SpellSlot spell = SpellInventory.Instance?.GetSpellSlot(SlotIndex);
+        SpellSlot spell = equipmentMode ? displayedSlot : SpellInventory.Instance?.GetSpellSlot(SlotIndex);
         if (spell != null && spell.isUnlocked)
         {
             UIEvents.RequestSpellTooltip(spell);

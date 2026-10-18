@@ -141,6 +141,24 @@ public sealed class DailyLoadoutIntegrationTests
         var session = (IDisposable)Activator.CreateInstance(Production("DailyLoadoutSession"), unlocks, xp, seeds, spells, cycle, flow);
         sessions.Add(session); return session;
     }
+    // Opt-in committed baseline, never part of owner/session initialization.
+    private void EquipInitial(object session)
+    {
+        Assert.That(Call(session, "TrySetDraftPlant", 0, Seed(7)), Is.EqualTo(true));
+        Assert.That(Call(session, "TrySetDraftPlant", 1, Seed(3)), Is.EqualTo(true));
+        Assert.That(Call(session, "TrySetDraftSpell", 0, firstSpell), Is.EqualTo(true));
+        Assert.That(Call(session, "TrySetDraftSpell", 1, secondSpell), Is.EqualTo(true));
+        Assert.That(Call(session, "TryConfirm"), Is.EqualTo(true));
+        Night(); Day();
+    }
+    private static void AssertEmpty(object session)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            Assert.That(Property(Call(session, "GetCommittedPlant", i), "HasValue"), Is.False);
+            Assert.That(Property(Call(session, "GetCommittedSpell", i), "HasValue"), Is.False);
+        }
+    }
     private void Day() => Call(cycle, "StartDay");
     private void Night() => Call(cycle, "StartNight");
     private static object Identity(object session, string getter, int index) => Property(Call(session, getter, index), "Identity");
@@ -159,10 +177,10 @@ public sealed class DailyLoadoutIntegrationTests
         Assert.That(Property(session, "IsInitialized"), Is.False);
         Call(unlocks, "RebuildUnlocksUpToLevel", 1);
         Assert.That(Property(session, "IsInitialized"), Is.True);
-        Assert.That(Identity(session, "GetCommittedPlant", 0), Is.EqualTo(Seed(7)));
-        Assert.That(Identity(session, "GetCommittedPlant", 1), Is.EqualTo(Seed(3)));
-        Assert.That(Property(Call(session, "GetCommittedPlant", 2), "HasValue"), Is.False);
-        Assert.That(Identity(session, "GetCommittedSpell", 0), Is.SameAs(firstSpell));
+        AssertEmpty(session);
+        Assert.That(Call(unlocks, "IsPlantUnlocked", Seed(7)), Is.EqualTo(true));
+        Assert.That(Call(unlocks, "IsPlantUnlocked", Seed(3)), Is.EqualTo(true));
+        Assert.That(Call(unlocks, "IsSpellUnlocked", firstSpell), Is.EqualTo(true));
         Assert.That(Property(session, "HasConfirmedToday"), Is.False);
         Assert.That(Call(session, "TryConfirm"), Is.EqualTo(true));
     }
@@ -176,26 +194,25 @@ public sealed class DailyLoadoutIntegrationTests
         Day();
         Call(xp, "AddExperience", 100);
         Call(unlocks, "RebuildUnlocksUpToLevel", 2);
-        Assert.That(Identity(session, "GetCommittedPlant", 0), Is.EqualTo(Seed(7)));
-        Assert.That(Property(Call(session, "GetCommittedPlant", 2), "HasValue"), Is.False);
-        Assert.That(Property(Call(session, "GetCommittedSpell", 2), "HasValue"), Is.False);
+        AssertEmpty(session);
         Assert.That(Call(session, "TrySetDraftPlant", 2, Seed(14)), Is.EqualTo(true));
         Assert.That(Call(session, "TryConfirm"), Is.EqualTo(true));
     }
 
     [Test]
-    public void BootstrapMatchesSerializedLevelOneCatalogOrder()
+    public void InitializationLeavesSerializedLevelOneCatalogUnlockedButEquipmentEmpty()
     {
         var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>("Assets/Scriptables/Progression/Experience Progression.asset");
         Assert.That(asset, Is.Not.Null);
         Set(xp, "progressionData", asset);
         var session = StartOwner();
-        Assert.That(Identity(session, "GetCommittedPlant", 0), Is.EqualTo(Seed(3)));
-        Assert.That(Identity(session, "GetCommittedPlant", 1), Is.EqualTo(Seed(7)));
+        AssertEmpty(session);
+        Assert.That(Call(unlocks, "IsPlantUnlocked", Seed(3)), Is.EqualTo(true));
+        Assert.That(Call(unlocks, "IsPlantUnlocked", Seed(7)), Is.EqualTo(true));
         var level = Call(asset, "GetLevelData", 1);
         var orderedSpells = (IList)Property(level, "SpellUnlocks");
-        Assert.That(Identity(session, "GetCommittedSpell", 0), Is.SameAs(orderedSpells[0]));
-        Assert.That(Identity(session, "GetCommittedSpell", 1), Is.SameAs(orderedSpells[1]));
+        Assert.That(Call(unlocks, "IsSpellUnlocked", orderedSpells[0]), Is.EqualTo(true));
+        Assert.That(Call(unlocks, "IsSpellUnlocked", orderedSpells[1]), Is.EqualTo(true));
         Assert.That(Property(Call(session, "GetCommittedSpell", 2), "HasValue"), Is.False);
     }
 
@@ -215,8 +232,8 @@ public sealed class DailyLoadoutIntegrationTests
         var session = NewSession();
         for (int i = 0; i < 4; i++)
         {
-            AssertResolution(Call(session, "ResolvePlant", Seed(7)), true, true, true);
-            AssertResolution(Call(session, "ResolveSpell", firstSpell), true, true, true);
+            AssertResolution(Call(session, "ResolvePlant", Seed(7)), true, false, true);
+            AssertResolution(Call(session, "ResolveSpell", firstSpell), true, false, true);
         }
         Assert.That(Call(seeds, "GetSeedCountInSlot", 0), Is.EqualTo(5));
         Assert.That(Field(Call(spells, "GetSpellSlot", 0), "currentCooldown"), Is.EqualTo(3600f));
@@ -228,7 +245,7 @@ public sealed class DailyLoadoutIntegrationTests
     [Test]
     public void PlantIdentitySurvivesDepletionClearingSwapsAndReplenishment()
     {
-        Day(); var session = StartOwner();
+        Day(); var session = StartOwner(); EquipInitial(session);
         AssertResolution(Call(session, "ResolvePlant", Seed(7)), true, true, false);
         Call(seeds, "TryGrantUnlockedPlant", Plant(7), 1);
         Call(seeds, "SelectSlot", 0);
@@ -249,7 +266,7 @@ public sealed class DailyLoadoutIntegrationTests
     [Test]
     public void UnlockedEquippedAndInventoryEntryAreSeparateStates()
     {
-        Day(); var session = StartOwner();
+        Day(); var session = StartOwner(); EquipInitial(session);
         Call(xp, "AddExperience", 100);
         AssertResolution(Call(session, "ResolvePlant", Seed(14)), true, false, false);
         Call(seeds, "TryGrantUnlockedPlant", Plant(14), 2);
@@ -261,7 +278,7 @@ public sealed class DailyLoadoutIntegrationTests
     [Test]
     public void SpellResolutionReturnsOriginalCooldownOwnerAndRejectsInvalidMappings()
     {
-        Day(); var session = StartOwner();
+        Day(); var session = StartOwner(); EquipInitial(session);
         Call(spells, "StartCooldown", 0);
         var slot = Call(spells, "GetSpellSlot", 0);
         var resolved = Call(session, "ResolveSpell", firstSpell);
@@ -285,8 +302,8 @@ public sealed class DailyLoadoutIntegrationTests
         var levels = (IList)Field(progression, "levelRequirements");
         ((IList)Property(levels[0], "SpellUnlocks")).Add(conflict);
         var session = StartOwner();
-        AssertResolution(Call(session, "ResolveSpell", firstSpell), true, true, false);
-        AssertResolution(Call(session, "ResolveSpell", conflict), true, true, false);
+        AssertResolution(Call(session, "ResolveSpell", firstSpell), true, false, false);
+        AssertResolution(Call(session, "ResolveSpell", conflict), true, false, false);
     }
 
     [Test]
@@ -305,7 +322,7 @@ public sealed class DailyLoadoutIntegrationTests
     [Test]
     public void NightDiscardsDraftAndNextGenuineDayRestoresCommittedDraftAndAllowance()
     {
-        Day(); var session = StartOwner();
+        Day(); var session = StartOwner(); EquipInitial(session);
         Call(session, "TrySetDraftPlant", 0, Seed(0));
         Call(session, "TrySetDraftSpell", 0, null);
         Night();
@@ -334,7 +351,7 @@ public sealed class DailyLoadoutIntegrationTests
     [Test]
     public void InvalidDraftOrConfirmationDoesNotChangeCommittedStateOrSpendAllowance()
     {
-        Day(); var session = StartOwner();
+        Day(); var session = StartOwner(); EquipInitial(session);
         Assert.That(Call(session, "TrySetDraftPlant", 2, Seed(7)), Is.EqualTo(false));
         Assert.That(Call(session, "TrySetDraftPlant", 2, Seed(14)), Is.EqualTo(false));
         Assert.That(Call(session, "TrySetDraftSpell", 2, firstSpell), Is.EqualTo(false));
@@ -354,7 +371,7 @@ public sealed class DailyLoadoutIntegrationTests
     [Test]
     public void ConfirmationLocksBothDraftCategoriesUntilGenuineDayOrRunReset()
     {
-        Day(); var session = StartOwner();
+        Day(); var session = StartOwner(); EquipInitial(session);
         Assert.That(Property(session, "CanConfigure"), Is.True);
         Assert.That(Call(session, "TryConfirm"), Is.EqualTo(true));
         Assert.That(Property(session, "CanConfigure"), Is.False);
@@ -371,8 +388,7 @@ public sealed class DailyLoadoutIntegrationTests
         Call(session, "ResetForNewRun");
         Assert.That(Property(session, "CanConfigure"), Is.True);
         Assert.That(Property(session, "HasConfirmedToday"), Is.False);
-        Assert.That(Identity(session, "GetCommittedPlant", 0), Is.EqualTo(Seed(7)));
-        Assert.That(Identity(session, "GetCommittedSpell", 0), Is.SameAs(firstSpell));
+        AssertEmpty(session);
     }
 
     private object Admission(object session) => Property(session, "Admission");
@@ -390,7 +406,7 @@ public sealed class DailyLoadoutIntegrationTests
     [Test]
     public void AdmissionIsReadOnlyPhaseSpecificAndSeparatesSpellReadiness()
     {
-        Day(); var session = StartOwner(); var policy = Admission(session);
+        Day(); var session = StartOwner(); EquipInitial(session); var policy = Admission(session);
         Call(seeds, "TryGrantUnlockedPlant", Plant(7), 2);
         Call(xp, "AddExperience", 100);
         Call(seeds, "TryGrantUnlockedPlant", Plant(14), 2);
@@ -421,6 +437,7 @@ public sealed class DailyLoadoutIntegrationTests
         Day(); var session = NewSession(); var policy = Admission(session);
         Assert.That(PlantAdmission(policy, Seed(7)), Is.EqualTo("SessionUnavailable"));
         Call(unlocks, "RebuildUnlocksUpToLevel", 1);
+        EquipInitial(session);
         Call(seeds, "TryGrantUnlockedPlant", Plant(7), 1);
         Assert.That(PlantAdmission(policy, Seed(7)), Is.EqualTo("Allowed"));
         Call(unlocks, "RebuildUnlocksUpToLevel", 0);
@@ -432,7 +449,7 @@ public sealed class DailyLoadoutIntegrationTests
     [Test]
     public void AdmissionTracksDepletionRestockAndSwapsWithoutChangingAssignments()
     {
-        Day(); var session = StartOwner(); var policy = Admission(session);
+        Day(); var session = StartOwner(); EquipInitial(session); var policy = Admission(session);
         Assert.That(PlantAdmission(policy, Seed(7)), Is.EqualTo("Unavailable"));
         Call(seeds, "TryGrantUnlockedPlant", Plant(7), 1);
         Assert.That(PlantAdmission(policy, Seed(7)), Is.EqualTo("Allowed"));
@@ -448,9 +465,59 @@ public sealed class DailyLoadoutIntegrationTests
         Production("EquipmentGameplaySelection"), session, seeds, spells);
 
     [Test]
-    public void ContextualNumbersResolveEquipmentPositionsNotStorageAndEmitOneOriginalEvent()
+    public void InvalidPhaseRangeBlockedAndDisposedSelectionLeaveStorageSelectionAndCountersUntouched()
     {
         Day(); var session = StartOwner(); var selection = Selection(session);
+        Call(seeds, "TryGrantUnlockedPlant", Plant(7), 3);
+        Call(seeds, "SelectSlot", 4); Call(spells, "SelectSlot", 5);
+        int notifications = 0;
+        Listen(seeds, "onSlotSelected", (Action<int>)(_ => notifications++));
+        Listen(spells, "onSpellSlotSelected", (Action<int>)(_ => notifications++));
+        Listen(seeds, "onInventoryChanged", (Action)(() => notifications++));
+        Listen(spells, "OnSpellInventoryChanged", (Action)(() => notifications++));
+        foreach (int position in new[] { -1, 3, 9 })
+            Assert.That(Call(selection, "TrySelectPosition", position), Is.EqualTo(false));
+        Set(flow, "<IsChoosingUpgrade>k__BackingField", true);
+        Assert.That(Call(selection, "TrySelectPosition", 0), Is.EqualTo(false));
+        Set(flow, "<IsChoosingUpgrade>k__BackingField", false);
+        Call(flow, "SetPhase", Enum.Parse(Production("GamePhase"), "GameOver"));
+        Assert.That(Call(selection, "TrySelectPosition", 0), Is.EqualTo(false));
+        Call(session, "Dispose");
+        Assert.That(Call(selection, "TrySelectPosition", 0), Is.EqualTo(false));
+        Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(4));
+        Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(5));
+        Assert.That(Call(seeds, "GetSeedCountInSlot", 0), Is.EqualTo(3));
+        Assert.That(Property(session, "HasConfirmedToday"), Is.False);
+        AssertEmpty(session);
+        Assert.That(notifications, Is.Zero);
+    }
+
+    [Test]
+    public void ClearSelectionIsAdditiveAndOriginalValidStorageSelectionStillWorks()
+    {
+        StartOwner();
+        Call(seeds, "TryGrantUnlockedPlant", Plant(7), 3);
+        Call(spells, "StartCooldown", 0);
+        int seedsSelected = 0, spellsSelected = 0;
+        Listen(seeds, "onSlotSelected", (Action<int>)(_ => seedsSelected++));
+        Listen(spells, "onSpellSlotSelected", (Action<int>)(_ => spellsSelected++));
+        Call(seeds, "ClearSelection"); Call(spells, "ClearSelection");
+        Assert.That(Call(seeds, "GetSelectedPlantSlot"), Is.Null);
+        Assert.That(Call(spells, "GetSelectedSpellSlot"), Is.Null);
+        Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(-1));
+        Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(-1));
+        Call(seeds, "SelectSlot", 0); Call(spells, "SelectSlot", 1);
+        Assert.That(Call(seeds, "GetSelectedPlantSlot"), Is.SameAs(Call(seeds, "GetPlantSlot", 0)));
+        Assert.That(Call(spells, "GetSelectedSpellSlot"), Is.SameAs(Call(spells, "GetSpellSlot", 1)));
+        Assert.That(seedsSelected, Is.EqualTo(2)); Assert.That(spellsSelected, Is.EqualTo(2));
+        Assert.That(Call(seeds, "GetSeedCountInSlot", 0), Is.EqualTo(3));
+        Assert.That(Field(Call(spells, "GetSpellSlot", 0), "currentCooldown"), Is.EqualTo(3600f));
+    }
+
+    [Test]
+    public void ContextualNumbersResolveEquipmentPositionsNotStorageAndEmitOneOriginalEvent()
+    {
+        Day(); var session = StartOwner(); EquipInitial(session); var selection = Selection(session);
         Call(seeds, "TryGrantUnlockedPlant", Plant(7), 2);
         Call(seeds, "TryGrantUnlockedPlant", Plant(3), 2);
         Call(seeds, "SwapSlots", 0, 5); Call(seeds, "SwapSlots", 1, 4);
@@ -463,9 +530,12 @@ public sealed class DailyLoadoutIntegrationTests
         Assert.That(Call(selection, "TrySelectPosition", 1), Is.EqualTo(true));
         Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(4));
         Assert.That(seedEvents, Is.EqualTo(2));
-        foreach (int position in new[] { -1, 2, 3, 7 })
+        foreach (int position in new[] { -1, 3, 7 })
             Assert.That(Call(selection, "TrySelectPosition", position), Is.EqualTo(false));
         Assert.That(seedEvents, Is.EqualTo(2));
+        Assert.That(Call(selection, "TrySelectPosition", 2), Is.EqualTo(false));
+        Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(-1));
+        Assert.That(seedEvents, Is.EqualTo(3));
         // Change equipment order without changing spell storage.
         Call(session, "TrySetDraftSpell", 0, null);
         Call(session, "TrySetDraftSpell", 1, firstSpell);
@@ -474,22 +544,23 @@ public sealed class DailyLoadoutIntegrationTests
         Night();
         Assert.That(Call(selection, "TrySelectPosition", 0), Is.EqualTo(true));
         Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(1));
-        Assert.That(spellEvents, Is.EqualTo(1)); Assert.That(seedEvents, Is.EqualTo(2));
+        Assert.That(spellEvents, Is.EqualTo(1)); Assert.That(seedEvents, Is.EqualTo(3));
         Assert.That(Call(selection, "TrySelectPosition", 1), Is.EqualTo(true));
         Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(0));
         Assert.That(spellEvents, Is.EqualTo(2));
         Assert.That(Call(selection, "TrySelectPosition", 2), Is.EqualTo(false));
         Assert.That(Call(selection, "TrySelectPosition", 3), Is.EqualTo(false));
-        Assert.That(spellEvents, Is.EqualTo(2));
+        Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(-1));
+        Assert.That(spellEvents, Is.EqualTo(3));
     }
 
     [Test]
     public void ContextualSelectionRejectsDepletedAndInvalidEntriesAndRestockRestoresIt()
     {
-        Day(); var session = StartOwner(); var selection = Selection(session);
+        Day(); var session = StartOwner(); EquipInitial(session); var selection = Selection(session);
         Call(seeds, "SelectSlot", 5);
         Assert.That(Call(selection, "TrySelectPosition", 0), Is.EqualTo(false));
-        Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(5));
+        Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(-1));
         Call(seeds, "TryGrantUnlockedPlant", Plant(7), 1);
         Assert.That(Call(selection, "TrySelectPosition", 0), Is.EqualTo(true));
         Call(seeds, "ConsumeSeedInSelectedSlot");
@@ -499,13 +570,13 @@ public sealed class DailyLoadoutIntegrationTests
         Night(); Call(spells, "SelectSlot", 6);
         Set(firstSpell, "manaCost", 999);
         Assert.That(Call(selection, "TrySelectPosition", 0), Is.EqualTo(false));
-        Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(6));
+        Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(-1));
     }
 
     [Test]
     public void NightCyclingWrapsEquipmentOrderSkipsEmptyAndInvalidWithoutChangingGeneralCycle()
     {
-        Day(); var session = StartOwner(); var selection = Selection(session);
+        Day(); var session = StartOwner(); EquipInitial(session); var selection = Selection(session);
         Call(xp, "AddExperience", 100); // inventory 2 unlocked, deliberately unequipped
         Call(spells, "SelectSlot", 0);
         Assert.That(Call(selection, "TryCycleSpell", 1), Is.EqualTo(false));
@@ -527,22 +598,20 @@ public sealed class DailyLoadoutIntegrationTests
     }
 
     [Test]
-    public void MouseSelectionAndDragSwapStillUseOriginalInventoryContracts()
+    public void DirectStorageSelectionAndSwapRetainOriginalContractsIndependentlyOfEquipmentHud()
     {
-        Day(); var session = StartOwner(); var selection = Selection(session);
+        Day(); var session = StartOwner(); EquipInitial(session); var selection = Selection(session);
         Call(seeds, "TryGrantUnlockedPlant", Plant(7), 3);
         Call(seeds, "TryGrantUnlockedPlant", Plant(3), 4);
         var original = Call(seeds, "GetPlantSlot", 0);
         var destination = Call(seeds, "GetPlantSlot", 5);
-        var hud = Component("SeedSlotsUIController", false);
-        Set(hud, "seedInventory", seeds);
         int selectedEvents = 0, storageEvents = 0;
         Listen(seeds, "onSlotSelected", (Action<int>)(_ => selectedEvents++));
         Listen(seeds, "onInventoryChanged", (Action)(() => storageEvents++));
-        Call(hud, "SelectSlot", 1); // existing public mouse/inventory selection contract
+        Call(seeds, "SelectSlot", 1); // Direct storage API is deliberately unchanged.
         Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(1));
-        Set(hud, "dragSourceIndex", 0);
-        hud.GetType().GetMethod("ExecuteDragSwap", Fields).Invoke(hud, new object[] { 5 });
+        Assert.That(Call(seeds, "SwapSlots", 0, 5), Is.EqualTo(true));
+        Call(seeds, "SelectSlot", 5);
         Assert.That(Call(seeds, "GetPlantSlot", 5), Is.SameAs(original));
         Assert.That(Call(seeds, "GetPlantSlot", 0), Is.SameAs(destination));
         Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(5));
@@ -552,8 +621,7 @@ public sealed class DailyLoadoutIntegrationTests
         Call(seeds, "SelectSlot", 1);
         Assert.That(Call(selection, "TrySelectPosition", 0), Is.EqualTo(true));
         Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(5));
-        // No keyboard swap state survives LD-07; HUD remains alive for drag/mouse.
-        Assert.That(hud.GetType().GetMethod("OnSlotKeyPressed", Fields), Is.Null);
+        Assert.That(Call(seeds, "GetSeedCountInSlot", 1), Is.EqualTo(4));
     }
 
     private void LoadSerializedSeedInventory()
@@ -629,7 +697,11 @@ public sealed class DailyLoadoutIntegrationTests
         LoadSerializedSeedInventory();
         Set(xp, "progressionData", AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(
             "Assets/Scriptables/Progression/Experience Progression.asset"));
-        Day(); var session = StartOwner(); var selection = Selection(session);
+        Day(); var session = StartOwner();
+        Assert.That(Call(session, "TrySetDraftPlant", 0, Seed(3)), Is.EqualTo(true));
+        Assert.That(Call(session, "TrySetDraftPlant", 1, Seed(7)), Is.EqualTo(true));
+        Assert.That(Call(session, "TryConfirm"), Is.EqualTo(true));
+        var selection = Selection(session);
         int events = 0, lastIndex = -1;
         Listen(seeds, "onSlotSelected", (Action<int>)(i => { events++; lastIndex = i; }));
         Assert.That(Identity(session, "GetCommittedPlant", 0), Is.EqualTo(Seed(3)));
@@ -641,12 +713,12 @@ public sealed class DailyLoadoutIntegrationTests
         Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(1));
         Assert.That(lastIndex, Is.EqualTo(1)); Assert.That(events, Is.EqualTo(2));
         Assert.That(Call(selection, "TrySelectPosition", 2), Is.EqualTo(false));
-        Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(1));
-        Assert.That(events, Is.EqualTo(2));
+        Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(-1));
+        Assert.That(events, Is.EqualTo(3));
         Assert.That(Call(seeds, "SwapSlots", 1, 5), Is.EqualTo(true));
         Assert.That(Call(selection, "TrySelectPosition", 1), Is.EqualTo(true));
         Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(5));
-        Assert.That(lastIndex, Is.EqualTo(5)); Assert.That(events, Is.EqualTo(3));
+        Assert.That(lastIndex, Is.EqualTo(5)); Assert.That(events, Is.EqualTo(4));
         Assert.That(Call(seeds, "GetSeedCountInSlot", 5), Is.EqualTo(3));
         Assert.That(Identity(session, "GetCommittedPlant", 0), Is.EqualTo(Seed(3)));
         Assert.That(Identity(session, "GetCommittedPlant", 1), Is.EqualTo(Seed(7)));
@@ -676,9 +748,7 @@ public sealed class DailyLoadoutIntegrationTests
         Assert.That(Property(cycle, "TotalNights"), Is.EqualTo(nights));
         Assert.That(Property(session, "IsInitialized"), Is.True);
         Assert.That(Property(session, "HasConfirmedToday"), Is.False);
-        Assert.That(Identity(session, "GetCommittedPlant", 0), Is.EqualTo(Seed(7)));
-        Assert.That(Identity(session, "GetCommittedSpell", 0), Is.SameAs(firstSpell));
-        Assert.That(Property(Call(session, "GetCommittedPlant", 2), "HasValue"), Is.False);
+        AssertEmpty(session);
         AssertResolution(Call(session, "ResolvePlant", Seed(14)), false, false, false);
         Assert.That(Call(session, "TryConfirm"), Is.EqualTo(true));
     }

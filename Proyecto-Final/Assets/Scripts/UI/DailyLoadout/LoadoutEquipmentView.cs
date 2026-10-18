@@ -50,6 +50,7 @@ namespace MagicGarden.LoadoutUI
             locked = value; Refresh();
         }
         protected virtual bool AllowEmptySelection => true;
+        protected virtual bool AvailabilityTextOnly => false;
 
         public void OnPointerEnter(PointerEventData data) { hovered = true; Refresh(); }
         public void OnPointerExit(PointerEventData data) { ResetPointer(); Refresh(); }
@@ -75,7 +76,13 @@ namespace MagicGarden.LoadoutUI
             Color tint = disabled ? disabledColor : invalid ? invalidColor : selected ? selectedColor : Color.white;
             background.color = tint;
             icon.color = disabled ? disabledColor : Color.white;
-            // Text distinguishes persistent states without relying on colour alone.
+            // Option labels describe availability/assignment, not transient pointer feedback.
+            if (AvailabilityTextOnly && hasContent)
+            {
+                stateLabel.text = assigned || selected ? "Selected" : "Available";
+                return;
+            }
+            // Equipment positions retain their existing detailed state text.
             string status = hasContent ? (assigned ? "Assigned" : "Available") : "Empty";
             if (selected) status += " | Selected";
             if (invalid) status += " | Invalid target";

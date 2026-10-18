@@ -18,20 +18,59 @@ public sealed class EquipmentGameplaySelection
         this.spells = spells;
     }
 
+    // Startup can precede owner.Start; a disposed/replaced owner must not pin HUD bindings.
+    public static PlayerContentUnlockSystem ResolveOwner(PlayerContentUnlockSystem current)
+    {
+        if (current != null && current.Loadout != null && current.Loadout.IsReady) return current;
+        var active = UnityEngine.Object.FindObjectsOfType<PlayerContentUnlockSystem>();
+        foreach (var owner in active)
+            if (owner.Loadout != null && owner.Loadout.IsReady) return owner;
+        foreach (var owner in active)
+            if (owner.Loadout == null) return owner; // Wait for its Start, do not manufacture a session.
+        if (current != null) return current;
+        return UnityEngine.Object.FindObjectOfType<PlayerContentUnlockSystem>(true);
+    }
+
     public bool TrySelectPosition(int position)
     {
-        if (UpgradeRuntime.GameplayBlocked || session == null) return false;
-        if (seeds != null && session.Admission.CheckPlantPosition(position, out var plant) == EquipmentAdmissionResult.Allowed)
+        if (UpgradeRuntime.GameplayBlocked || session == null || !session.IsReady || position < 0 || position >= Count)
+            return false;
+        var plantResult = session.Admission.CheckPlantPosition(position, out var plant);
+        if (plantResult != EquipmentAdmissionResult.WrongPhase && plantResult != EquipmentAdmissionResult.SessionUnavailable)
         {
-            seeds.SelectSlot(plant.InventoryIndex);
-            return true;
+            if (seeds == null) return false;
+            if (plantResult == EquipmentAdmissionResult.Allowed) seeds.SelectSlot(plant.InventoryIndex);
+            else seeds.ClearSelection();
+            return plantResult == EquipmentAdmissionResult.Allowed;
         }
-        if (spells != null && session.Admission.CheckSpellPosition(position, out var spell) == EquipmentAdmissionResult.Allowed)
+        var spellResult = session.Admission.CheckSpellPosition(position, out var spell);
+        if (spellResult == EquipmentAdmissionResult.WrongPhase || spellResult == EquipmentAdmissionResult.SessionUnavailable || spells == null)
+            return false;
+        if (spellResult == EquipmentAdmissionResult.Allowed) spells.SelectSlot(spell.InventoryIndex);
+        else spells.ClearSelection();
+        return spellResult == EquipmentAdmissionResult.Allowed;
+    }
+
+    public int GetSelectedPosition(bool plants)
+    {
+        if (session == null || !session.IsReady) return -1;
+        for (int i = 0; i < Count; i++)
         {
-            spells.SelectSlot(spell.InventoryIndex);
-            return true;
+            if (plants)
+            {
+                var assignment = session.GetCommittedPlant(i);
+                var selected = seeds != null ? seeds.GetSelectedPlantSlot() : null;
+                if (assignment.HasValue && selected != null && selected.seedType == assignment.Identity) return i;
+            }
+            else
+            {
+                var assignment = session.GetCommittedSpell(i);
+                if (assignment.HasValue && spells != null &&
+                    session.ResolveSpell(assignment.Identity).InventoryIndex == spells.GetSelectedSlotIndex() &&
+                    spells.GetSelectedSlotIndex() >= 0) return i;
+            }
         }
-        return false;
+        return -1;
     }
 
     public bool TryCycleSpell(int direction)

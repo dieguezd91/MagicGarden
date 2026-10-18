@@ -5,7 +5,7 @@ instantiates it through an Assembly-CSharp session adapter; Stage 3 locks draft
 editing after confirmation. The model has no Unity dependency, singleton, inventory reference,
 selected-slot state, quantities, cooldowns, input or UI.
 
-## Identity and bootstrap
+## Identity and initialization
 
 A later coordinator can instantiate `DailyLoadoutState<SeedsEnum, SpellDataSO>`
 from Assembly-CSharp without moving or modifying those existing types.
@@ -18,19 +18,16 @@ from Assembly-CSharp without moving or modifying those existing types.
   the existing ScriptableObject identity for spells. Do not pass mutable storage
   indices, display names or upgrade-target keys as item identities.
 
-`TryBootstrap(orderedPlants, orderedSpells)` chooses the first three distinct
-identities per category in the supplied order. It accepts fewer than three,
-including none, and is permitted only once per run. Null lists/identities reject
-atomically. It copies assignments; it does not retain the lists.
-
-The caller must provide **already unlocked** content in a deterministic catalog
-order (for example, serialized progression-list order), not HashSet enumeration.
-The model does not query or duplicate PlayerContentUnlockSystem. Bootstrap does
-not enter a day and does not consume a manual confirmation.
+`TryInitialize()` initializes all three plant and all three spell positions empty.
+It is permitted only once per run, takes no catalog and never chooses defaults.
+Unlocked catalogs remain owned by PlayerContentUnlockSystem; initialization does
+not grant/remove resources, enter a day or consume a manual confirmation.
+Later unlocks do not change equipment. A complete run reset permits a fresh empty
+initialization; a genuine next day retains committed equipment.
 
 ## Explicit lifecycle, not live integration
 
-1. `TryBootstrap(...)` initializes the run's committed equipment and draft.
+1. `TryInitialize()` initializes the run's committed equipment and draft empty.
 2. `TryBeginDay(runDayToken)` opens editing and copies committed equipment to draft.
 3. `TrySetDraftPlant` / `TrySetDraftSpell` edit one of three positions. Duplicate
    identities within the same category and invalid positions are rejected without
@@ -55,23 +52,28 @@ and a night transition cannot reopen editing; a genuinely new day or run reset c
 
 ## Stage boundaries
 
-Stage 2 provides LD-01 bootstrap and explicit daily/run coordination through
+Stage 2 provides explicit daily/run coordination through
 `Assets/Scripts/Equipment/DailyLoadoutSession.cs`, owned by the existing unlock
 system. Its resolver reads current stock/configuration without selecting or
 mutating inventory. See `Assets/Scripts/Equipment/README.md` for those boundaries.
 
-Stage 3 adds LD-06 contextual controls and gameplay admission outside this pure
-model. LD-07 removes keyboard double-press swapping, retaining mouse/drag storage
-interaction. The six-position HUD and Loadout menu remain out of scope. The pure
-model does not validate domain unlock membership; the session does. No save format
-or cross-session persistence is introduced.
+Stage 3 adds contextual controls and gameplay admission outside this pure model.
+Stage 4D supersedes default equipment and raw-storage hotbar selection: the menu
+edits drafts, while the existing HUD displays committed identities and live
+inventory quantities/cooldowns. The pure model does not validate domain unlock
+membership; the session does. No save format or cross-session persistence is introduced.
 
 ## Verification
 
 EditMode tests: `Assets/Tests/Editor/Loadout/DailyLoadoutStateTests.cs` in
 `MagicGarden.Loadout.Tests`. Use Unity's EditMode Test Runner when available.
 
-Actual local results:
+Stage 4D local results: **19 passed, 0 failed**, exit 0, empty stderr, invoking
+the exact updated NUnit methods under bundled Mono. Ten affected runtime/Editor/
+test assemblies compile. No current Unity Test Runner, installed HUD authoring or
+manual Game flow results are claimed. Logs: `Temp/Stage4D-check/`.
+
+Historical Stage 1 evidence (not current integration acceptance):
 
 - Pure model: **19 passed, 0 failed** under Unity 2022.3.62f3's bundled Mono runtime,
   invoking the exact NUnit `[Test]` methods. This is not Unity Test Runner execution.

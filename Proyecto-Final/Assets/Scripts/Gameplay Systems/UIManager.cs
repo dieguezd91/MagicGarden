@@ -21,6 +21,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private InterfaceSoundBase interfaceSounds;
 
     [SerializeField] private UIFlowController uiFlowController;
+    [SerializeField] private MagicGarden.LoadoutUI.DailyLoadoutPresenter dailyLoadout;
 
     [Header("UI References")]
     public GameObject gameOverPanel;
@@ -51,6 +52,15 @@ public class UIManager : MonoBehaviour
     public RitualUIController Ritual => ritualUI;
     public TeleportAbilityUI TeleportAbility => teleportAbilityUI;
     public UIFlowController Flow => uiFlowController;
+    public MagicGarden.LoadoutUI.DailyLoadoutPresenter DailyLoadout => dailyLoadout;
+
+    public void CloseDailyLoadout() => dailyLoadout?.Close();
+    private void OnDisable() => CloseDailyLoadout();
+    private void OnDestroy()
+    {
+        CloseDailyLoadout();
+        if (Instance == this) Instance = null;
+    }
 
     private void Awake() { if (uiFlowController == null) uiFlowController = GetComponent<UIFlowController>(); if (uiFlowController == null) uiFlowController = gameObject.AddComponent<UIFlowController>();
         if (Instance == null)

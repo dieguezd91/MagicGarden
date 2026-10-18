@@ -22,6 +22,31 @@ public sealed class DailyLoadoutPresenterTests
     }
 
     [Test]
+    public void OpenSelectsPlantOneAndSingleAssignmentLeavesOtherFivePositionsEmpty()
+    {
+        Assert.That(f.Open(), Is.True);
+        Assert.That(f.Status, Does.StartWith("Plant 1 selected."));
+        Assert.That(F.State(f.Slot(true, 0)), Does.Contain("Selected"));
+        Assert.That(F.Name(f.Option(0)), Is.EqualTo("First authored plant"));
+        Assert.That(F.Name(f.Option(1)), Is.EqualTo("Second authored plant"));
+        Assert.That(Snapshot(true), Is.All.EqualTo("<empty>"));
+        Assert.That(F.State(f.Option(0)), Is.EqualTo("Available"));
+        f.Assign(0);
+        Assert.That(F.State(f.Option(0)), Is.EqualTo("Selected"));
+        f.Select(true, 1);
+        Assert.That(F.State(f.Option(0)), Is.EqualTo("Selected"));
+        f.Select(true, 0);
+        Assert.That(F.State(f.Option(0)), Is.EqualTo("Selected"));
+        Assert.That(f.Identity(true, false, 0), Is.EqualTo(F.Seed(7)));
+        Assert.That(Snapshot(false).Count(x => x != "<empty>"), Is.EqualTo(1));
+        f.Action("Confirm").onClick.Invoke();
+        Assert.That(Snapshot(true).Count(x => x != "<empty>"), Is.EqualTo(1));
+        Assert.That(F.State(f.Slot(true, 0)), Does.Contain("Selected"));
+        f.Select(false, 2); Assert.That(F.Name(f.Option(0)), Is.EqualTo("First authored spell"));
+        f.Select(true, 0); Assert.That(F.Name(f.Option(0)), Is.EqualTo("First authored plant"));
+    }
+
+    [Test]
     public void CatalogUsesAuthoredOrderDeduplicatesIdentitiesFiltersLockedAndDoesNotGrantStock()
     {
         int seedCount = (int)F.Call(f.Seeds, "GetSeedCountInSlot", 0);
@@ -72,13 +97,15 @@ public sealed class DailyLoadoutPresenterTests
     [TestCase(true)] [TestCase(false)]
     public void DuplicateIsRejectedWithoutSwapOrAnyDraftOrCommittedMutation(bool plants)
     {
-        Assert.That(f.Open(), Is.True);
+        f.EquipInitial(); Assert.That(f.Open(), Is.True);
         string[] draft = Snapshot(false), committed = Snapshot(true);
         f.Select(plants, 1); f.Assign(0);
         CollectionAssert.AreEqual(draft, Snapshot(false));
         CollectionAssert.AreEqual(committed, Snapshot(true));
         Assert.That(f.Status, Does.Contain("Assignment rejected"));
-        Assert.That(F.State(f.Option(0)), Does.Contain("Invalid target"));
+        Assert.That(F.State(f.Option(0)), Is.EqualTo("Selected"));
+        var rejectedBackground = (Image)F.Field(f.Option(0), "background");
+        Assert.That(rejectedBackground.color.r, Is.GreaterThan(rejectedBackground.color.g));
         Assert.That(f.Confirmed, Is.False);
     }
 
@@ -90,6 +117,7 @@ public sealed class DailyLoadoutPresenterTests
         f.Select(true, 2); f.Action("Clear").onClick.Invoke(); AssertEmpty(true, false, 2);
         f.Select(true, 0); f.Action("Clear").onClick.Invoke(); AssertEmpty(true, false, 0);
         f.Select(false, 0); f.Action("Clear").onClick.Invoke(); AssertEmpty(false, false, 0);
+        f.Select(true, 1); f.Assign(0); f.Select(false, 2); f.Assign(1);
         CollectionAssert.AreEqual(committed, Snapshot(true));
         f.Action("Cancel").onClick.Invoke();
         Assert.That(f.IsOpen, Is.False); Assert.That(f.Panel.activeSelf, Is.False);
@@ -117,11 +145,14 @@ public sealed class DailyLoadoutPresenterTests
         foreach (bool category in new[] { true, false })
             for (int i = 0; i < 3; i++)
             {
-                Assert.That(F.SelectButton(f.Slot(category, i)).interactable, Is.False);
+                Assert.That(F.SelectButton(f.Slot(category, i)).interactable, Is.True);
                 Assert.That(F.State(f.Slot(category, i)), Does.Contain("Read-only"));
             }
-        F.Call(f.Presenter, "SelectPosition", true, 0); F.Call(f.Presenter, "Clear");
-        F.Call(f.Presenter, "Confirm");
+        F.Call(f.Presenter, "SelectPosition", false, 1);
+        Assert.That(F.Name(f.Option(0)), Is.EqualTo("First authored spell"));
+        Assert.That(f.Status, Does.StartWith("Spell 2 selected."));
+        Assert.That(F.State(f.Slot(false, 1)), Does.Contain("Selected"));
+        F.Call(f.Presenter, "Clear"); F.Call(f.Presenter, "Confirm");
         CollectionAssert.AreEqual(expected, Snapshot(true)); CollectionAssert.AreEqual(expected, Snapshot(false));
         f.Action("Cancel").onClick.Invoke(); Assert.That(f.Open(), Is.True);
         F.Call(f.Days, "StartDay"); // A repeated phase/day notification is not a new allowance.
@@ -145,7 +176,7 @@ public sealed class DailyLoadoutPresenterTests
     [Test]
     public void NewDayKeepsCommittedConfigurationAndRestoresEditingWithoutReconfirmation()
     {
-        Assert.That(f.Open(), Is.True); f.Select(true, 0); f.Action("Clear").onClick.Invoke();
+        Assert.That(f.Open(), Is.True); f.Assign(0); f.Select(false, 1); f.Assign(1);
         f.Action("Confirm").onClick.Invoke(); string[] expected = Snapshot(true);
         F.Call(f.Days, "StartNight"); Assert.That(f.IsOpen, Is.False);
         F.Call(f.Days, "StartDay"); Assert.That(f.Confirmed, Is.False);
@@ -157,6 +188,7 @@ public sealed class DailyLoadoutPresenterTests
     [Test]
     public void ExistingModalCannotBeStolenAndExternalModalCloseDiscardsDraft()
     {
+        f.EquipInitial();
         var inventory = Enum.Parse(F.Production("UIModal"), "Inventory");
         Assert.That(F.Call(f.Modals, "Open", inventory), Is.EqualTo(true));
         Assert.That(f.Open(), Is.False); Assert.That(F.Property(f.Modals, "CurrentModal"), Is.EqualTo(inventory));
@@ -171,6 +203,7 @@ public sealed class DailyLoadoutPresenterTests
     [Test]
     public void ReopenIsIdempotentAndDisableUnbindsOwnedCallbacksOnly()
     {
+        f.EquipInitial();
         int externalClicks = 0;
         f.Action("Clear").onClick.AddListener(() => externalClicks++);
         for (int i = 0; i < 3; i++)
@@ -207,20 +240,21 @@ public sealed class DailyLoadoutPresenterTests
     [Test]
     public void UnconfirmedRunResetRendersFreshDraftRatherThanPreviousEdits()
     {
-        Assert.That(f.Open(), Is.True); f.Select(true, 0); f.Action("Clear").onClick.Invoke();
-        Assert.That(f.HasValue(true, false, 0), Is.False);
+        Assert.That(f.Open(), Is.True); f.Assign(0);
+        Assert.That(f.HasValue(true, false, 0), Is.True);
         F.Call(f.Experience, "ResetProgression"); F.Call(f.Session, "ResetForNewRun"); f.Refresh();
         Assert.That(f.Confirmed, Is.False); CollectionAssert.AreEqual(Snapshot(true), Snapshot(false));
-        Assert.That(F.Name(f.Slot(true, 0)), Is.EqualTo("First authored plant"));
+        Assert.That(f.HasValue(true, false, 0), Is.False);
     }
 
     [Test]
     public void FullRunResetAndDisposedSessionNeverLeaveStaleEditableUI()
     {
-        Assert.That(f.Open(), Is.True); f.Action("Confirm").onClick.Invoke(); Assert.That(f.Confirmed, Is.True);
+        Assert.That(f.Open(), Is.True); f.Assign(0); f.Select(false, 1); f.Assign(0);
+        f.Action("Confirm").onClick.Invoke(); Assert.That(f.Confirmed, Is.True);
         F.Call(f.Experience, "ResetProgression"); F.Call(f.Session, "ResetForNewRun"); f.Refresh();
         Assert.That(f.Confirmed, Is.False); Assert.That(f.Action("Confirm").interactable, Is.True);
-        Assert.That(f.Status, Does.Not.Contain("consumed")); Assert.That(f.HasValue(true, false, 0), Is.True);
+        Assert.That(f.Status, Does.Not.Contain("consumed")); Assert.That(f.HasValue(true, false, 0), Is.False);
         ((IDisposable)f.Session).Dispose(); f.Refresh();
         Assert.That(f.IsOpen, Is.False); Assert.That(F.Property(f.Modals, "HasOpenModal"), Is.False);
         Assert.That(f.Open(), Is.False); Assert.That(f.Action("Confirm").interactable, Is.False);

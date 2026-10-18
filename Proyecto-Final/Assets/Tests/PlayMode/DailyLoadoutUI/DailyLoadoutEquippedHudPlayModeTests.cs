@@ -1,0 +1,99 @@
+#if UNITY_EDITOR
+using System;
+using System.Collections;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
+using UnityEngine.UI;
+using F = DailyLoadoutUIFixture;
+
+public sealed class DailyLoadoutEquippedHudPlayModeTests
+{
+    private F f;
+    [SetUp] public void Setup() { f = new F(); }
+    [TearDown] public void Cleanup() { f?.Dispose(); }
+
+    [UnityTest]
+    public IEnumerator CommittedHudRebindsAfterDisableAndResetsWithoutAddingClickListeners()
+    {
+        f.EquipInitial(); var plants = f.Hud(true); var spells = f.Hud(false);
+        int children = plants.GetComponentsInChildren<Transform>(true).Length;
+        for (int i = 0; i < 3; i++)
+        {
+            plants.gameObject.SetActive(false); spells.gameObject.SetActive(false);
+            yield return null;
+            plants.gameObject.SetActive(true); spells.gameObject.SetActive(true);
+            F.Call(plants, "RefreshAllSlots"); F.Call(spells, "RefreshAllSlots");
+        }
+        F.Call(f.Days, "StartNight");
+        Assert.That(((CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup")).interactable, Is.False);
+        Assert.That(((CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup")).interactable, Is.True);
+        yield return new WaitForSeconds(.4f);
+        Assert.That(((CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup")).alpha, Is.Zero);
+        Assert.That(((CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup")).alpha, Is.EqualTo(1));
+        int events = 0; Action<int> callback = _ => events++;
+        var selected = f.Spells.GetType().GetEvent("onSpellSlotSelected"); selected.AddEventHandler(f.Spells, callback);
+        try
+        {
+            ((UnityEngine.Events.UnityEvent)F.Field(F.HudSlot(spells, false, 0), "OnClick")).Invoke();
+            Assert.That(F.Call(f.Spells, "GetSelectedSlotIndex"), Is.EqualTo(4));
+            Assert.That(events, Is.EqualTo(1));
+        }
+        finally { selected.RemoveEventHandler(f.Spells, callback); }
+        F.Call(f.Days, "StartDay"); F.Call(f.Session, "ResetForNewRun");
+        Assert.That(((Image)F.Field(F.HudSlot(plants, true, 0), "slotIcon")).gameObject.activeSelf, Is.False);
+        Assert.That(((Image)F.Field(F.HudSlot(spells, false, 0), "slotIcon")).gameObject.activeSelf, Is.False);
+        Assert.That(plants.GetComponentsInChildren<Transform>(true).Length, Is.EqualTo(children));
+    }
+
+    [UnityTest]
+    public IEnumerator PhaseTransitionsHideOutgoingBarImmediatelyWithoutCrossFading()
+    {
+        var plants = f.Hud(true); var spells = f.Hud(false);
+        var pg = (CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup");
+        var sg = (CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup");
+        Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(sg.alpha, Is.Zero);
+        F.Call(f.Days, "StartNight");
+        Assert.That(pg.alpha, Is.Zero); Assert.That(pg.interactable, Is.False);
+        Assert.That(pg.blocksRaycasts, Is.False);
+        for (int i = 0; i < 3; i++)
+        {
+            yield return null;
+            Assert.That(pg.alpha, Is.Zero, "The outgoing bar must not overlap the incoming fade.");
+        }
+        // Interrupt the incoming fade: the spell bar must hide immediately too.
+        F.Call(f.Days, "StartDay");
+        Assert.That(sg.alpha, Is.Zero); Assert.That(sg.interactable, Is.False);
+        Assert.That(sg.blocksRaycasts, Is.False);
+        yield return new WaitForSeconds(.4f);
+        Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(pg.interactable, Is.True);
+        Assert.That(pg.blocksRaycasts, Is.True); Assert.That(sg.alpha, Is.Zero);
+    }
+
+    [UnityTest]
+    public IEnumerator LateSessionOwnerIsResolvedThroughExistingHandleUpdateAndReplacesDisposedOwner()
+    {
+        var plants = f.Hud(true); var spells = f.Hud(false);
+        ((IDisposable)f.Session).Dispose();
+        var replacement = new GameObject("Stage4D replacement progression owner"); replacement.SetActive(false);
+        try
+        {
+            var experience = replacement.AddComponent(F.Production("PlayerExperienceSystem"));
+            F.Set(experience, "progressionData", f.Progression);
+            var unlocks = replacement.AddComponent(F.Production("PlayerContentUnlockSystem"));
+            replacement.SetActive(true);
+            Assert.That(F.Property(unlocks, "Loadout"), Is.Null);
+            F.Call(plants, "HandleUpdate"); F.Call(spells, "HandleUpdate");
+            yield return null; // Real owner.Start creates the session.
+            F.Call(plants, "HandleUpdate"); F.Call(spells, "HandleUpdate");
+            var session = F.Property(unlocks, "Loadout");
+            Assert.That(F.Property(session, "IsReady"), Is.True);
+            Assert.That(F.Call(session, "TrySetDraftPlant", 1, F.Seed(7)), Is.True);
+            Assert.That(F.Call(session, "TryConfirm"), Is.True);
+            Assert.That(((Image)F.Field(F.HudSlot(plants, true, 1), "slotIcon")).gameObject.activeSelf, Is.True);
+            Assert.That(((Image)F.Field(F.HudSlot(plants, true, 0), "slotIcon")).gameObject.activeSelf, Is.False);
+        }
+        finally { UnityEngine.Object.DestroyImmediate(replacement); }
+    }
+}
+#endif

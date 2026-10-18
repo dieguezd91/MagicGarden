@@ -1,231 +1,136 @@
 using UnityEngine;
 using System.Collections;
 
+/// <summary>Existing spell HUD, with live inventory cooldown ownership and committed identities.</summary>
 public class SpellSlotsUIController : UIControllerBase
 {
     [Header("Spell Slots")]
-    [SerializeField] private SpellSlotUI[] spellSlotUIs = new SpellSlotUI[7];
+    [SerializeField] private SpellSlotUI[] spellSlotUIs = new SpellSlotUI[3];
     [SerializeField] private CanvasGroup spellSlotsCanvasGroup;
-
     [Header("Visibility Settings")]
-    [SerializeField] private float fadeDuration = 0.3f;
-
-    private GamePhase lastPhase;
-
-    protected override void SetupEventListeners()
-    {
-        if (SpellInventory.Instance != null)
-        {
-            SpellInventory.Instance.onSpellSlotSelected += UpdateSelectedSlotUI;
-            SpellInventory.Instance.onCooldownUpdated += UpdateSlotCooldown;
-            SpellInventory.Instance.OnSpellInventoryChanged += RefreshAllSlots;
-        }
-
-        if (LevelManager.Instance != null)
-        {
-            GameFlowController.Instance.OnPhaseChanged += OnPhaseChanged;
-        }
-    }
-
-    protected override void ConfigureInitialState()
-    {
-        InitializeSlots();
-
-        if (spellSlotsCanvasGroup != null)
-        {
-            spellSlotsCanvasGroup.alpha = 0f;
-            spellSlotsCanvasGroup.interactable = false;
-            spellSlotsCanvasGroup.blocksRaycasts = false;
-        }
-    }
-
-    public override void HandleUpdate()
-    {
-        if (LevelManager.Instance != null &&
-            GameFlowController.Instance.CurrentPhase == GamePhase.Night)
-        {
-            UpdateAllCooldownDisplays();
-        }
-    }
-
-    private void InitializeSlots()
-    {
-        for (int i = 0; i < spellSlotUIs.Length; i++)
-        {
-            if (spellSlotUIs[i] == null) continue;
-
-            spellSlotUIs[i].Initialize(i);
-            spellSlotUIs[i].OnSlotClicked += OnSlotClicked;
-            UpdateSlotDisplay(i);
-        }
-
-        if (SpellInventory.Instance != null)
-        {
-            UpdateSelectedSlotUI(SpellInventory.Instance.GetSelectedSlotIndex());
-        }
-    }
-
-    private void OnPhaseChanged(GamePhase newPhase)
-    {
-        bool shouldShow = newPhase == GamePhase.Night;
-
-        if (shouldShow && spellSlotsCanvasGroup != null)
-        {
-            ShowSpellSlots();
-        }
-        else if (!shouldShow && spellSlotsCanvasGroup != null)
-        {
-            HideSpellSlots();
-        }
-
-        lastPhase = newPhase;
-    }
-
-    private void ShowSpellSlots()
-    {
-        if (spellSlotsCanvasGroup != null)
-        {
-            spellSlotsCanvasGroup.interactable = true;
-            spellSlotsCanvasGroup.blocksRaycasts = true;
-        }
-
-        if (gameObject.activeInHierarchy)
-        {
-            StartCoroutine(FadeCanvasGroup(1f));
-        }
-        else
-        {
-            if (spellSlotsCanvasGroup != null)
-            {
-                spellSlotsCanvasGroup.alpha = 1f;
-            }
-        }
-    }
-
-    private void HideSpellSlots()
-    {
-        if (spellSlotsCanvasGroup != null)
-        {
-            spellSlotsCanvasGroup.interactable = false;
-            spellSlotsCanvasGroup.blocksRaycasts = false;
-        }
-
-        if (gameObject.activeInHierarchy)
-        {
-            StartCoroutine(FadeCanvasGroup(0f));
-        }
-        else
-        {
-            if (spellSlotsCanvasGroup != null)
-            {
-                spellSlotsCanvasGroup.alpha = 0f;
-            }
-        }
-    }
-
-    private IEnumerator FadeCanvasGroup(float targetAlpha)
-    {
-        if (spellSlotsCanvasGroup == null) yield break;
-
-        float startAlpha = spellSlotsCanvasGroup.alpha;
-        float time = 0f;
-
-        while (time < fadeDuration)
-        {
-            time += Time.deltaTime;
-            float t = time / fadeDuration;
-            spellSlotsCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
-            yield return null;
-        }
-
-        spellSlotsCanvasGroup.alpha = targetAlpha;
-    }
-
-    private void OnSlotClicked(int slotIndex)
-    {
-        if (SpellInventory.Instance != null)
-        {
-            SpellInventory.Instance.SelectSlot(slotIndex);
-        }
-
-        UIManager.Instance.InterfaceSounds?.PlaySound(InterfaceSoundType.MenuButtonHover);
-    }
-
-    private void UpdateSelectedSlotUI(int slotIndex)
-    {
-        for (int i = 0; i < spellSlotUIs.Length; i++)
-        {
-            if (spellSlotUIs[i] != null)
-            {
-                spellSlotUIs[i].SetSelected(i == slotIndex);
-            }
-        }
-    }
-
-    private void UpdateSlotDisplay(int slotIndex)
-    {
-        if (slotIndex < 0 || slotIndex >= spellSlotUIs.Length) return;
-        if (spellSlotUIs[slotIndex] == null) return;
-
-        SpellSlot spellSlotData = SpellInventory.Instance?.GetSpellSlot(slotIndex);
-        spellSlotUIs[slotIndex].UpdateSlotDisplay(spellSlotData);
-    }
-
-    private void UpdateSlotCooldown(int slotIndex)
-    {
-        if (slotIndex < 0 || slotIndex >= spellSlotUIs.Length) return;
-        if (spellSlotUIs[slotIndex] == null) return;
-
-        SpellSlot spellSlotData = SpellInventory.Instance?.GetSpellSlot(slotIndex);
-        spellSlotUIs[slotIndex].UpdateCooldownDisplay(spellSlotData);
-    }
-
-    private void UpdateAllCooldownDisplays()
-    {
-        if (SpellInventory.Instance == null) return;
-
-        for (int i = 0; i < spellSlotUIs.Length; i++)
-        {
-            if (spellSlotUIs[i] == null) continue;
-
-            SpellSlot spellSlotData = SpellInventory.Instance.GetSpellSlot(i);
-            if (spellSlotData != null && spellSlotData.isUnlocked && spellSlotData.currentCooldown > 0f)
-            {
-                spellSlotUIs[i].UpdateCooldownDisplay(spellSlotData);
-            }
-        }
-    }
-
-    public void RefreshAllSlots()
-    {
-        for (int i = 0; i < spellSlotUIs.Length; i++)
-        {
-            UpdateSlotDisplay(i);
-        }
-    }
-
-    protected override void CleanupEventListeners()
-    {
-        if (SpellInventory.Instance != null)
-        {
-            SpellInventory.Instance.onSpellSlotSelected -= UpdateSelectedSlotUI;
-            SpellInventory.Instance.onCooldownUpdated -= UpdateSlotCooldown;
-            SpellInventory.Instance.OnSpellInventoryChanged -= RefreshAllSlots;
-        }
-
-        if (LevelManager.Instance != null)
-        {
-            GameFlowController.Instance.OnPhaseChanged -= OnPhaseChanged;
-        }
-
-        for (int i = 0; i < spellSlotUIs.Length; i++)
-        {
-            if (spellSlotUIs[i] != null)
-            {
-                spellSlotUIs[i].OnSlotClicked -= OnSlotClicked;
-            }
-        }
-    }
+    [SerializeField] private float fadeDuration = .3f;
+    private SpellInventory inventory;
+    private PlayerContentUnlockSystem unlocks;
+    private PlayerAbilitySystem abilitySystem;
+    private DailyLoadoutSession session;
+    private GameFlowController flow;
+    private Coroutine fadeCoroutine;
+    private bool listening;
 
     protected override void CacheReferences() { }
+    protected override void SetupEventListeners()
+    {
+        if (listening) return;
+        listening = true;
+        for (int i = 0; i < spellSlotUIs.Length; i++)
+        {
+            var slot = spellSlotUIs[i];
+            if (slot == null) continue;
+            slot.gameObject.SetActive(i < 3);
+            if (i >= 3) continue;
+            slot.Initialize(i);
+            slot.OnSlotClicked += OnSlotClicked;
+        }
+        BindOwners();
+    }
+    protected override void ConfigureInitialState() { RefreshAllSlots(); ApplyPhase(false); }
+    private void OnEnable() { if (isSetup) { SetupEventListeners(); RefreshAllSlots(); } }
+    private void OnDisable() => CleanupEventListeners();
+    public override void HandleUpdate()
+    {
+        if (!isSetup || !listening) return;
+        BindOwners();
+        UpdateSlotCooldown(-1);
+    }
+    private void BindOwners()
+    {
+        var owner = EquipmentGameplaySelection.ResolveOwner(unlocks);
+        var nextSession = owner != null ? owner.Loadout : null;
+        var nextInventory = SpellInventory.Instance;
+        var nextFlow = GameFlowController.Instance;
+        if (ReferenceEquals(session, nextSession) && inventory == nextInventory && flow == nextFlow && unlocks == owner) return;
+        UnbindOwners();
+        unlocks = owner; session = nextSession; inventory = nextInventory; flow = nextFlow;
+        abilitySystem = owner != null ? owner.GetComponent<PlayerAbilitySystem>() : null;
+        if (session != null) session.CommittedChanged += RefreshAllSlots;
+        if (inventory != null)
+        {
+            inventory.onSpellSlotSelected += UpdateSelectedSlotUI;
+            inventory.OnSpellInventoryChanged += RefreshAllSlots;
+            inventory.onCooldownUpdated += UpdateSlotCooldown;
+        }
+        if (flow != null) flow.OnPhaseChanged += OnPhaseChanged;
+        RefreshAllSlots(); ApplyPhase(false);
+    }
+    private void UnbindOwners()
+    {
+        if (session != null) session.CommittedChanged -= RefreshAllSlots;
+        if (inventory != null)
+        {
+            inventory.onSpellSlotSelected -= UpdateSelectedSlotUI;
+            inventory.OnSpellInventoryChanged -= RefreshAllSlots;
+            inventory.onCooldownUpdated -= UpdateSlotCooldown;
+        }
+        if (flow != null) flow.OnPhaseChanged -= OnPhaseChanged;
+    }
+    private void OnPhaseChanged(GamePhase phase) { ApplyPhase(true); UpdateSelectedSlotUI(-1); }
+    private void ApplyPhase(bool animate)
+    {
+        if (spellSlotsCanvasGroup == null) return;
+        bool active = flow != null && flow.CurrentPhase == GamePhase.Night;
+        spellSlotsCanvasGroup.interactable = active;
+        spellSlotsCanvasGroup.blocksRaycasts = active;
+        if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
+        fadeCoroutine = null;
+        // Hide the outgoing bar immediately; cross-fading would overlap both categories.
+        if (!active) { spellSlotsCanvasGroup.alpha = 0f; return; }
+        if (animate && Application.isPlaying && isActiveAndEnabled)
+            fadeCoroutine = StartCoroutine(FadeCanvasGroup(1f));
+        else spellSlotsCanvasGroup.alpha = 1f;
+    }
+    private IEnumerator FadeCanvasGroup(float target)
+    {
+        float start = spellSlotsCanvasGroup.alpha;
+        for (float time = 0; time < fadeDuration; time += Time.deltaTime)
+        {
+            spellSlotsCanvasGroup.alpha = Mathf.Lerp(start, target, time / fadeDuration);
+            yield return null;
+        }
+        spellSlotsCanvasGroup.alpha = target; fadeCoroutine = null;
+    }
+    private void OnSlotClicked(int position)
+    {
+        if (flow == null || flow.CurrentPhase != GamePhase.Night) return;
+        if (abilitySystem != null) abilitySystem.TrySelectEquipmentPosition(position);
+        else new EquipmentGameplaySelection(session, null, inventory).TrySelectPosition(position);
+    }
+    private void UpdateSelectedSlotUI(int ignored)
+    {
+        int selected = new EquipmentGameplaySelection(session, null, inventory).GetSelectedPosition(false);
+        for (int i = 0; i < spellSlotUIs.Length && i < 3; i++)
+            if (spellSlotUIs[i] != null) spellSlotUIs[i].SetSelected(i == selected);
+    }
+    private void UpdateSlotDisplay(int position)
+    {
+        if (position < 0 || position >= 3 || position >= spellSlotUIs.Length || spellSlotUIs[position] == null) return;
+        var assignment = session != null && session.IsReady ? session.GetCommittedSpell(position) : default;
+        var resolution = assignment.HasValue ? session.ResolveSpell(assignment.Identity) : default;
+        spellSlotUIs[position].UpdateEquipmentDisplay(assignment.HasValue ? assignment.Identity : null,
+            resolution.Slot, inventory, resolution.InventoryIndex);
+    }
+    private void UpdateSlotCooldown(int ignored)
+    {
+        // Resolve again: indices are ephemeral, including after reset/owner replacement.
+        for (int i = 0; i < spellSlotUIs.Length && i < 3; i++) UpdateSlotDisplay(i);
+    }
+    public void RefreshAllSlots() { UpdateSlotCooldown(-1); UpdateSelectedSlotUI(-1); }
+    protected override void CleanupEventListeners()
+    {
+        if (!listening) return;
+        listening = false; UnbindOwners();
+        session = null; inventory = null; flow = null; unlocks = null; abilitySystem = null;
+        foreach (var slot in spellSlotUIs) if (slot != null) slot.OnSlotClicked -= OnSlotClicked;
+        if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
+        fadeCoroutine = null;
+    }
 }

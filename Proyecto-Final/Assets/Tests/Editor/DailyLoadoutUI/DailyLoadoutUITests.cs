@@ -18,7 +18,7 @@ public sealed class DailyLoadoutUITests
     private GameObject Instantiate(string name)
     {
         var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Folder + name + ".prefab");
-        Assert.That(prefab, Is.Not.Null, "Run Tools/Magic Garden/Daily Loadout/Create UI prefabs (once) first.");
+        Assert.That(prefab, Is.Not.Null, "Required authored Loadout prefab is missing. Restore the existing prefab and its metadata; do not regenerate approved assets.");
         instance = Object.Instantiate(prefab);
         return instance;
     }
@@ -76,6 +76,7 @@ public sealed class DailyLoadoutUITests
     [TestCase("LoadoutOption", "LoadoutOptionView")]
     public void EquipmentStatesAreDistinctAndDoNotChangeContent(string prefab, string component)
     {
+        bool option = prefab == "LoadoutOption";
         var view = View(Instantiate(prefab), component);
         var button = (Button)Ref(view, "selectButton");
         var background = (Image)Ref(view, "background");
@@ -93,22 +94,28 @@ public sealed class DailyLoadoutUITests
         Call(view, "SetContent", sprite, "Test plant or spell");
         Assert.That(icon.enabled, Is.True); Assert.That(icon.sprite, Is.SameAs(sprite));
         Assert.That(button.interactable, Is.True); Assert.That(state.text, Is.EqualTo("Available"));
-        Call(view, "SetAssigned", true); Assert.That(state.text, Is.EqualTo("Assigned"));
+        Call(view, "SetAssigned", true); Assert.That(state.text, Is.EqualTo(option ? "Selected" : "Assigned"));
         Call(view, "SetSelected", true);
-        Assert.That(state.text, Is.EqualTo("Assigned | Selected"));
+        Assert.That(state.text, Is.EqualTo(option ? "Selected" : "Assigned | Selected"));
         Assert.That(background.color, Is.Not.EqualTo(Color.white));
         Call(view, "SetHighlighted", true);
         Assert.That(background.sprite, Is.SameAs(Ref(view, "hoverSprite")));
-        Assert.That(state.text, Is.EqualTo("Assigned | Selected | Highlighted"));
+        Assert.That(state.text, Is.EqualTo(option ? "Selected" : "Assigned | Selected | Highlighted"));
         Call(view, "SetInvalidDropTarget", true);
-        Assert.That(state.text, Is.EqualTo("Assigned | Selected | Invalid target"));
+        Assert.That(state.text, Is.EqualTo(option ? "Selected" : "Assigned | Selected | Invalid target"));
         Assert.That(background.color.r, Is.GreaterThan(background.color.g));
         Call(view, "SetReadOnly", true);
-        Assert.That(button.interactable, Is.False); Assert.That(state.text, Does.EndWith("Read-only"));
+        Assert.That(button.interactable, Is.False);
+        if (option) Assert.That(state.text, Is.EqualTo("Selected"));
+        else Assert.That(state.text, Does.EndWith("Read-only"));
         Call(view, "SetReadOnly", false);
         Call(view, "SetSelected", false); Call(view, "SetAssigned", false);
         Call(view, "SetHighlighted", false); Call(view, "SetInvalidDropTarget", false);
         Call(view, "OnPointerEnter", new PointerEventData(null));
+        if (option) Assert.That(state.text, Is.EqualTo("Available"));
+        Call(view, "OnSelect", new BaseEventData(null));
+        if (option) Assert.That(state.text, Is.EqualTo("Available"));
+        Call(view, "OnDeselect", new BaseEventData(null));
         Assert.That(background.sprite, Is.SameAs(Ref(view, "hoverSprite")));
         Call(view, "OnPointerDown", new PointerEventData(null) { button = PointerEventData.InputButton.Left });
         Assert.That(background.sprite, Is.SameAs(Ref(view, "pressedSprite")));
@@ -119,7 +126,7 @@ public sealed class DailyLoadoutUITests
         if (prefab == "LoadoutOption")
         {
             Call(view, "SetLocked", true);
-            Assert.That(button.interactable, Is.False); Assert.That(state.text, Is.EqualTo("Available | Locked"));
+            Assert.That(button.interactable, Is.False); Assert.That(state.text, Is.EqualTo("Available"));
             Call(view, "SetLocked", false); Assert.That(button.interactable, Is.True);
         }
     }

@@ -14,6 +14,7 @@ public sealed class DailyLoadoutPresenterPlayModeTests
     [UnityTest]
     public IEnumerator NightWhileOpenClosesImmediatelyDiscardsDraftAndReleasesModal()
     {
+        f.EquipInitial();
         Assert.That(f.Open(), Is.True);
         f.Select(true, 0); f.Action("Clear").onClick.Invoke();
         f.Select(false, 0); f.Action("Clear").onClick.Invoke();
@@ -52,6 +53,7 @@ public sealed class DailyLoadoutPresenterPlayModeTests
     [UnityTest]
     public IEnumerator EffectiveUpgradeOverlayBlocksEditingEvenWithoutPhaseEvent()
     {
+        f.EquipInitial();
         Assert.That(f.Open(), Is.True); f.Select(true, 0);
         F.Set(f.Flow, "<IsChoosingUpgrade>k__BackingField", true);
         yield return null;
@@ -66,6 +68,7 @@ public sealed class DailyLoadoutPresenterPlayModeTests
     [UnityTest]
     public IEnumerator DisableAndDestroyReleaseSubscriptionsWithoutTouchingAnotherModal()
     {
+        f.EquipInitial();
         int externalClicks = 0;
         f.Action("Clear").onClick.AddListener(() => externalClicks++);
         for (int i = 0; i < 3; i++)

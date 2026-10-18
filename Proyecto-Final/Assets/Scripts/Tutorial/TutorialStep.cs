@@ -50,5 +50,8 @@ public enum TutorialObjectiveType
     Welcome,
     TeleportSpell,
     FifthNightWarning,
-    AbilityChanged
+    AbilityChanged,
+    // Append only: earlier values are serialized by existing tutorial assets.
+    OpenDailyLoadout = 28,
+    DailyLoadoutProximity = 29
 }
