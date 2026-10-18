@@ -119,6 +119,8 @@ public class PlayerSpellController : MonoBehaviour
 
     private void CastSpell()
     {
+        // Animation events and any future caller must pass the same live boundary.
+        if (!CanCastSpell()) return;
         if (UpgradeRuntime.GameplayBlocked) return;
         WorldTransitionAnimator worldTransitionCheck = FindObjectOfType<WorldTransitionAnimator>();
         if (worldTransitionCheck != null && worldTransitionCheck.IsInInterior)
@@ -169,6 +171,10 @@ public class PlayerSpellController : MonoBehaviour
     private bool CanCastSpell()
     {
         if (UpgradeRuntime.GameplayBlocked) return false;
+        var session = GetComponent<PlayerContentUnlockSystem>()?.Loadout;
+        if (SpellInventory.Instance == null || session == null ||
+            session.Admission.CheckSpellInventoryIndex(SpellInventory.Instance.GetSelectedSlotIndex(), out _) != EquipmentAdmissionResult.Allowed)
+            return false;
 
         if (fireSpellActive)
             return false;
@@ -257,7 +263,8 @@ public class PlayerSpellController : MonoBehaviour
         if (GameFlowController.Instance.CurrentPhase != GamePhase.Night) return;
         if (playerController != null && !playerController.CanAct()) return;
 
-        SpellInventory.Instance.CycleSpell(direction);
+        var session = GetComponent<PlayerContentUnlockSystem>()?.Loadout;
+        new EquipmentGameplaySelection(session, null, SpellInventory.Instance).TryCycleSpell(direction);
     }
 
     public void SetFireSpellActive(bool active)

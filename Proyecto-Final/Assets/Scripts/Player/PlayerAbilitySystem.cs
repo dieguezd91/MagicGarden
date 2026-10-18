@@ -47,6 +47,11 @@ public class PlayerAbilitySystem : MonoBehaviour
     [SerializeField] private Animator handAnimator;
     [SerializeField] private float interactionAnimationDuration = 0.5f;
     private bool isPlayingInteractionAnimation = false;
+    // Only the in-flight player action is captured, never inventory ownership.
+    private PlantSlot pendingPlantSlot;
+    private SeedsEnum pendingPlantIdentity;
+    private GameObject pendingPlantPrefab;
+    private float pendingPlantManaPaid;
     [SerializeField] private GameObject plantingParticlesPrefab;
 
     [Header("INPUT")]
@@ -74,6 +79,7 @@ public class PlayerAbilitySystem : MonoBehaviour
     private bool _cancelDiggingRequested = false;
 
     public PlayerAbility CurrentAbility => currentAbility;
+    private DailyLoadoutSession Loadout => GetComponent<PlayerContentUnlockSystem>()?.Loadout;
 
     private void OnEnable()
     {
@@ -83,6 +89,7 @@ public class PlayerAbilitySystem : MonoBehaviour
         input.OnCycleInput     += HandleCycleInput;
         input.OnScrollInput    += HandleScrollInput;
         input.OnPrimaryPressed += HandlePrimaryInput;
+        input.OnSlotSelected   += HandleEquipmentSlotInput;
     }
 
     private void OnDisable()
@@ -93,6 +100,7 @@ public class PlayerAbilitySystem : MonoBehaviour
         input.OnCycleInput     -= HandleCycleInput;
         input.OnScrollInput    -= HandleScrollInput;
         input.OnPrimaryPressed -= HandlePrimaryInput;
+        input.OnSlotSelected   -= HandleEquipmentSlotInput;
     }
 
     private void Awake()
@@ -208,6 +216,39 @@ public class PlayerAbilitySystem : MonoBehaviour
         CycleAbility(direction);
     }
 
+    private void HandleEquipmentSlotInput(int position)
+    {
+        var player = GetComponent<PlayerController>();
+        if (UpgradeRuntime.GameplayBlocked || (player != null && !player.CanAct())) return;
+        if (pauseController != null && pauseController.IsPaused) return;
+        if (isDigging || isHarvesting) return;
+
+        var flow = GameFlowController.Instance;
+        if (flow == null) return;
+        bool selected;
+        if (flow.CurrentPhase == GamePhase.Day)
+        {
+            // Seed numbers address storage, not equipment. Planting admission
+            // remains at execution, even for empty or unequipped selections.
+            if (seedInventory == null || position < 0 || position >= seedInventory.PlantSlotsCount) return;
+            seedInventory.SelectSlot(position);
+            selected = true;
+        }
+        else
+        {
+            var selection = new EquipmentGameplaySelection(Loadout, seedInventory, SpellInventory.Instance);
+            selected = selection.TrySelectPosition(position);
+        }
+        if (selected)
+        {
+            // Keep the first-event bootstrap contract in OnSeedSlotSelected, but
+            // an explicit gameplay key must activate planting even on that first event.
+            if (flow.CurrentPhase == GamePhase.Day && currentAbility != PlayerAbility.Planting)
+                SetAbility(PlayerAbility.Planting);
+            UIManager.Instance?.InterfaceSounds?.PlaySound(InterfaceSoundType.OnSeedSelect);
+        }
+    }
+
     private void HandleScrollInput(float scrollDelta)
     {
         if (isDigging || isHarvesting) return;
@@ -274,6 +315,11 @@ public class PlayerAbilitySystem : MonoBehaviour
     {
         if (!isPlayingInteractionAnimation)
         {
+            var selectedSlot = seedInventory != null ? seedInventory.GetSelectedPlantSlot() : null;
+            if (selectedSlot == null || Loadout == null ||
+                Loadout.Admission.CheckPlant(selectedSlot.seedType, out _) != EquipmentAdmissionResult.Allowed)
+                return;
+
             Vector3 mouseWorld = GetMouseWorldPosition();
 
             Vector3Int cellPos =
@@ -313,6 +359,7 @@ public class PlayerAbilitySystem : MonoBehaviour
                 return;
             }
 
+            float manaBefore = manaSystem != null ? manaSystem.GetCurrentMana() : 0f;
             if (manaSystem != null &&
                 !manaSystem.UseMana(plantManaCost))
             {
@@ -331,6 +378,10 @@ public class PlayerAbilitySystem : MonoBehaviour
                 return;
             }
 
+            pendingPlantSlot = selectedSlot;
+            pendingPlantIdentity = selectedSlot.seedType;
+            pendingPlantPrefab = selectedPlant;
+            pendingPlantManaPaid = manaSystem != null ? Mathf.Max(0f, manaBefore - manaSystem.GetCurrentMana()) : 0f;
             StartCoroutine(
                 PlantWithAnimation(
                     cellPos,
@@ -347,6 +398,17 @@ public class PlayerAbilitySystem : MonoBehaviour
 
         yield return new WaitForSeconds(interactionAnimationDuration * 0.4f);
 
+        if (!IsPendingPlantEligible())
+        {
+            RestoreRejectedPlantingPayment();
+            isPlayingInteractionAnimation = false;
+            StopInteractionAnimation();
+            yield break;
+        }
+
+        // From here on retain the original tile-failure/payment semantics.
+        pendingPlantSlot = null;
+        pendingPlantManaPaid = 0f;
         bool planted = TilePlantingSystem.Instance.TryPlant(cellPos, selectedPlant, out string reason);
 
         if (planted)
@@ -373,6 +435,30 @@ public class PlayerAbilitySystem : MonoBehaviour
         StopInteractionAnimation();
     }
 
+
+    private bool IsPendingPlantEligible()
+    {
+        return IsPendingPlantEquipmentEligible() && seedInventory != null &&
+            ReferenceEquals(seedInventory.GetSelectedPlantSlot(), pendingPlantSlot);
+    }
+
+    private bool IsPendingPlantEquipmentEligible()
+    {
+        return pendingPlantSlot != null &&
+            pendingPlantSlot.seedType == pendingPlantIdentity && pendingPlantSlot.seedCount > 0 &&
+            pendingPlantSlot.plantPrefab == pendingPlantPrefab && !UpgradeRuntime.GameplayBlocked &&
+            Loadout != null && Loadout.Admission.CheckPlant(pendingPlantIdentity, out _) == EquipmentAdmissionResult.Allowed;
+    }
+
+    private void RestoreRejectedPlantingPayment()
+    {
+        // SetMana restores the exact payment, without AddMana's lunar gain bonus.
+        // It still owns clamping/notifications. Ordinary cancellation is unchanged.
+        if (manaSystem != null && pendingPlantManaPaid > 0f)
+            manaSystem.SetMana(manaSystem.GetCurrentMana() + pendingPlantManaPaid);
+        pendingPlantSlot = null;
+        pendingPlantManaPaid = 0f;
+    }
 
     public HarvestablePlant GetHarvestableAtPosition(Vector2 worldPosition)
     {
@@ -731,6 +817,12 @@ public class PlayerAbilitySystem : MonoBehaviour
 
         if (isPlayingInteractionAnimation)
         {
+            // A selection notification cancels the action as before and retains
+            // its early cost while the intended equipment itself is still valid.
+            if (pendingPlantSlot != null && !IsPendingPlantEquipmentEligible())
+                RestoreRejectedPlantingPayment();
+            pendingPlantSlot = null;
+            pendingPlantManaPaid = 0f;
             StopAllCoroutines();
             isPlayingInteractionAnimation = false;
             StopInteractionAnimation();

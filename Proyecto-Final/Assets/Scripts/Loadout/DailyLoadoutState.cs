@@ -92,10 +92,10 @@ namespace MagicGarden.Loadout
         }
 
         public bool TrySetDraftPlant(int index, EquipmentAssignment<TPlant> assignment)
-            => IsInitialized && IsDay && TryAssign(draftPlants, index, assignment);
+            => IsInitialized && IsDay && !HasConfirmedToday && TryAssign(draftPlants, index, assignment);
 
         public bool TrySetDraftSpell(int index, EquipmentAssignment<TSpell> assignment)
-            => IsInitialized && IsDay && TryAssign(draftSpells, index, assignment);
+            => IsInitialized && IsDay && !HasConfirmedToday && TryAssign(draftSpells, index, assignment);
 
         /// <summary>
         /// Commits all six positions, or changes nothing on rejection. Draft setters

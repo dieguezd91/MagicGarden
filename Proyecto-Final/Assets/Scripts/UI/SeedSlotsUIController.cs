@@ -11,12 +11,6 @@ public class SeedSlotsUIController : UIControllerBase
     [SerializeField] private SeedSlot[] seedSlots = new SeedSlot[9];
     [SerializeField] private CanvasGroup seedSlotsCanvasGroup;
 
-    [Header("Drag & Drop Settings")]
-    [SerializeField] private float doublePressThreshold = 0.3f;
-
-    private int lastPressSlot = -1;
-    private float lastPressTime = 0f;
-    private int pendingSwapSlot = -1;
     private int hoveredSlotIndex = -1;
     private Coroutine fadeCoroutine;
 
@@ -67,7 +61,7 @@ public class SeedSlotsUIController : UIControllerBase
 
     public override void HandleUpdate()
     {
-        HandleSeedSlotInput();
+        // Numeric gameplay selection is routed once through InputReader.
     }
 
     private void OnPhaseChanged(GamePhase newPhase)
@@ -226,9 +220,14 @@ public class SeedSlotsUIController : UIControllerBase
         // Handle slot unhover if needed
     }
 
+    private bool HasSlot(int slotIndex)
+    {
+        return slotIndex >= 0 && slotIndex < seedSlots.Length && seedSlots[slotIndex] != null;
+    }
+
     private void BeginDragIcon(int slotIndex)
     {
-        if (!seedSlots[slotIndex].CanStartDrag()) return;
+        if (dragSourceIndex >= 0 || !HasSlot(slotIndex) || !seedSlots[slotIndex].CanStartDrag()) return;
 
         InitializeDrag(slotIndex);
         ActivatePlantingAbility();
@@ -270,7 +269,7 @@ public class SeedSlotsUIController : UIControllerBase
 
     private void OnDragIcon(int slotIndex, PointerEventData data)
     {
-        if (dragIcon == null) return;
+        if (dragIcon == null || slotIndex != dragSourceIndex || data == null || EventSystem.current == null) return;
 
         var rt = dragIcon.GetComponent<RectTransform>();
         rt.position = data.position;
@@ -305,14 +304,19 @@ public class SeedSlotsUIController : UIControllerBase
 
     private void EndDragIcon(int slotIndex, PointerEventData data)
     {
-        DestroyDragIcon();
-
-        var results = new List<RaycastResult>();
-        EventSystem.current.RaycastAll(data, results);
-        int hitIndex = GetHoveredSlotIndex(results);
-
-        ProcessDragResult(hitIndex);
-        CleanupDrag();
+        // Unity may send end-drag even when the begin was rejected.
+        if (!HasSlot(dragSourceIndex) || slotIndex != dragSourceIndex) return;
+        try
+        {
+            var results = new List<RaycastResult>();
+            if (data != null && EventSystem.current != null)
+                EventSystem.current.RaycastAll(data, results);
+            ProcessDragResult(GetHoveredSlotIndex(results));
+        }
+        finally
+        {
+            CleanupDrag();
+        }
     }
 
     private void DestroyDragIcon()
@@ -326,19 +330,8 @@ public class SeedSlotsUIController : UIControllerBase
 
     private void ProcessDragResult(int hitIndex)
     {
-        if (hitIndex == dragSourceIndex || hitIndex < 0)
-        {
-            RestoreOriginalIcon();
-        }
-        else
-        {
+        if (hitIndex != dragSourceIndex && hitIndex >= 0)
             ExecuteDragSwap(hitIndex);
-        }
-    }
-
-    private void RestoreOriginalIcon()
-    {
-        seedSlots[dragSourceIndex].SetDragSource(false);
     }
 
     private void ExecuteDragSwap(int targetIndex)
@@ -369,8 +362,20 @@ public class SeedSlotsUIController : UIControllerBase
 
     private void CleanupDrag()
     {
+        DestroyDragIcon();
+        if (HasSlot(dragSourceIndex))
+            seedSlots[dragSourceIndex].SetDragSource(false);
+        // Swap notifications run synchronously while the source is hidden.
+        // Render from the current storage entries after clearing that state,
+        // including rejected/cancelled swaps which emitted no notification.
+        UpdateSeedCounts();
         ClearSlotHighlight();
         dragSourceIndex = -1;
+    }
+
+    private void OnDisable()
+    {
+        if (dragSourceIndex >= 0) CleanupDrag();
     }
 
     private void HighlightSlot(int slotIndex, bool highlight)
@@ -381,113 +386,17 @@ public class SeedSlotsUIController : UIControllerBase
 
     private void ClearSlotHighlight()
     {
-        if (hoveredSlotIndex >= 0 && seedSlots[hoveredSlotIndex] != null)
+        if (HasSlot(hoveredSlotIndex))
         {
             seedSlots[hoveredSlotIndex].SetHighlighted(false);
             hoveredSlotIndex = -1;
         }
     }
 
-    private void HandleSeedSlotInput()
-    {
-        if (!CanHandleInput()) return;
-
-        for (int i = 0; i < seedSlots.Length; i++)
-        {
-            KeyCode key = GetSlotKey(i);
-            if (Input.GetKeyDown(key))
-            {
-                OnSlotKeyPressed(i);
-                break;
-            }
-        }
-    }
-
-    private KeyCode GetSlotKey(int slotIndex)
-    {
-        if (slotIndex == 9)
-            return KeyCode.Alpha0;
-
-        return KeyCode.Alpha1 + slotIndex;
-    }
-
-    private bool CanHandleInput()
-    {
-        return gameFlowController != null &&
-               gameFlowController.CurrentPhase == GamePhase.Day;
-    }
-
-    private void OnSlotKeyPressed(int slotIndex)
-    {
-        float now = Time.time;
-
-        if (pendingSwapSlot >= 0)
-        {
-            HandlePendingSwap(slotIndex);
-            return;
-        }
-
-        if (IsDoublePress(slotIndex, now))
-        {
-            InitiateSwapMode(slotIndex);
-        }
-        else
-        {
-            SelectSlotInternal(slotIndex);
-        }
-
-        UpdatePressHistory(slotIndex, now);
-    }
-
-    private void HandlePendingSwap(int targetSlot)
-    {
-        int sourceSlot = pendingSwapSlot;
-
-        if (sourceSlot == targetSlot)
-        {
-            CancelSwapMode(sourceSlot);
-        }
-        else
-        {
-            ExecuteSwap(sourceSlot, targetSlot);
-        }
-    }
-
-    private bool IsDoublePress(int slotIndex, float currentTime)
-    {
-        return slotIndex == lastPressSlot &&
-               (currentTime - lastPressTime) < doublePressThreshold;
-    }
-
-    private void InitiateSwapMode(int slotIndex)
-    {
-        pendingSwapSlot = slotIndex;
-        HighlightSlot(slotIndex, true);
-    }
-
     private void SelectSlotInternal(int slotIndex)
     {
         seedInventory?.SelectSlot(slotIndex);
         UIManager.Instance.InterfaceSounds?.PlaySound(InterfaceSoundType.OnSeedSelect);
-    }
-
-    private void UpdatePressHistory(int slotIndex, float time)
-    {
-        lastPressSlot = slotIndex;
-        lastPressTime = time;
-    }
-
-    private void CancelSwapMode(int slotIndex)
-    {
-        HighlightSlot(slotIndex, false);
-        pendingSwapSlot = -1;
-    }
-
-    private void ExecuteSwap(int slotA, int slotB)
-    {
-        seedInventory?.SwapSlots(slotA, slotB);
-        HighlightSlot(slotA, false);
-        pendingSwapSlot = -1;
     }
 
     public void SelectSlot(int slotIndex)
@@ -563,11 +472,8 @@ public class SeedSlotsUIController : UIControllerBase
             fadeCoroutine = null;
         }
 
-        if (dragIcon != null)
-        {
-            Destroy(dragIcon);
-            dragIcon = null;
-        }
+        if (dragSourceIndex >= 0) CleanupDrag();
+        else DestroyDragIcon();
     }
 
     protected override void CacheReferences()

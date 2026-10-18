@@ -1,8 +1,8 @@
 # Daily Loadout — equipment-state model
 
 `DailyLoadoutState<TPlant, TSpell>` owns equipment configuration only. Stage 2
-instantiates it through an Assembly-CSharp session adapter; the model remains
-unchanged and has no Unity dependency, singleton, inventory reference,
+instantiates it through an Assembly-CSharp session adapter; Stage 3 locks draft
+editing after confirmation. The model has no Unity dependency, singleton, inventory reference,
 selected-slot state, quantities, cooldowns, input or UI.
 
 ## Identity and bootstrap
@@ -49,9 +49,9 @@ is idempotent and does not erase edits or renew confirmation. Older tokens, and
 reopening a night-closed day with the same token, are rejected. Only a run reset
 permits token reuse. There is deliberately no DayCycleController subscription.
 
-Draft edits never affect committed state. The daily limit applies to confirmation,
-not a new restriction on otherwise valid daytime draft edits after the allowance
-has been used; those edits cannot be confirmed that day.
+Draft edits never affect committed state. Successful confirmation locks both draft
+setters for the rest of that genuine day. Discarding drafts, repeated day notifications
+and a night transition cannot reopen editing; a genuinely new day or run reset can.
 
 ## Stage boundaries
 
@@ -60,9 +60,11 @@ Stage 2 provides LD-01 bootstrap and explicit daily/run coordination through
 system. Its resolver reads current stock/configuration without selecting or
 mutating inventory. See `Assets/Scripts/Equipment/README.md` for those boundaries.
 
-LD-06 contextual controls, gameplay admission and the six-position HUD remain
-untouched. The pure model still does not validate domain unlock membership; the
-session does. No save format or cross-session persistence is introduced.
+Stage 3 adds LD-06 contextual controls and gameplay admission outside this pure
+model. LD-07 removes keyboard double-press swapping, retaining mouse/drag storage
+interaction. The six-position HUD and Loadout menu remain out of scope. The pure
+model does not validate domain unlock membership; the session does. No save format
+or cross-session persistence is introduced.
 
 ## Verification
 

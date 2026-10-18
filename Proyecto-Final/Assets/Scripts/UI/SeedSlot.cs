@@ -31,6 +31,7 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
 
     private PlantSlotTooltipHandler tooltipHandler;
     private bool isDragSource = false;
+    private PlantSlot displayedSlot;
 
     public void Initialize(int slotIndex)
     {
@@ -84,6 +85,7 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
 
     public void UpdateSlotDisplay(PlantSlot plantSlot)
     {
+        displayedSlot = plantSlot;
         if (HasValidSeed(plantSlot))
         {
             ShowSlotContent(plantSlot);
@@ -105,23 +107,29 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
         {
             slotIcon.sprite = plantSlot.plantIcon;
             slotIcon.preserveAspect = true;
-            slotIcon.gameObject.SetActive(true);
+            slotIcon.gameObject.SetActive(!isDragSource);
         }
 
         if (seedCountText != null)
         {
             seedCountText.text = plantSlot.seedCount.ToString();
-            seedCountText.enabled = true;
+            seedCountText.enabled = !isDragSource;
         }
     }
 
     private void HideSlotContent()
     {
         if (slotIcon != null)
+        {
+            slotIcon.sprite = null;
             slotIcon.gameObject.SetActive(false);
+        }
 
         if (seedCountText != null)
+        {
+            seedCountText.text = "";
             seedCountText.enabled = false;
+        }
     }
 
     public void SetSelected(bool selected)
@@ -152,8 +160,7 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
     public void SetDragSource(bool isDragSource)
     {
         this.isDragSource = isDragSource;
-        if (slotIcon != null)
-            slotIcon.gameObject.SetActive(!isDragSource);
+        UpdateSlotDisplay(displayedSlot);
     }
 
     public bool CanStartDrag()

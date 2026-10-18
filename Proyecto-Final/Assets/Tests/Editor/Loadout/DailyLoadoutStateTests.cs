@@ -183,16 +183,21 @@ public sealed class DailyLoadoutStateTests
         state.TryBeginDay(1);
         state.TrySetDraftPlant(0, Item("c"));
         Assert.That(state.TryConfirm(), Is.True);
-        state.TrySetDraftPlant(0, Item("d"));
-        state.TrySetDraftSpell(0, Item("z"));
+        Assert.That(state.TrySetDraftPlant(0, Item("d")), Is.False);
+        Assert.That(state.TrySetDraftSpell(0, Item("z")), Is.False);
         Assert.That(state.TryConfirm(), Is.False);
         AssertEquipment(state, new[] { "c", "plant-b", null }, new[] { "spell-a", "spell-b", null });
-        AssertEquipment(state, new[] { "d", "plant-b", null }, new[] { "z", "spell-b", null }, draft: true);
+        AssertEquipment(state, new[] { "c", "plant-b", null }, new[] { "spell-a", "spell-b", null }, draft: true);
+        state.DiscardDraft();
+        Assert.That(state.TrySetDraftPlant(0, default), Is.False);
+        Assert.That(state.TrySetDraftSpell(0, default), Is.False);
         Assert.That(state.HasConfirmedToday, Is.True);
         state.BeginNight();
         Assert.That(state.TryBeginDay(2), Is.True);
         Assert.That(state.HasConfirmedToday, Is.False);
         AssertEquipment(state, new[] { "c", "plant-b", null }, new[] { "spell-a", "spell-b", null }, draft: true);
+        Assert.That(state.TrySetDraftPlant(0, Item("d")), Is.True);
+        Assert.That(state.TrySetDraftSpell(0, Item("z")), Is.True);
         Assert.That(state.TryConfirm(), Is.True);
     }
 

@@ -16,11 +16,13 @@ public sealed class DailyLoadoutSession : IDisposable
     private readonly EquipmentInventoryResolver resolver;
     private bool disposed;
 
-    public bool IsInitialized => state.IsInitialized;
+    public bool IsInitialized => !disposed && state.IsInitialized;
+    public bool IsReady => IsInitialized && unlocks != null && unlocks.HasInitializedUnlockState;
+    public EquipmentAdmissionPolicy Admission { get; }
     public bool IsDay => state.IsDay;
     public bool HasConfirmedToday => state.HasConfirmedToday;
     public bool CanConfigure => !disposed && unlocks != null && unlocks.HasInitializedUnlockState &&
-        flow != null && flow.CurrentPhase == GamePhase.Day && state.IsInitialized && state.IsDay;
+        flow != null && flow.CurrentPhase == GamePhase.Day && state.IsInitialized && state.IsDay && !state.HasConfirmedToday;
 
     public DailyLoadoutSession(PlayerContentUnlockSystem unlocks, PlayerExperienceSystem experience,
         SeedInventory seeds, SpellInventory spells, DayCycleController days, GameFlowController flow)
@@ -30,6 +32,7 @@ public sealed class DailyLoadoutSession : IDisposable
         this.days = days;
         this.flow = flow;
         resolver = new EquipmentInventoryResolver(unlocks, seeds, spells, state);
+        Admission = new EquipmentAdmissionPolicy(this, flow);
         unlocks.OnUnlockStateRebuilt += HandleUnlockStateRebuilt;
         if (days != null) days.OnNewDay.AddListener(HandleNewDay);
         if (flow != null) flow.OnPhaseChanged += HandlePhaseChanged;

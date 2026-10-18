@@ -41,8 +41,6 @@ public class SpellSlotsUIController : UIControllerBase
 
     public override void HandleUpdate()
     {
-        HandleSpellSlotInput();
-
         if (LevelManager.Instance != null &&
             GameFlowController.Instance.CurrentPhase == GamePhase.Night)
         {
@@ -141,30 +139,6 @@ public class SpellSlotsUIController : UIControllerBase
         }
 
         spellSlotsCanvasGroup.alpha = targetAlpha;
-    }
-
-    private void HandleSpellSlotInput()
-    {
-        if (!CanHandleInput()) return;
-
-        for (int i = 0; i < spellSlotUIs.Length; i++)
-        {
-            KeyCode alphaKey = KeyCode.Alpha1 + i;
-            KeyCode numpadKey = KeyCode.Keypad1 + i;
-
-            if (Input.GetKeyDown(alphaKey) || Input.GetKeyDown(numpadKey))
-            {
-                OnSlotClicked(i);
-                break;
-            }
-        }
-    }
-
-    private bool CanHandleInput()
-    {
-        if (LevelManager.Instance == null) return false;
-
-        return GameFlowController.Instance.CurrentPhase == GamePhase.Night;
     }
 
     private void OnSlotClicked(int slotIndex)
