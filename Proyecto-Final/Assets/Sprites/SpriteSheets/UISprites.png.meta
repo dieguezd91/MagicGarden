@@ -250,7 +250,7 @@ TextureImporter:
         height: 22
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 6, y: 6, z: 6, w: 6}
       outline: []
       physicsShape: []
       tessellationDetail: 0
@@ -418,7 +418,7 @@ TextureImporter:
         height: 9
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 20, y: 2, z: 20, w: 2}
       outline: []
       physicsShape: []
       tessellationDetail: 0
@@ -649,7 +649,7 @@ TextureImporter:
         height: 85
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 25, y: 20, z: 25, w: 20}
       outline: []
       physicsShape: []
       tessellationDetail: 0
@@ -691,7 +691,7 @@ TextureImporter:
         height: 16
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 6, y: 4, z: 6, w: 4}
       outline: []
       physicsShape: []
       tessellationDetail: 0
@@ -838,7 +838,7 @@ TextureImporter:
         height: 160
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 25, y: 20, z: 25, w: 20}
       outline: []
       physicsShape: []
       tessellationDetail: 0
@@ -859,7 +859,7 @@ TextureImporter:
         height: 11
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 26, y: 3, z: 26, w: 3}
       outline: []
       physicsShape: []
       tessellationDetail: 0
@@ -2430,6 +2430,27 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: UISprites_22
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 101
+        width: 26
+        height: 26
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 8, y: 8, z: 8, w: 8}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e4a7ba53a20045341875e26b7e9c63b8
+      internalID: 1641670062
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -2569,6 +2590,7 @@ TextureImporter:
       UISprites_2: -713296351
       UISprites_20: -1901002457
       UISprites_21: -1696816199
+      UISprites_22: 1641670062
       UISprites_3: 1425165297
       UISprites_4: -281481597
       UISprites_5: -15138589
