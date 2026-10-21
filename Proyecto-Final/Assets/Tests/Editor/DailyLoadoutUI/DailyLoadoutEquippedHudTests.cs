@@ -15,6 +15,109 @@ public sealed class DailyLoadoutEquippedHudTests
     private static Image Icon(Component slot) => (Image)F.Field(slot, "slotIcon");
     private static TMP_Text Count(Component slot) => (TMP_Text)F.Field(slot, "seedCountText");
 
+    [Test]
+    public void NativeSpellLabelAuthoringIsIdempotentAndRetainsFunctionalBindings()
+    {
+        var root = PrefabUtility.LoadPrefabContents("Assets/Prefabs/UI/Slots/Spell Slot.prefab");
+        try
+        {
+            var slot = root.GetComponent(F.Production("SpellSlotUI"));
+            var icon = F.Field(slot, "slotIcon"); var overlay = F.Field(slot, "cooldownOverlay"); var cooldown = F.Field(slot, "cooldownText");
+            var rect = (RectTransform)root.transform; var size = rect.sizeDelta;
+            Type authoring = null;
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) authoring = authoring ?? assembly.GetType("DailyLoadoutHudAuthoring");
+            var method = authoring.GetMethod("ConfigureSpellPositionLabel");
+            method.Invoke(null, new object[] { root }); method.Invoke(null, new object[] { root });
+            Assert.That(F.Field(slot, "slotNumberText"), Is.SameAs(root.transform.Find("Slot_Text").GetComponent<TMP_Text>()));
+            Assert.That(root.transform.Find("SpellCount_Text").gameObject.activeSelf, Is.False);
+            Assert.That(F.Field(slot, "slotIcon"), Is.SameAs(icon)); Assert.That(F.Field(slot, "cooldownOverlay"), Is.SameAs(overlay));
+            Assert.That(F.Field(slot, "cooldownText"), Is.SameAs(cooldown)); Assert.That(rect.sizeDelta, Is.EqualTo(size));
+        }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
+    }
+
+    [TestCase(true)]
+    [TestCase(false)]
+    public void NonEquipmentSlotsRetainTheirExistingSelectionColorsAndScale(bool plants)
+    {
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(plants
+            ? "Assets/Prefabs/UI/Seeds/Generic Seed Button.prefab" : "Assets/Prefabs/UI/Slots/Spell Slot.prefab");
+        var root = UnityEngine.Object.Instantiate(prefab);
+        try
+        {
+            var slot = root.GetComponent(F.Production(plants ? "SeedSlot" : "SpellSlotUI"));
+            F.Call(slot, "SetSelected", true);
+            Assert.That(((Image)F.Field(slot, "slotBackground")).color, Is.EqualTo((Color)F.Field(slot, "selectedColor")));
+            Assert.That(root.transform.localScale.x, Is.EqualTo((float)F.Field(slot, "selectedScale")));
+            F.Call(slot, "SetSelected", false);
+            Assert.That(((Image)F.Field(slot, "slotBackground")).color, Is.EqualTo((Color)F.Field(slot, "normalColor")));
+        }
+        finally { UnityEngine.Object.DestroyImmediate(root); }
+    }
+
+    [Test]
+    public void EquipmentPositionsUseTheSameFrameIconGeometryAndSingleBottomRightNumber()
+    {
+        var plants = f.Hud(true); var spells = f.Hud(false);
+        for (int i = 0; i < 3; i++)
+        {
+            var plant = F.HudSlot(plants, true, i); var spell = F.HudSlot(spells, false, i);
+            var pf = (Image)F.Field(plant, "slotBackground"); var sf = (Image)F.Field(spell, "slotBackground");
+            Assert.That(sf.sprite, Is.SameAs(pf.sprite)); Assert.That(sf.type, Is.EqualTo(pf.type));
+            Assert.That(sf.sprite.border, Is.EqualTo(pf.sprite.border));
+            Assert.That(((RectTransform)spell.transform).sizeDelta, Is.EqualTo(((RectTransform)plant.transform).sizeDelta));
+            Assert.That(Icon(spell).rectTransform.sizeDelta, Is.EqualTo(Icon(plant).rectTransform.sizeDelta));
+            Assert.That(Icon(spell).rectTransform.anchoredPosition, Is.EqualTo(Icon(plant).rectTransform.anchoredPosition));
+            var pn = (TMP_Text)F.Field(plant, "slotNumber"); var sn = (TMP_Text)F.Field(spell, "slotNumberText");
+            Assert.That(sn.name, Is.EqualTo("Slot_Text"), "Use the existing bottom-right position, not the green count-shaped label");
+            Assert.That(sn.text, Is.EqualTo((i + 1).ToString())); Assert.That(pn.text, Is.EqualTo(sn.text));
+            Assert.That(sn.font, Is.SameAs(pn.font)); Assert.That(sn.fontSize, Is.EqualTo(pn.fontSize));
+            Assert.That(sn.alignment, Is.EqualTo(pn.alignment));
+            Assert.That(sn.rectTransform.anchorMin, Is.EqualTo(pn.rectTransform.anchorMin));
+            Assert.That(sn.rectTransform.anchoredPosition, Is.EqualTo(pn.rectTransform.anchoredPosition));
+            Assert.That(spell.transform.Find("SpellCount_Text").gameObject.activeSelf, Is.False);
+        }
+    }
+
+    [Test]
+    public void EmptyEquipmentIsIdenticalAndCannotKeepSelectionOrCooldownAfterReset()
+    {
+        f.EquipInitial(); var plants = f.Hud(true); var spells = f.Hud(false);
+        F.Call(f.Spells, "StartCooldown", 4);
+        F.Call(f.Session, "ResetForNewRun");
+        for (int i = 0; i < 3; i++)
+        {
+            var p = F.HudSlot(plants, true, i); var s = F.HudSlot(spells, false, i);
+            F.Call(p, "SetSelected", true); F.Call(s, "SetSelected", true);
+            Assert.That(((Image)F.Field(p, "slotBackground")).color, Is.EqualTo(new Color(.32f, .34f, .36f, 1)));
+            Assert.That(((Image)F.Field(s, "slotBackground")).color, Is.EqualTo(((Image)F.Field(p, "slotBackground")).color));
+            Assert.That(p.transform.localScale, Is.EqualTo(Vector3.one)); Assert.That(s.transform.localScale, Is.EqualTo(Vector3.one));
+            Assert.That(Icon(p).sprite, Is.Null); Assert.That(Icon(s).sprite, Is.Null);
+            Assert.That(Count(p).enabled, Is.False);
+            Assert.That(((Image)F.Field(s, "cooldownOverlay")).fillAmount, Is.Zero);
+            Assert.That(((TMP_Text)F.Field(s, "cooldownText")).gameObject.activeSelf, Is.False);
+        }
+    }
+
+    [Test]
+    public void OccupiedEquipmentUsesSharedOpaquePhaseTintsAndSelectionDoesNotOverrideInactiveTone()
+    {
+        f.EquipInitial(); var plants = f.Hud(true); var spells = f.Hud(false);
+        var p = F.HudSlot(plants, true, 0); var s = F.HudSlot(spells, false, 0);
+        F.Call(p, "SetSelected", true); F.Call(s, "SetSelected", true);
+        Assert.That(((Image)F.Field(p, "slotBackground")).color, Is.EqualTo(Color.white));
+        Assert.That(((Image)F.Field(s, "slotBackground")).color, Is.EqualTo(new Color(.42f, .44f, .46f, 1)));
+        Assert.That(Icon(p).color, Is.EqualTo(Color.white));
+        Assert.That(Icon(s).color, Is.EqualTo(new Color(.5f, .52f, .54f, 1)));
+        F.Call(f.Days, "StartNight");
+        F.Call(s, "SetSelected", true);
+        Assert.That(((Image)F.Field(p, "slotBackground")).color, Is.EqualTo(new Color(.42f, .44f, .46f, 1)));
+        Assert.That(((Image)F.Field(s, "slotBackground")).color, Is.EqualTo(Color.white));
+        Assert.That(s.transform.localScale, Is.EqualTo(new Vector3(1.2f, 1.2f, 1)));
+        Assert.That(((CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup")).alpha, Is.EqualTo(1));
+        Assert.That(((CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup")).alpha, Is.EqualTo(1));
+    }
+
     [TestCase(false)]
     [TestCase(true)]
     public void LocationHidesBothBarsAndRestoresTheCurrentExteriorPhase(bool night)
@@ -35,7 +138,7 @@ public sealed class DailyLoadoutEquippedHudTests
         var pg = (CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup");
         var sg = (CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup");
         Assert.That(pg.alpha, Is.GreaterThan(0)); Assert.That(sg.alpha, Is.GreaterThan(0));
-        Assert.That(night ? sg.alpha : pg.alpha, Is.GreaterThan(night ? pg.alpha : sg.alpha));
+        Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(sg.alpha, Is.EqualTo(1));
         Assert.That(pg.interactable, Is.EqualTo(!night)); Assert.That(pg.blocksRaycasts, Is.EqualTo(!night));
         Assert.That(sg.interactable, Is.EqualTo(night)); Assert.That(sg.blocksRaycasts, Is.EqualTo(night));
     }
@@ -153,10 +256,10 @@ public sealed class DailyLoadoutEquippedHudTests
         var pg = (CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup");
         var sg = (CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup");
         Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(pg.interactable, Is.True);
-        Assert.That(sg.alpha, Is.GreaterThan(0).And.LessThan(pg.alpha)); Assert.That(sg.interactable, Is.False);
+        Assert.That(sg.alpha, Is.EqualTo(1)); Assert.That(sg.interactable, Is.False);
         Assert.That(sg.blocksRaycasts, Is.False);
         F.Call(f.Days, "StartNight");
-        Assert.That(pg.alpha, Is.GreaterThan(0).And.LessThan(sg.alpha)); Assert.That(pg.blocksRaycasts, Is.False);
+        Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(pg.blocksRaycasts, Is.False);
         Assert.That(pg.interactable, Is.False);
         Assert.That(sg.alpha, Is.EqualTo(1)); Assert.That(sg.interactable, Is.True);
         Assert.That(F.HudSlot(plants, true, 0).gameObject.activeSelf, Is.True);
@@ -164,21 +267,21 @@ public sealed class DailyLoadoutEquippedHudTests
         F.Call(f.Days, "StartDay");
         Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(pg.interactable, Is.True);
         Assert.That(pg.blocksRaycasts, Is.True);
-        Assert.That(sg.alpha, Is.GreaterThan(0).And.LessThan(pg.alpha)); Assert.That(sg.interactable, Is.False);
+        Assert.That(sg.alpha, Is.EqualTo(1)); Assert.That(sg.interactable, Is.False);
         Assert.That(sg.blocksRaycasts, Is.False);
     }
 
     [Test]
-    public void InactiveOpacityIsConfigurableForBothEquipmentCategories()
+    public void PhaseTintDoesNotMakeTheEquipmentGroupsTransparent()
     {
         var plants = f.Hud(true); var spells = f.Hud(false);
-        F.Set(plants, "inactiveAlpha", .35f); F.Set(spells, "inactiveAlpha", .55f);
-        F.Call(f.Days, "StartNight");
-        Assert.That(((CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup")).alpha, Is.EqualTo(.35f));
-        F.Call(f.Days, "StartDay");
-        Assert.That(((CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup")).alpha, Is.EqualTo(.55f));
+        for (int i = 0; i < 3; i++)
+        {
+            F.Call(f.Days, "StartNight"); F.Call(f.Days, "StartDay");
+            Assert.That(((CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup")).alpha, Is.EqualTo(1));
+            Assert.That(((CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup")).alpha, Is.EqualTo(1));
+        }
     }
-
     [TestCase(1920, 1080)]
     [TestCase(1280, 720)]
     [TestCase(2560, 1440)]

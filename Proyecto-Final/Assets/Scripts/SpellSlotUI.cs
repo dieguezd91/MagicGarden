@@ -31,6 +31,8 @@ public class SpellSlotUI : ImprovedUIButton, IPointerEnterHandler, IPointerExitH
     private int inventoryIndex = -1;
     private bool equipmentMode;
     private bool hasAssignment;
+    private bool selected;
+    private bool equipmentPhaseActive = true;
 
     public void UpdateEquipmentDisplay(SpellDataSO identity, SpellSlot slot, SpellInventory owner, int index)
     {
@@ -39,7 +41,7 @@ public class SpellSlotUI : ImprovedUIButton, IPointerEnterHandler, IPointerExitH
         displayedSlot = slot;
         cooldownOwner = owner;
         inventoryIndex = index;
-        if (!hasAssignment) { ShowLockedSlot(); return; }
+        if (!hasAssignment) { selected = false; ShowLockedSlot(); ApplyEquipmentStyle(); return; }
         if (slotIcon != null)
         {
             slotIcon.sprite = identity.SpellIcon;
@@ -47,6 +49,7 @@ public class SpellSlotUI : ImprovedUIButton, IPointerEnterHandler, IPointerExitH
             slotIcon.gameObject.SetActive(true);
         }
         UpdateCooldownDisplay(slot);
+        ApplyEquipmentStyle();
     }
 
     protected override void Awake()
@@ -112,7 +115,10 @@ public class SpellSlotUI : ImprovedUIButton, IPointerEnterHandler, IPointerExitH
     private void ShowLockedSlot()
     {
         if (slotIcon != null)
+        {
+            if (equipmentMode) slotIcon.sprite = null;
             slotIcon.gameObject.SetActive(false);
+        }
 
         if (slotBackground != null)
             slotBackground.color = lockedColor;
@@ -167,6 +173,8 @@ public class SpellSlotUI : ImprovedUIButton, IPointerEnterHandler, IPointerExitH
 
     public void SetSelected(bool selected)
     {
+        this.selected = selected;
+        if (equipmentMode) { ApplyEquipmentStyle(); return; }
         if (slotBackground == null) return;
 
         bool isLocked = equipmentMode ? !hasAssignment : SpellInventory.Instance?.GetSpellSlot(SlotIndex)?.isUnlocked == false;
@@ -182,6 +190,19 @@ public class SpellSlotUI : ImprovedUIButton, IPointerEnterHandler, IPointerExitH
 
         float scale = selected ? selectedScale : normalScale;
         transform.localScale = new Vector3(scale, scale, 1f);
+    }
+
+    public void SetEquipmentPhaseActive(bool active)
+    {
+        equipmentPhaseActive = active;
+        ApplyEquipmentStyle();
+    }
+
+    private void ApplyEquipmentStyle()
+    {
+        if (equipmentMode)
+            EquipmentHudStyle.Apply(transform, slotBackground, slotIcon, slotNumberText, null,
+                hasAssignment, selected, equipmentPhaseActive);
     }
     public void OnPointerEnter(PointerEventData eventData)
     {

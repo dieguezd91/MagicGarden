@@ -4,12 +4,47 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 /// <summary>Explicit native fallback while the Editor endpoint is unavailable. Never runs on import.</summary>
 public static class DailyLoadoutHudAuthoring
 {
     public const string CanvasPath = "Assets/Prefabs/UI/Canvas/Canvas Game UI.prefab";
     public const string GamePath = "Assets/Scenes/Game.unity";
+    public const string SpellSlotPath = "Assets/Prefabs/UI/Slots/Spell Slot.prefab";
+
+    [MenuItem("Tools/Magic Garden/Daily Loadout/Unify Equipment Position Label")]
+    public static void UnifySlotVisuals()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode || PrefabStageUtility.GetCurrentPrefabStage() != null)
+            throw new InvalidOperationException("Close Play Mode and Prefab Mode before editing the spell slot.");
+        var asset = AssetDatabase.LoadAssetAtPath<GameObject>(SpellSlotPath);
+        foreach (var component in asset.GetComponentsInChildren<Component>(true))
+            if (component != null && (EditorUtility.IsDirty(component) || EditorUtility.IsDirty(component.gameObject)))
+                throw new InvalidOperationException("Save/review unsaved spell slot edits first.");
+        var root = PrefabUtility.LoadPrefabContents(SpellSlotPath);
+        try
+        {
+            ConfigureSpellPositionLabel(root);
+            PrefabUtility.SaveAsPrefabAsset(root, SpellSlotPath);
+        }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
+        Debug.Log("Equipment position label rebound natively; redundant green label disabled. Art, stock and cooldown retained.");
+    }
+
+    public static void ConfigureSpellPositionLabel(GameObject root)
+    {
+        var slot = root.GetComponent<SpellSlotUI>();
+        var number = root.transform.Find("Slot_Text").GetComponent<TextMeshProUGUI>();
+        var redundant = root.transform.Find("SpellCount_Text");
+        if (slot == null || number == null || redundant == null)
+            throw new InvalidOperationException("Expected the existing spell slot and its two authored labels.");
+        var serialized = new SerializedObject(slot);
+        serialized.FindProperty("slotNumberText").objectReferenceValue = number;
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+        number.gameObject.SetActive(true);
+        redundant.gameObject.SetActive(false);
+    }
 
     [MenuItem("Tools/Magic Garden/Daily Loadout/Wire Equipment HUD (Stage 4D)")]
     public static void Wire()

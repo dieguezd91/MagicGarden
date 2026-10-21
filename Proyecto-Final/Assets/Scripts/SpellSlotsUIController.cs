@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections;
 
 /// <summary>Existing spell HUD, with live inventory cooldown ownership and committed identities.</summary>
 public class SpellSlotsUIController : UIControllerBase
@@ -7,15 +6,11 @@ public class SpellSlotsUIController : UIControllerBase
     [Header("Spell Slots")]
     [SerializeField] private SpellSlotUI[] spellSlotUIs = new SpellSlotUI[3];
     [SerializeField] private CanvasGroup spellSlotsCanvasGroup;
-    [Header("Visibility Settings")]
-    [SerializeField, Range(.1f, .9f)] private float inactiveAlpha = .45f;
-    [SerializeField] private float fadeDuration = .3f;
     private SpellInventory inventory;
     private PlayerContentUnlockSystem unlocks;
     private PlayerAbilitySystem abilitySystem;
     private DailyLoadoutSession session;
     private GameFlowController flow;
-    private Coroutine fadeCoroutine;
     private bool listening;
 
     protected override void CacheReferences() { }
@@ -34,7 +29,7 @@ public class SpellSlotsUIController : UIControllerBase
         }
         BindOwners();
     }
-    protected override void ConfigureInitialState() { RefreshAllSlots(); ApplyPhase(false); }
+    protected override void ConfigureInitialState() { RefreshAllSlots(); ApplyPhase(); }
     private void OnEnable() { if (isSetup) { SetupEventListeners(); RefreshAllSlots(); } }
     private void OnDisable() => CleanupEventListeners();
     public override void HandleUpdate()
@@ -61,7 +56,7 @@ public class SpellSlotsUIController : UIControllerBase
             inventory.onCooldownUpdated += UpdateSlotCooldown;
         }
         if (flow != null) flow.OnPhaseChanged += OnPhaseChanged;
-        RefreshAllSlots(); ApplyPhase(false);
+        RefreshAllSlots(); ApplyPhase();
     }
     private void UnbindOwners()
     {
@@ -74,32 +69,19 @@ public class SpellSlotsUIController : UIControllerBase
         }
         if (flow != null) flow.OnPhaseChanged -= OnPhaseChanged;
     }
-    private void OnPhaseChanged(GamePhase phase) { ApplyPhase(true); UpdateSelectedSlotUI(-1); }
-    private void ApplyPhase(bool animate)
+    private void OnPhaseChanged(GamePhase phase) { ApplyPhase(); UpdateSelectedSlotUI(-1); }
+    private void ApplyPhase()
     {
-        if (spellSlotsCanvasGroup == null) return;
         bool active = flow != null && flow.CurrentPhase == GamePhase.Night;
-        spellSlotsCanvasGroup.interactable = active;
-        spellSlotsCanvasGroup.blocksRaycasts = active;
-        if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
-        fadeCoroutine = null;
-        float minimumAlpha = Mathf.Clamp(inactiveAlpha, .1f, .9f);
-        float targetAlpha = active ? 1f : minimumAlpha;
-        // Both equipment categories retain readable positions throughout transitions.
-        spellSlotsCanvasGroup.alpha = Mathf.Max(spellSlotsCanvasGroup.alpha, minimumAlpha);
-        if (animate && Application.isPlaying && isActiveAndEnabled)
-            fadeCoroutine = StartCoroutine(FadeCanvasGroup(targetAlpha));
-        else spellSlotsCanvasGroup.alpha = targetAlpha;
-    }
-    private IEnumerator FadeCanvasGroup(float target)
-    {
-        float start = spellSlotsCanvasGroup.alpha;
-        for (float time = 0; time < fadeDuration; time += Time.deltaTime)
+        if (spellSlotsCanvasGroup != null)
         {
-            spellSlotsCanvasGroup.alpha = Mathf.Lerp(start, target, time / fadeDuration);
-            yield return null;
+            // Location owns root visibility; opaque per-slot tints own phase presentation.
+            spellSlotsCanvasGroup.alpha = 1f;
+            spellSlotsCanvasGroup.interactable = active;
+            spellSlotsCanvasGroup.blocksRaycasts = active;
         }
-        spellSlotsCanvasGroup.alpha = target; fadeCoroutine = null;
+        foreach (var slot in spellSlotUIs)
+            if (slot != null) slot.SetEquipmentPhaseActive(active);
     }
     private void OnSlotClicked(int position)
     {
@@ -133,7 +115,5 @@ public class SpellSlotsUIController : UIControllerBase
         listening = false; UnbindOwners();
         session = null; inventory = null; flow = null; unlocks = null; abilitySystem = null;
         foreach (var slot in spellSlotUIs) if (slot != null) slot.OnSlotClicked -= OnSlotClicked;
-        if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
-        fadeCoroutine = null;
     }
 }

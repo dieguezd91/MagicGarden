@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections;
 using MagicGarden.LoadoutUI;
 
 /// <summary>Existing seed HUD, projected from committed equipment, never storage order.</summary>
@@ -8,15 +7,12 @@ public class SeedSlotsUIController : UIControllerBase
     [Header("Seed Slots")]
     [SerializeField] private SeedSlot[] seedSlots = new SeedSlot[3];
     [SerializeField] private CanvasGroup seedSlotsCanvasGroup;
-    [Header("Visibility Settings")]
-    [SerializeField, Range(.1f, .9f)] private float inactiveAlpha = .45f;
     private SeedInventory seedInventory;
     private PlayerAbilitySystem abilitySystem;
     private GameFlowController gameFlowController;
     private PlayerContentUnlockSystem unlocks;
     private DailyLoadoutSession session;
     private readonly DailyLoadoutCatalog catalog = new DailyLoadoutCatalog();
-    private Coroutine fadeCoroutine;
     private bool listening;
 
     protected override void CacheReferences() { }
@@ -34,7 +30,7 @@ public class SeedSlotsUIController : UIControllerBase
         }
         BindOwners();
     }
-    protected override void ConfigureInitialState() { RefreshAllSlots(); ApplyPhase(false); }
+    protected override void ConfigureInitialState() { RefreshAllSlots(); ApplyPhase(); }
     private void OnEnable() { if (isSetup) { SetupEventListeners(); RefreshAllSlots(); } }
     private void OnDisable() => CleanupEventListeners();
     public override void HandleUpdate() { if (isSetup && listening) BindOwners(); }
@@ -58,7 +54,7 @@ public class SeedSlotsUIController : UIControllerBase
         }
         if (gameFlowController != null) gameFlowController.OnPhaseChanged += OnPhaseChanged;
         RefreshAllSlots();
-        ApplyPhase(false);
+        ApplyPhase();
     }
     private void UnbindOwners()
     {
@@ -113,33 +109,19 @@ public class SeedSlotsUIController : UIControllerBase
         if (abilitySystem != null) abilitySystem.TrySelectEquipmentPosition(position);
         else new EquipmentGameplaySelection(session, seedInventory, null).TrySelectPosition(position);
     }
-    private void OnPhaseChanged(GamePhase phase) { ApplyPhase(true); UpdateSelectedSlotUI(-1); }
-    private void ApplyPhase(bool animate)
+    private void OnPhaseChanged(GamePhase phase) { ApplyPhase(); UpdateSelectedSlotUI(-1); }
+    private void ApplyPhase()
     {
-        if (seedSlotsCanvasGroup == null) return;
         bool active = gameFlowController != null && gameFlowController.CurrentPhase == GamePhase.Day;
-        // Disable interaction immediately, not when the visual fade finishes.
-        seedSlotsCanvasGroup.interactable = active;
-        seedSlotsCanvasGroup.blocksRaycasts = active;
-        if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
-        fadeCoroutine = null;
-        float minimumAlpha = Mathf.Clamp(inactiveAlpha, .1f, .9f);
-        float targetAlpha = active ? 1f : minimumAlpha;
-        // Even an interrupted fade or a freshly enabled group must remain visible.
-        seedSlotsCanvasGroup.alpha = Mathf.Max(seedSlotsCanvasGroup.alpha, minimumAlpha);
-        if (animate && Application.isPlaying && isActiveAndEnabled)
-            fadeCoroutine = StartCoroutine(FadeToAlpha(targetAlpha));
-        else seedSlotsCanvasGroup.alpha = targetAlpha;
-    }
-    private IEnumerator FadeToAlpha(float target)
-    {
-        float start = seedSlotsCanvasGroup.alpha;
-        for (float time = 0; time < .35f; time += Time.deltaTime)
+        if (seedSlotsCanvasGroup != null)
         {
-            seedSlotsCanvasGroup.alpha = Mathf.Lerp(start, target, time / .35f);
-            yield return null;
+            // Location owns root visibility; opaque per-slot tints own phase presentation.
+            seedSlotsCanvasGroup.alpha = 1f;
+            seedSlotsCanvasGroup.interactable = active;
+            seedSlotsCanvasGroup.blocksRaycasts = active;
         }
-        seedSlotsCanvasGroup.alpha = target; fadeCoroutine = null;
+        foreach (var slot in seedSlots)
+            if (slot != null) slot.SetEquipmentPhaseActive(active);
     }
     protected override void CleanupEventListeners()
     {
@@ -148,7 +130,5 @@ public class SeedSlotsUIController : UIControllerBase
         UnbindOwners();
         session = null; seedInventory = null; gameFlowController = null; unlocks = null; abilitySystem = null;
         foreach (var slot in seedSlots) if (slot != null) slot.OnSlotClicked -= OnSlotClicked;
-        if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
-        fadeCoroutine = null;
     }
 }

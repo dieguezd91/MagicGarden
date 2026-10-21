@@ -34,6 +34,8 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
     private PlantSlot displayedSlot;
     private bool equipmentMode;
     private bool selected;
+    private bool hasEquipment;
+    private bool equipmentPhaseActive = true;
     private int inventoryIndex = -1;
 
     public void InitializeEquipment(int position)
@@ -48,9 +50,10 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
 
     public void UpdateEquipmentDisplay(PlantDataSO data, int count, int storageIndex)
     {
+        hasEquipment = data != null;
         inventoryIndex = storageIndex;
         if (tooltipHandler != null) tooltipHandler.slotIndex = storageIndex;
-        if (data == null) { HideSlotContent(); return; }
+        if (data == null) { selected = false; HideSlotContent(); ApplyEquipmentStyle(); return; }
         if (slotIcon != null)
         {
             slotIcon.sprite = data.plantIcon;
@@ -58,6 +61,7 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
             slotIcon.gameObject.SetActive(true);
         }
         if (seedCountText != null) { seedCountText.text = count.ToString(); seedCountText.enabled = true; }
+        ApplyEquipmentStyle();
     }
 
     public void Initialize(int slotIndex)
@@ -163,6 +167,7 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
     public void SetSelected(bool selected)
     {
         this.selected = selected;
+        if (equipmentMode) { ApplyEquipmentStyle(); return; }
         if (slotBackground == null) return;
 
         slotBackground.color = selected ? selectedColor : normalColor;
@@ -172,6 +177,7 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
 
     public void SetHighlighted(bool highlighted)
     {
+        if (equipmentMode) { ApplyEquipmentStyle(); return; }
         if (slotBackground == null) return;
 
         if (highlighted)
@@ -184,6 +190,19 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
             bool isSelected = equipmentMode ? selected : SeedInventory.Instance?.GetSelectedSlotIndex() == SlotIndex;
             slotBackground.color = isSelected ? selectedColor : normalColor;
         }
+    }
+
+    public void SetEquipmentPhaseActive(bool active)
+    {
+        equipmentPhaseActive = active;
+        ApplyEquipmentStyle();
+    }
+
+    private void ApplyEquipmentStyle()
+    {
+        if (equipmentMode)
+            EquipmentHudStyle.Apply(transform, slotBackground, slotIcon, slotNumber, seedCountText,
+                hasEquipment, selected, equipmentPhaseActive);
     }
 
     public void SetDragSource(bool isDragSource)

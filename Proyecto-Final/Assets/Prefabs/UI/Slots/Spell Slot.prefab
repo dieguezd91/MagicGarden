@@ -510,7 +510,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7185393574806747807
 RectTransform:
   m_ObjectHideFlags: 0
@@ -754,7 +754,7 @@ MonoBehaviour:
   slotIcon: {fileID: 2554171947085921029}
   cooldownOverlay: {fileID: 1258984444878920810}
   cooldownText: {fileID: 4065458141220531062}
-  slotNumberText: {fileID: 6513671821617509585}
+  slotNumberText: {fileID: 3379213604261054784}
   normalColor: {r: 0.2, g: 0.2, b: 0.2, a: 0.8}
   selectedColor: {r: 0.4, g: 0.6, b: 1, a: 1}
   lockedColor: {r: 0.1, g: 0.1, b: 0.1, a: 0.8}

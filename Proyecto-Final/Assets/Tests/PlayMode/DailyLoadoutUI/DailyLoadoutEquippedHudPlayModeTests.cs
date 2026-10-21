@@ -48,28 +48,28 @@ public sealed class DailyLoadoutEquippedHudPlayModeTests
                 Assert.That(spells.gameObject.activeInHierarchy, Is.True);
                 var pg = (CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup");
                 var sg = (CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup");
-                Assert.That(sg.alpha, Is.GreaterThan(pg.alpha));
+                Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(sg.alpha, Is.EqualTo(1));
                 Assert.That(sg.interactable && sg.blocksRaycasts, Is.True);
                 Assert.That(pg.interactable || pg.blocksRaycasts, Is.False);
                 int position = cycle % 2;
                 var view = F.HudSlot(spells, false, position);
                 Assert.That(((Image)F.Field(view, "slotBackground")).color,
-                    Is.EqualTo((Color)F.Field(view, "normalColor")));
+                    Is.EqualTo(new Color(.82f, .82f, .82f, 1)));
                 int beforeClick = events;
                 view.GetComponent<Button>().onClick.Invoke();
                 Assert.That(events, Is.EqualTo(beforeClick + 1));
                 Assert.That(F.Call(f.Spells, "GetSelectedSlotIndex"), Is.EqualTo(position == 0 ? 4 : 0));
                 Assert.That(((Image)F.Field(view, "slotBackground")).color,
-                    Is.EqualTo((Color)F.Field(view, "selectedColor")));
+                    Is.EqualTo(Color.white));
                 var other = F.HudSlot(spells, false, 1 - position);
                 Assert.That(((Image)F.Field(other, "slotBackground")).color,
-                    Is.EqualTo((Color)F.Field(other, "normalColor")));
+                    Is.EqualTo(new Color(.82f, .82f, .82f, 1)));
                 F.Call(location, "ShowInteriorHUD");
                 F.Call(f.Days, "StartDay");
                 yield return null;
                 Assert.That(plants.gameObject.activeSelf || spells.gameObject.activeSelf, Is.False);
                 F.Call(location, "ShowExteriorHUD");
-                Assert.That(pg.alpha, Is.GreaterThan(sg.alpha));
+                Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(sg.alpha, Is.EqualTo(1));
                 Assert.That(pg.interactable && pg.blocksRaycasts, Is.True);
                 Assert.That(sg.interactable || sg.blocksRaycasts, Is.False);
             }
@@ -93,7 +93,7 @@ public sealed class DailyLoadoutEquippedHudPlayModeTests
         Assert.That(((CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup")).interactable, Is.False);
         Assert.That(((CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup")).interactable, Is.True);
         yield return new WaitForSeconds(.4f);
-        Assert.That(((CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup")).alpha, Is.GreaterThan(0).And.LessThan(1));
+        Assert.That(((CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup")).alpha, Is.EqualTo(1));
         Assert.That(((CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup")).alpha, Is.EqualTo(1));
         int events = 0; Action<int> callback = _ => events++;
         var selected = f.Spells.GetType().GetEvent("onSpellSlotSelected"); selected.AddEventHandler(f.Spells, callback);
@@ -116,7 +116,7 @@ public sealed class DailyLoadoutEquippedHudPlayModeTests
         var plants = f.Hud(true); var spells = f.Hud(false);
         var pg = (CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup");
         var sg = (CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup");
-        Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(sg.alpha, Is.GreaterThan(0).And.LessThan(pg.alpha));
+        Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(sg.alpha, Is.EqualTo(1));
         F.Call(f.Days, "StartNight");
         Assert.That(pg.alpha, Is.GreaterThan(0)); Assert.That(pg.interactable, Is.False);
         Assert.That(pg.blocksRaycasts, Is.False);
@@ -127,17 +127,17 @@ public sealed class DailyLoadoutEquippedHudPlayModeTests
             Assert.That(sg.alpha, Is.GreaterThan(0));
         }
         yield return new WaitForSeconds(.4f);
-        Assert.That(sg.alpha, Is.GreaterThan(pg.alpha));
+        Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(sg.alpha, Is.EqualTo(1));
         F.Call(f.Days, "StartDay");
         yield return null;
-        F.Call(f.Days, "StartNight"); // Interrupt both fades before returning to Day.
+        F.Call(f.Days, "StartNight"); // Rapid changes must not retain the previous phase tint.
         F.Call(f.Days, "StartDay");
         Assert.That(sg.alpha, Is.GreaterThan(0)); Assert.That(sg.interactable, Is.False);
         Assert.That(sg.blocksRaycasts, Is.False);
         yield return new WaitForSeconds(.4f);
         Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(pg.interactable, Is.True);
         Assert.That(pg.blocksRaycasts, Is.True);
-        Assert.That(sg.alpha, Is.GreaterThan(0).And.LessThan(pg.alpha));
+        Assert.That(sg.alpha, Is.EqualTo(1));
     }
 
     [UnityTest]
