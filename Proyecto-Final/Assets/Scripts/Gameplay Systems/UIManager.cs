@@ -224,6 +224,9 @@ public class UIManager : MonoBehaviour
         if (SeedSlots != null)
             SeedSlots.gameObject.SetActive(false);
 
+        if (SpellSlots != null)
+            SpellSlots.gameObject.SetActive(false);
+
         if (hudAbilities != null)
             hudAbilities.SetActive(false);
 
@@ -242,6 +245,9 @@ public class UIManager : MonoBehaviour
 
         if (SeedSlots != null)
             SeedSlots.gameObject.SetActive(true);
+
+        if (SpellSlots != null)
+            SpellSlots.gameObject.SetActive(true);
 
         if (GamePhase != null)
         {

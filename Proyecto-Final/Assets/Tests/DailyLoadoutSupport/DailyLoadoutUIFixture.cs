@@ -141,6 +141,16 @@ public sealed class DailyLoadoutUIFixture : IDisposable
     public static Component HudSlot(Component hud, bool plants, int position)
         => (Component)((IList)Field(hud, plants ? "seedSlots" : "spellSlotUIs"))[position];
 
+    public Component HudLocationOwner(Component plants, Component spells)
+    {
+        var owner = Component("UIManager", false);
+        Set(owner, "seedSlotsUI", plants);
+        Set(owner, "spellSlotsUI", spells);
+        Set(owner, "uiFlowController", Modals);
+        Call(owner, "Awake");
+        return owner;
+    }
+
     public bool Open() => (bool)Call(Presenter, "Open");
     public void Refresh() => Call(Presenter, "Refresh");
     public void Select(bool plant, int position) => SelectButton(Slot(plant, position)).onClick.Invoke();

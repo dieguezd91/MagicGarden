@@ -15,6 +15,51 @@ public sealed class DailyLoadoutEquippedHudTests
     private static Image Icon(Component slot) => (Image)F.Field(slot, "slotIcon");
     private static TMP_Text Count(Component slot) => (TMP_Text)F.Field(slot, "seedCountText");
 
+    [TestCase(false)]
+    [TestCase(true)]
+    public void LocationHidesBothBarsAndRestoresTheCurrentExteriorPhase(bool night)
+    {
+        var plants = f.Hud(true); var spells = f.Hud(false);
+        var location = f.HudLocationOwner(plants, spells);
+        F.Call(location, "ShowInteriorHUD");
+        Assert.That(plants.gameObject.activeInHierarchy, Is.False);
+        Assert.That(spells.gameObject.activeInHierarchy, Is.False);
+        // Phase events while hidden must not override location ownership.
+        F.Call(f.Days, "StartNight");
+        if (!night) F.Call(f.Days, "StartDay");
+        Assert.That(plants.gameObject.activeSelf, Is.False);
+        Assert.That(spells.gameObject.activeSelf, Is.False);
+        F.Call(location, "ShowExteriorHUD");
+        Assert.That(plants.gameObject.activeInHierarchy, Is.True);
+        Assert.That(spells.gameObject.activeInHierarchy, Is.True);
+        var pg = (CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup");
+        var sg = (CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup");
+        Assert.That(pg.alpha, Is.GreaterThan(0)); Assert.That(sg.alpha, Is.GreaterThan(0));
+        Assert.That(night ? sg.alpha : pg.alpha, Is.GreaterThan(night ? pg.alpha : sg.alpha));
+        Assert.That(pg.interactable, Is.EqualTo(!night)); Assert.That(pg.blocksRaycasts, Is.EqualTo(!night));
+        Assert.That(sg.interactable, Is.EqualTo(night)); Assert.That(sg.blocksRaycasts, Is.EqualTo(night));
+    }
+
+    [Test]
+    public void LoadoutResetWhileInsideDoesNotReshowBarsAndExteriorRefreshesEmptyAssignments()
+    {
+        f.EquipInitial();
+        var plants = f.Hud(true); var spells = f.Hud(false);
+        var location = f.HudLocationOwner(plants, spells);
+        F.Call(location, "ShowInteriorHUD");
+        F.Call(f.Session, "ResetForNewRun");
+        Assert.That(plants.gameObject.activeSelf, Is.False);
+        Assert.That(spells.gameObject.activeSelf, Is.False);
+        F.Call(location, "ShowExteriorHUD");
+        Assert.That(plants.gameObject.activeInHierarchy, Is.True);
+        Assert.That(spells.gameObject.activeInHierarchy, Is.True);
+        for (int i = 0; i < 3; i++)
+        {
+            Assert.That(Icon(F.HudSlot(plants, true, i)).gameObject.activeSelf, Is.False);
+            Assert.That(Icon(F.HudSlot(spells, false, i)).gameObject.activeSelf, Is.False);
+        }
+    }
+
     [Test]
     public void EmptyRunShowsOnlyThreeEmptyPositionsPerCategoryAndOpeningCatalogDoesNotProjectDraft()
     {

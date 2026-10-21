@@ -14,6 +14,70 @@ public sealed class DailyLoadoutEquippedHudPlayModeTests
     [TearDown] public void Cleanup() { f?.Dispose(); }
 
     [UnityTest]
+    public IEnumerator InteriorDisablesPointerTargetsAndRepeatedExitsRefreshSelectionWithoutDuplicateClicks()
+    {
+        f.EquipInitial();
+        var plants = f.Hud(true); var spells = f.Hud(false);
+        var location = f.HudLocationOwner(plants, spells);
+        int events = 0;
+        Action<int> callback = _ => events++;
+        var selected = f.Spells.GetType().GetEvent("onSpellSlotSelected");
+        selected.AddEventHandler(f.Spells, callback);
+        try
+        {
+            for (int cycle = 0; cycle < 3; cycle++)
+            {
+                F.Call(location, "ShowInteriorHUD");
+                Assert.That(plants.gameObject.activeInHierarchy, Is.False);
+                Assert.That(spells.gameObject.activeInHierarchy, Is.False);
+                foreach (var hud in new[] { plants, spells })
+                {
+                    foreach (var graphic in hud.GetComponentsInChildren<Graphic>(true))
+                        Assert.That(graphic.isActiveAndEnabled, Is.False);
+                    foreach (var button in hud.GetComponentsInChildren<Button>(true))
+                        Assert.That(button.IsActive(), Is.False);
+                }
+                // An inactive root cannot expose graphics to the pointer raycaster.
+                F.Call(f.Spells, "ClearSelection"); // Hidden views must refresh this on exit.
+                F.Call(f.Days, "StartNight");
+                yield return null;
+                Assert.That(plants.gameObject.activeSelf, Is.False);
+                Assert.That(spells.gameObject.activeSelf, Is.False);
+                F.Call(location, "ShowExteriorHUD");
+                Assert.That(plants.gameObject.activeInHierarchy, Is.True);
+                Assert.That(spells.gameObject.activeInHierarchy, Is.True);
+                var pg = (CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup");
+                var sg = (CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup");
+                Assert.That(sg.alpha, Is.GreaterThan(pg.alpha));
+                Assert.That(sg.interactable && sg.blocksRaycasts, Is.True);
+                Assert.That(pg.interactable || pg.blocksRaycasts, Is.False);
+                int position = cycle % 2;
+                var view = F.HudSlot(spells, false, position);
+                Assert.That(((Image)F.Field(view, "slotBackground")).color,
+                    Is.EqualTo((Color)F.Field(view, "normalColor")));
+                int beforeClick = events;
+                view.GetComponent<Button>().onClick.Invoke();
+                Assert.That(events, Is.EqualTo(beforeClick + 1));
+                Assert.That(F.Call(f.Spells, "GetSelectedSlotIndex"), Is.EqualTo(position == 0 ? 4 : 0));
+                Assert.That(((Image)F.Field(view, "slotBackground")).color,
+                    Is.EqualTo((Color)F.Field(view, "selectedColor")));
+                var other = F.HudSlot(spells, false, 1 - position);
+                Assert.That(((Image)F.Field(other, "slotBackground")).color,
+                    Is.EqualTo((Color)F.Field(other, "normalColor")));
+                F.Call(location, "ShowInteriorHUD");
+                F.Call(f.Days, "StartDay");
+                yield return null;
+                Assert.That(plants.gameObject.activeSelf || spells.gameObject.activeSelf, Is.False);
+                F.Call(location, "ShowExteriorHUD");
+                Assert.That(pg.alpha, Is.GreaterThan(sg.alpha));
+                Assert.That(pg.interactable && pg.blocksRaycasts, Is.True);
+                Assert.That(sg.interactable || sg.blocksRaycasts, Is.False);
+            }
+        }
+        finally { selected.RemoveEventHandler(f.Spells, callback); }
+    }
+
+    [UnityTest]
     public IEnumerator CommittedHudRebindsAfterDisableAndResetsWithoutAddingClickListeners()
     {
         f.EquipInitial(); var plants = f.Hud(true); var spells = f.Hud(false);
