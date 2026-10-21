@@ -8,6 +8,8 @@ public class SeedSlotsUIController : UIControllerBase
     [Header("Seed Slots")]
     [SerializeField] private SeedSlot[] seedSlots = new SeedSlot[3];
     [SerializeField] private CanvasGroup seedSlotsCanvasGroup;
+    [Header("Visibility Settings")]
+    [SerializeField, Range(.1f, .9f)] private float inactiveAlpha = .45f;
     private SeedInventory seedInventory;
     private PlayerAbilitySystem abilitySystem;
     private GameFlowController gameFlowController;
@@ -121,11 +123,13 @@ public class SeedSlotsUIController : UIControllerBase
         seedSlotsCanvasGroup.blocksRaycasts = active;
         if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
         fadeCoroutine = null;
-        // Hide the outgoing bar immediately; cross-fading would overlap both categories.
-        if (!active) { seedSlotsCanvasGroup.alpha = 0f; return; }
+        float minimumAlpha = Mathf.Clamp(inactiveAlpha, .1f, .9f);
+        float targetAlpha = active ? 1f : minimumAlpha;
+        // Even an interrupted fade or a freshly enabled group must remain visible.
+        seedSlotsCanvasGroup.alpha = Mathf.Max(seedSlotsCanvasGroup.alpha, minimumAlpha);
         if (animate && Application.isPlaying && isActiveAndEnabled)
-            fadeCoroutine = StartCoroutine(FadeToAlpha(1f));
-        else seedSlotsCanvasGroup.alpha = 1f;
+            fadeCoroutine = StartCoroutine(FadeToAlpha(targetAlpha));
+        else seedSlotsCanvasGroup.alpha = targetAlpha;
     }
     private IEnumerator FadeToAlpha(float target)
     {

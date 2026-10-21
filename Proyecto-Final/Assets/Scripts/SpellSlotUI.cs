@@ -49,8 +49,10 @@ public class SpellSlotUI : ImprovedUIButton, IPointerEnterHandler, IPointerExitH
         UpdateCooldownDisplay(slot);
     }
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+        OnClick.RemoveListener(HandleSlotClick);
         OnClick.AddListener(HandleSlotClick);
 
         if (cooldownOverlay != null)
@@ -64,9 +66,10 @@ public class SpellSlotUI : ImprovedUIButton, IPointerEnterHandler, IPointerExitH
         }
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
         OnClick.RemoveListener(HandleSlotClick);
+        base.OnDestroy();
     }
 
     public void Initialize(int index)

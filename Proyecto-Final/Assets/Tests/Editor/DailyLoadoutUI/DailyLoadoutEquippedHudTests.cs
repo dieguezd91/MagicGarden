@@ -102,16 +102,16 @@ public sealed class DailyLoadoutEquippedHudTests
     }
 
     [Test]
-    public void PhaseVisibilityShowsOnlyTheMatchingEquipmentBar()
+    public void PhaseVisibilityKeepsBothCategoriesVisibleAndOnlyTheMatchingCategoryInteractive()
     {
         var plants = f.Hud(true); var spells = f.Hud(false);
         var pg = (CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup");
         var sg = (CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup");
         Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(pg.interactable, Is.True);
-        Assert.That(sg.alpha, Is.Zero); Assert.That(sg.interactable, Is.False);
+        Assert.That(sg.alpha, Is.GreaterThan(0).And.LessThan(pg.alpha)); Assert.That(sg.interactable, Is.False);
         Assert.That(sg.blocksRaycasts, Is.False);
         F.Call(f.Days, "StartNight");
-        Assert.That(pg.alpha, Is.Zero); Assert.That(pg.blocksRaycasts, Is.False);
+        Assert.That(pg.alpha, Is.GreaterThan(0).And.LessThan(sg.alpha)); Assert.That(pg.blocksRaycasts, Is.False);
         Assert.That(pg.interactable, Is.False);
         Assert.That(sg.alpha, Is.EqualTo(1)); Assert.That(sg.interactable, Is.True);
         Assert.That(F.HudSlot(plants, true, 0).gameObject.activeSelf, Is.True);
@@ -119,8 +119,52 @@ public sealed class DailyLoadoutEquippedHudTests
         F.Call(f.Days, "StartDay");
         Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(pg.interactable, Is.True);
         Assert.That(pg.blocksRaycasts, Is.True);
-        Assert.That(sg.alpha, Is.Zero); Assert.That(sg.interactable, Is.False);
+        Assert.That(sg.alpha, Is.GreaterThan(0).And.LessThan(pg.alpha)); Assert.That(sg.interactable, Is.False);
         Assert.That(sg.blocksRaycasts, Is.False);
+    }
+
+    [Test]
+    public void InactiveOpacityIsConfigurableForBothEquipmentCategories()
+    {
+        var plants = f.Hud(true); var spells = f.Hud(false);
+        F.Set(plants, "inactiveAlpha", .35f); F.Set(spells, "inactiveAlpha", .55f);
+        F.Call(f.Days, "StartNight");
+        Assert.That(((CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup")).alpha, Is.EqualTo(.35f));
+        F.Call(f.Days, "StartDay");
+        Assert.That(((CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup")).alpha, Is.EqualTo(.55f));
+    }
+
+    [TestCase(1920, 1080)]
+    [TestCase(1280, 720)]
+    [TestCase(2560, 1440)]
+    [TestCase(960, 600)]
+    [TestCase(1024, 768)]
+    public void SavedEquipmentGroupsAreSeparatedAndFitScaledTargetViewport(int width, int height)
+    {
+        var root = PrefabUtility.LoadPrefabContents("Assets/Prefabs/UI/Canvas/Canvas Game UI.prefab");
+        try
+        {
+            var scaler = root.GetComponent<CanvasScaler>();
+            var plants = (RectTransform)root.GetComponentInChildren(F.Production("SeedSlotsUIController"), true).transform;
+            var spells = (RectTransform)root.GetComponentInChildren(F.Production("SpellSlotsUIController"), true).transform;
+            Assert.That(plants.parent, Is.SameAs(spells.parent));
+            Assert.That(plants.anchorMin, Is.EqualTo(new Vector2(.5f, 0f)));
+            Assert.That(spells.anchorMin, Is.EqualTo(plants.anchorMin));
+            Assert.That(plants.anchorMax, Is.EqualTo(plants.anchorMin));
+            Assert.That(spells.anchorMax, Is.EqualTo(spells.anchorMin));
+            float left = plants.anchoredPosition.x + plants.rect.xMin;
+            float plantRight = plants.anchoredPosition.x + plants.rect.xMax;
+            float spellLeft = spells.anchoredPosition.x + spells.rect.xMin;
+            float right = spells.anchoredPosition.x + spells.rect.xMax;
+            Assert.That(plantRight, Is.LessThan(spellLeft));
+            float scale = Mathf.Pow(2f, Mathf.Lerp(Mathf.Log(width / scaler.referenceResolution.x, 2f),
+                Mathf.Log(height / scaler.referenceResolution.y, 2f), scaler.matchWidthOrHeight));
+            Assert.That(left * scale, Is.GreaterThanOrEqualTo(-width / 2f));
+            Assert.That(right * scale, Is.LessThanOrEqualTo(width / 2f));
+            Assert.That((plants.anchoredPosition.y + plants.rect.yMax) * scale, Is.LessThan(height));
+            Assert.That((spells.anchoredPosition.y + spells.rect.yMax) * scale, Is.LessThan(height));
+        }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
     }
 
     [Test]
@@ -190,6 +234,13 @@ public sealed class DailyLoadoutEquippedHudTests
             int children = root.GetComponentsInChildren<Transform>(true).Length;
             type.GetMethod("ConfigureCanvas").Invoke(null, new object[] { root });
             type.GetMethod("ConfigureCanvas").Invoke(null, new object[] { root });
+            var plantRect = (RectTransform)seed.transform;
+            var spellRect = (RectTransform)spell.transform;
+            Assert.That(plantRect.anchoredPosition.x, Is.EqualTo(-165f));
+            Assert.That(spellRect.anchoredPosition.x, Is.EqualTo(165f));
+            Assert.That(plantRect.sizeDelta, Is.EqualTo(new Vector2(310f, 100f)));
+            Assert.That(spellRect.sizeDelta, Is.EqualTo(new Vector2(310f, 100f)));
+            Assert.That(plantRect.anchoredPosition.y, Is.EqualTo(spellRect.anchoredPosition.y));
             Assert.That(((IList)F.Field(seed, "seedSlots")).Count, Is.EqualTo(3));
             Assert.That(((IList)F.Field(spell, "spellSlotUIs")).Count, Is.EqualTo(3));
             Assert.That(root.GetComponentsInChildren<Transform>(true).Length, Is.EqualTo(children));

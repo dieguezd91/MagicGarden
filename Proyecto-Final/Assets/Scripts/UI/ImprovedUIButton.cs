@@ -60,7 +60,7 @@ public class ImprovedUIButton : MonoBehaviour, IPointerEnterHandler, IPointerExi
     #endregion
 
     #region Unity Lifecycle
-    private void Awake()
+    protected virtual void Awake()
     {
         InitializeComponents();
         if (buttonComponent != null)
@@ -75,7 +75,7 @@ public class ImprovedUIButton : MonoBehaviour, IPointerEnterHandler, IPointerExi
         UpdateButtonState();
     }
 
-    private void OnDestroy()
+    protected virtual void OnDestroy()
     {
         if (buttonComponent != null)
         {

@@ -34,8 +34,8 @@ public static class DailyLoadoutHudAuthoring
         }
         finally { PrefabUtility.UnloadPrefabContents(root); }
         ValidateGame(true);
-        Debug.Log("Stage 4D equipment HUD wired: first three existing nested slots retained, extras inactive. " +
-            "No slots, art, transforms or inventory resources created/replaced. Run HUD tests and the Game checklist.");
+        Debug.Log("Equipment HUD wired: three existing plant slots on the left, three spell slots on the right. " +
+            "No slots, art or inventory resources created/replaced. Run HUD tests and the Game checklist.");
     }
 
     // Public for unsaved isolated-content tests. Does not save assets or destroy extra slots.
@@ -45,6 +45,16 @@ public static class DailyLoadoutHudAuthoring
         var owner = root.GetComponentInChildren<UIManager>(true);
         Configure(owner.SeedSlots, "seedSlots");
         Configure(owner.SpellSlots, "spellSlotUIs");
+        ConfigureLayout(owner.SeedSlots, -165f);
+        ConfigureLayout(owner.SpellSlots, 165f);
+    }
+    private static void ConfigureLayout(Component controller, float x)
+    {
+        var rect = (RectTransform)controller.transform;
+        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, 0f);
+        rect.sizeDelta = new Vector2(310f, 100f); // Three existing 100-wide slots, spacing 5.
+        rect.anchoredPosition = new Vector2(x, 72f); // A 20-unit gap between categories.
+        PrefabUtility.RecordPrefabInstancePropertyModifications(rect);
     }
     private static void Configure(Component controller, string field)
     {
@@ -68,6 +78,17 @@ public static class DailyLoadoutHudAuthoring
             throw new InvalidOperationException("Expected one existing seed/spell HUD explicitly bound to UIManager.");
         ValidateSlots(seeds[0], "seedSlots", "seedSlotsCanvasGroup", configured);
         ValidateSlots(spells[0], "spellSlotUIs", "spellSlotsCanvasGroup", configured);
+        if (configured)
+        {
+            var plantRect = (RectTransform)seeds[0].transform;
+            var spellRect = (RectTransform)spells[0].transform;
+            // Prefab Canvas roots can have zero scale before the native Canvas initializes.
+            // Compare in the shared HUD parent's space, not collapsed world coordinates.
+            if (plantRect.parent != spellRect.parent ||
+                plantRect.localPosition.x + plantRect.rect.xMax * plantRect.localScale.x >=
+                spellRect.localPosition.x + spellRect.rect.xMin * spellRect.localScale.x)
+                throw new InvalidOperationException("Plant HUD must remain left of the spell HUD without overlap.");
+        }
     }
     private static void ValidateSlots(Component controller, string field, string group, bool configured)
     {

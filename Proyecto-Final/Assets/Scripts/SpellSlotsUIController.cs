@@ -8,6 +8,7 @@ public class SpellSlotsUIController : UIControllerBase
     [SerializeField] private SpellSlotUI[] spellSlotUIs = new SpellSlotUI[3];
     [SerializeField] private CanvasGroup spellSlotsCanvasGroup;
     [Header("Visibility Settings")]
+    [SerializeField, Range(.1f, .9f)] private float inactiveAlpha = .45f;
     [SerializeField] private float fadeDuration = .3f;
     private SpellInventory inventory;
     private PlayerContentUnlockSystem unlocks;
@@ -82,11 +83,13 @@ public class SpellSlotsUIController : UIControllerBase
         spellSlotsCanvasGroup.blocksRaycasts = active;
         if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
         fadeCoroutine = null;
-        // Hide the outgoing bar immediately; cross-fading would overlap both categories.
-        if (!active) { spellSlotsCanvasGroup.alpha = 0f; return; }
+        float minimumAlpha = Mathf.Clamp(inactiveAlpha, .1f, .9f);
+        float targetAlpha = active ? 1f : minimumAlpha;
+        // Both equipment categories retain readable positions throughout transitions.
+        spellSlotsCanvasGroup.alpha = Mathf.Max(spellSlotsCanvasGroup.alpha, minimumAlpha);
         if (animate && Application.isPlaying && isActiveAndEnabled)
-            fadeCoroutine = StartCoroutine(FadeCanvasGroup(1f));
-        else spellSlotsCanvasGroup.alpha = 1f;
+            fadeCoroutine = StartCoroutine(FadeCanvasGroup(targetAlpha));
+        else spellSlotsCanvasGroup.alpha = targetAlpha;
     }
     private IEnumerator FadeCanvasGroup(float target)
     {

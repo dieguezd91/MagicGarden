@@ -29,7 +29,7 @@ public sealed class DailyLoadoutEquippedHudPlayModeTests
         Assert.That(((CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup")).interactable, Is.False);
         Assert.That(((CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup")).interactable, Is.True);
         yield return new WaitForSeconds(.4f);
-        Assert.That(((CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup")).alpha, Is.Zero);
+        Assert.That(((CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup")).alpha, Is.GreaterThan(0).And.LessThan(1));
         Assert.That(((CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup")).alpha, Is.EqualTo(1));
         int events = 0; Action<int> callback = _ => events++;
         var selected = f.Spells.GetType().GetEvent("onSpellSlotSelected"); selected.AddEventHandler(f.Spells, callback);
@@ -47,27 +47,63 @@ public sealed class DailyLoadoutEquippedHudPlayModeTests
     }
 
     [UnityTest]
-    public IEnumerator PhaseTransitionsHideOutgoingBarImmediatelyWithoutCrossFading()
+    public IEnumerator PhaseTransitionsKeepBothCategoriesVisibleAndDisableOutgoingInputImmediately()
     {
         var plants = f.Hud(true); var spells = f.Hud(false);
         var pg = (CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup");
         var sg = (CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup");
-        Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(sg.alpha, Is.Zero);
+        Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(sg.alpha, Is.GreaterThan(0).And.LessThan(pg.alpha));
         F.Call(f.Days, "StartNight");
-        Assert.That(pg.alpha, Is.Zero); Assert.That(pg.interactable, Is.False);
+        Assert.That(pg.alpha, Is.GreaterThan(0)); Assert.That(pg.interactable, Is.False);
         Assert.That(pg.blocksRaycasts, Is.False);
         for (int i = 0; i < 3; i++)
         {
             yield return null;
-            Assert.That(pg.alpha, Is.Zero, "The outgoing bar must not overlap the incoming fade.");
+            Assert.That(pg.alpha, Is.GreaterThan(0));
+            Assert.That(sg.alpha, Is.GreaterThan(0));
         }
-        // Interrupt the incoming fade: the spell bar must hide immediately too.
+        yield return new WaitForSeconds(.4f);
+        Assert.That(sg.alpha, Is.GreaterThan(pg.alpha));
         F.Call(f.Days, "StartDay");
-        Assert.That(sg.alpha, Is.Zero); Assert.That(sg.interactable, Is.False);
+        yield return null;
+        F.Call(f.Days, "StartNight"); // Interrupt both fades before returning to Day.
+        F.Call(f.Days, "StartDay");
+        Assert.That(sg.alpha, Is.GreaterThan(0)); Assert.That(sg.interactable, Is.False);
         Assert.That(sg.blocksRaycasts, Is.False);
         yield return new WaitForSeconds(.4f);
         Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(pg.interactable, Is.True);
-        Assert.That(pg.blocksRaycasts, Is.True); Assert.That(sg.alpha, Is.Zero);
+        Assert.That(pg.blocksRaycasts, Is.True);
+        Assert.That(sg.alpha, Is.GreaterThan(0).And.LessThan(pg.alpha));
+    }
+
+    [UnityTest]
+    public IEnumerator ProductionSpellButtonDispatchesExactlyOnceAfterRefreshAndReenable()
+    {
+        f.EquipInitial();
+        var hud = f.Hud(false);
+        F.Call(f.Days, "StartNight");
+        for (int i = 0; i < 3; i++)
+        {
+            hud.gameObject.SetActive(false);
+            yield return null;
+            hud.gameObject.SetActive(true);
+            F.Call(hud, "RefreshAllSlots");
+        }
+        yield return null; // Use the production prefab's native Awake/OnEnable lifecycle.
+        var view = F.HudSlot(hud, false, 0);
+        var button = view.GetComponent<Button>();
+        Assert.That(button, Is.Not.Null);
+        int events = 0;
+        Action<int> callback = _ => events++;
+        var selected = f.Spells.GetType().GetEvent("onSpellSlotSelected");
+        selected.AddEventHandler(f.Spells, callback);
+        try
+        {
+            button.onClick.Invoke(); // Do not bypass the Button -> ImprovedUIButton bridge.
+            Assert.That(F.Call(f.Spells, "GetSelectedSlotIndex"), Is.EqualTo(4));
+            Assert.That(events, Is.EqualTo(1));
+        }
+        finally { selected.RemoveEventHandler(f.Spells, callback); }
     }
 
     [UnityTest]
