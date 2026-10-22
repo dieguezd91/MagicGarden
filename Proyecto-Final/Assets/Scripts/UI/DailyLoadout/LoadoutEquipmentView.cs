@@ -22,9 +22,18 @@ namespace MagicGarden.LoadoutUI
         [SerializeField] private Color disabledColor = new Color(.45f, .45f, .45f);
         private bool hasContent, assigned, selected, highlighted, invalid, readOnly, locked;
         private bool hovered, pressed, focused;
+        private bool dropCompatible, dropHovered, dropAllowed;
 
         public Button SelectButton => selectButton;
         public bool HasContent => hasContent;
+        public Sprite IconSprite => icon != null ? icon.sprite : null;
+        public string DisplayName => nameLabel != null ? nameLabel.text : string.Empty;
+
+        public void SetDropFeedback(bool compatible, bool hoveredTarget, bool allowed)
+        {
+            if (dropCompatible == compatible && dropHovered == hoveredTarget && dropAllowed == allowed) return;
+            dropCompatible = compatible; dropHovered = hoveredTarget; dropAllowed = allowed; Refresh();
+        }
 
         public void SetContent(Sprite sprite, string displayName)
         {
@@ -50,7 +59,6 @@ namespace MagicGarden.LoadoutUI
             locked = value; Refresh();
         }
         protected virtual bool AllowEmptySelection => true;
-        protected virtual bool AvailabilityTextOnly => false;
 
         public void OnPointerEnter(PointerEventData data) { hovered = true; Refresh(); }
         public void OnPointerExit(PointerEventData data) { ResetPointer(); Refresh(); }
@@ -72,24 +80,14 @@ namespace MagicGarden.LoadoutUI
             bool disabled = readOnly || locked || (!AllowEmptySelection && !hasContent);
             selectButton.interactable = !disabled;
             background.sprite = !disabled && pressed ? pressedSprite :
-                !disabled && (hovered || highlighted || focused) ? hoverSprite : normalSprite;
-            Color tint = disabled ? disabledColor : invalid ? invalidColor : selected ? selectedColor : Color.white;
+                !disabled && (hovered || highlighted || focused || dropCompatible || dropHovered) ? hoverSprite : normalSprite;
+            bool invalidTarget = invalid || (dropHovered && !dropAllowed);
+            Color tint = disabled ? disabledColor : invalidTarget ? invalidColor :
+                dropHovered ? new Color(.5f, 1f, .6f) : dropCompatible ? new Color(.8f, 1f, .85f) : selected ? selectedColor : Color.white;
             background.color = tint;
             icon.color = disabled ? disabledColor : Color.white;
-            // Option labels describe availability/assignment, not transient pointer feedback.
-            if (AvailabilityTextOnly && hasContent)
-            {
-                stateLabel.text = assigned || selected ? "Selected" : "Available";
-                return;
-            }
-            // Equipment positions retain their existing detailed state text.
-            string status = hasContent ? (assigned ? "Assigned" : "Available") : "Empty";
-            if (selected) status += " | Selected";
-            if (invalid) status += " | Invalid target";
-            else if (highlighted || (!disabled && (hovered || focused))) status += " | Highlighted";
-            if (locked) status += " | Locked";
-            if (readOnly) status += " | Read-only";
-            stateLabel.text = status;
+            // Pointer, drop validity and editability remain visual/input feedback, never extra written states.
+            stateLabel.text = assigned || selected ? "Selected" : hasContent ? "Available" : "Empty";
         }
     }
 }

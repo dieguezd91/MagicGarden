@@ -94,20 +94,19 @@ public sealed class DailyLoadoutUITests
         Call(view, "SetContent", sprite, "Test plant or spell");
         Assert.That(icon.enabled, Is.True); Assert.That(icon.sprite, Is.SameAs(sprite));
         Assert.That(button.interactable, Is.True); Assert.That(state.text, Is.EqualTo("Available"));
-        Call(view, "SetAssigned", true); Assert.That(state.text, Is.EqualTo(option ? "Selected" : "Assigned"));
+        Call(view, "SetAssigned", true); Assert.That(state.text, Is.EqualTo("Selected"));
         Call(view, "SetSelected", true);
-        Assert.That(state.text, Is.EqualTo(option ? "Selected" : "Assigned | Selected"));
+        Assert.That(state.text, Is.EqualTo("Selected"));
         Assert.That(background.color, Is.Not.EqualTo(Color.white));
         Call(view, "SetHighlighted", true);
         Assert.That(background.sprite, Is.SameAs(Ref(view, "hoverSprite")));
-        Assert.That(state.text, Is.EqualTo(option ? "Selected" : "Assigned | Selected | Highlighted"));
+        Assert.That(state.text, Is.EqualTo("Selected"));
         Call(view, "SetInvalidDropTarget", true);
-        Assert.That(state.text, Is.EqualTo(option ? "Selected" : "Assigned | Selected | Invalid target"));
+        Assert.That(state.text, Is.EqualTo("Selected"));
         Assert.That(background.color.r, Is.GreaterThan(background.color.g));
         Call(view, "SetReadOnly", true);
         Assert.That(button.interactable, Is.False);
-        if (option) Assert.That(state.text, Is.EqualTo("Selected"));
-        else Assert.That(state.text, Does.EndWith("Read-only"));
+        Assert.That(state.text, Is.EqualTo("Selected"));
         Call(view, "SetReadOnly", false);
         Call(view, "SetSelected", false); Call(view, "SetAssigned", false);
         Call(view, "SetHighlighted", false); Call(view, "SetInvalidDropTarget", false);
@@ -137,8 +136,14 @@ public sealed class DailyLoadoutUITests
         var root = Instantiate("DailyLoadoutPanel");
         foreach (var text in root.GetComponentsInChildren<TMP_Text>(true))
             Assert.That(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(text.font)), Is.EqualTo("52be7e01f8fbce54186eac8da2da70cc"));
+        var contentIcons = new HashSet<Image>(root.GetComponentsInChildren<MonoBehaviour>(true)
+            .Where(c => c.GetType().Name == "LoadoutSlotView" || c.GetType().Name == "LoadoutOptionView")
+            .Select(c => (Image)Ref(c, "icon")));
+        contentIcons.Add((Image)Ref(View(root, "DailyLoadoutPanelView"), "selectedEquipmentIcon"));
         foreach (var image in root.GetComponentsInChildren<Image>(true).Where(i => i.sprite != null))
         {
+            // Baked preview content uses existing catalog art; chrome still has its exact original sheet/filter contract.
+            if (contentIcons.Contains(image)) { Assert.That(AssetDatabase.Contains(image.sprite), Is.True); continue; }
             Assert.That(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(image.sprite)), Is.EqualTo("6b876b38e4597704b84b5e76e54d27a1"));
             Assert.That(image.sprite.texture.filterMode, Is.EqualTo(FilterMode.Point));
         }

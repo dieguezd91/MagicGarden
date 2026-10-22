@@ -146,7 +146,10 @@ public sealed class DailyLoadoutPresenterTests
             for (int i = 0; i < 3; i++)
             {
                 Assert.That(F.SelectButton(f.Slot(category, i)).interactable, Is.True);
-                Assert.That(F.State(f.Slot(category, i)), Does.Contain("Read-only"));
+                bool selected = category == (bool)F.Property(f.Presenter, "IsPlantCategory") &&
+                    i == (int)F.Property(f.Presenter, "SelectedPosition");
+                Assert.That(F.State(f.Slot(category, i)), Is.EqualTo(
+                    selected || (bool)F.Property(f.Slot(category, i), "HasContent") ? "Selected" : "Empty"));
             }
         F.Call(f.Presenter, "SelectPosition", false, 1);
         Assert.That(F.Name(f.Option(0)), Is.EqualTo("First authored spell"));

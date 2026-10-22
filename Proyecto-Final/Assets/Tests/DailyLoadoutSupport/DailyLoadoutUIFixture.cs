@@ -156,6 +156,17 @@ public sealed class DailyLoadoutUIFixture : IDisposable
     public void Select(bool plant, int position) => SelectButton(Slot(plant, position)).onClick.Invoke();
     public void Assign(int option) => SelectButton(Option(option)).onClick.Invoke();
     public void AdvanceCatalog() { Call(Experience, "AddExperience", 100); Refresh(); }
+    public void ExpandPlantCatalogToSixOptions()
+    {
+        var level = ((IList)Field(Progression, "levelRequirements"))[0];
+        var plants = (IList)Field(level, "plantUnlocks");
+        foreach (int identity in new[] { 1, 2, 4, 5 })
+        {
+            var plant = Plant(identity, "Expanded plant " + identity);
+            Set(plant, "plantIcon", Field(FirstPlant, "plantIcon")); plants.Add(plant);
+        }
+        Call(Unlocks, "RebuildUnlocksUpToLevel", 1); Refresh();
+    }
     public static IList List(string name, params object[] values)
     {
         var list = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(Production(name)));

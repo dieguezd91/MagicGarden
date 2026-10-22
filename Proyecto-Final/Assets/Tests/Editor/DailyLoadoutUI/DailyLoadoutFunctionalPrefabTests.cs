@@ -8,6 +8,34 @@ using F = DailyLoadoutUIFixture;
 
 public sealed class DailyLoadoutFunctionalPrefabTests
 {
+    [Test]
+    public void AuthoredCategoryCardsHaveIndependentBindingsAndPanelCanOpen()
+    {
+        using (var f = new F())
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path);
+            var view = prefab.GetComponent(F.Production("MagicGarden.LoadoutUI.DailyLoadoutPanelView"));
+            var data = new SerializedObject(view);
+            var plants = data.FindProperty("optionViews");
+            var spells = data.FindProperty("spellOptionViews");
+            var seen = new System.Collections.Generic.HashSet<UnityEngine.Object>();
+            foreach (var list in new[] { plants, spells })
+                for (int i = 0; i < list.arraySize; i++)
+                {
+                    var card = list.GetArrayElementAtIndex(i).objectReferenceValue;
+                    Assert.That(card, Is.Not.Null);
+                    Assert.That(seen.Add(card), Is.True, "Each category must reference its own authored cards");
+                    Assert.That(PrefabUtility.GetCorrespondingObjectFromOriginalSource((Component)card),
+                        Is.SameAs(F.Property(view, "OptionPrefab")), "Both categories must use the same card prefab");
+                    var content = (Transform)data.FindProperty(list == plants ? "optionContent" : "spellOptionContent")
+                        .objectReferenceValue;
+                    Assert.That(((Component)card).transform.IsChildOf(content), Is.True);
+                }
+            f.Open();
+            Assert.That((bool)F.Property(f.Presenter, "IsOpen"), Is.True);
+        }
+    }
+
     private const string Path = "Assets/Prefabs/UI/DailyLoadout/DailyLoadoutPanel.prefab";
 
     [Test]
@@ -28,7 +56,7 @@ public sealed class DailyLoadoutFunctionalPrefabTests
             var option = (Component)pool.GetArrayElementAtIndex(i).objectReferenceValue;
             Assert.That(option, Is.Not.Null); Assert.That(unique.Add(option), Is.True);
             Assert.That(option.transform.parent, Is.SameAs(content));
-            Assert.That(option.gameObject.activeSelf, Is.False);
+            Assert.That(option.gameObject.activeSelf, Is.True, "Authored preview remains visible outside Play Mode; the presenter projects real runtime availability");
             Assert.That(F.SelectButton(option), Is.Not.Null);
         }
         foreach (var behaviour in prefab.GetComponentsInChildren<MonoBehaviour>(true)) Assert.That(behaviour, Is.Not.Null);
