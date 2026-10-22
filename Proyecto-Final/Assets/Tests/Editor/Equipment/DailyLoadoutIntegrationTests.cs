@@ -534,8 +534,8 @@ public sealed class DailyLoadoutIntegrationTests
             Assert.That(Call(selection, "TrySelectPosition", position), Is.EqualTo(false));
         Assert.That(seedEvents, Is.EqualTo(2));
         Assert.That(Call(selection, "TrySelectPosition", 2), Is.EqualTo(false));
-        Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(-1));
-        Assert.That(seedEvents, Is.EqualTo(3));
+        Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(4));
+        Assert.That(seedEvents, Is.EqualTo(2));
         // Change equipment order without changing spell storage.
         Call(session, "TrySetDraftSpell", 0, null);
         Call(session, "TrySetDraftSpell", 1, firstSpell);
@@ -544,14 +544,14 @@ public sealed class DailyLoadoutIntegrationTests
         Night();
         Assert.That(Call(selection, "TrySelectPosition", 0), Is.EqualTo(true));
         Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(1));
-        Assert.That(spellEvents, Is.EqualTo(1)); Assert.That(seedEvents, Is.EqualTo(3));
+        Assert.That(spellEvents, Is.EqualTo(1)); Assert.That(seedEvents, Is.EqualTo(2));
         Assert.That(Call(selection, "TrySelectPosition", 1), Is.EqualTo(true));
         Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(0));
         Assert.That(spellEvents, Is.EqualTo(2));
         Assert.That(Call(selection, "TrySelectPosition", 2), Is.EqualTo(false));
         Assert.That(Call(selection, "TrySelectPosition", 3), Is.EqualTo(false));
-        Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(-1));
-        Assert.That(spellEvents, Is.EqualTo(3));
+        Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(0));
+        Assert.That(spellEvents, Is.EqualTo(2));
     }
 
     [Test]
@@ -713,12 +713,12 @@ public sealed class DailyLoadoutIntegrationTests
         Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(1));
         Assert.That(lastIndex, Is.EqualTo(1)); Assert.That(events, Is.EqualTo(2));
         Assert.That(Call(selection, "TrySelectPosition", 2), Is.EqualTo(false));
-        Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(-1));
-        Assert.That(events, Is.EqualTo(3));
+        Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(1));
+        Assert.That(events, Is.EqualTo(2));
         Assert.That(Call(seeds, "SwapSlots", 1, 5), Is.EqualTo(true));
         Assert.That(Call(selection, "TrySelectPosition", 1), Is.EqualTo(true));
         Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(5));
-        Assert.That(lastIndex, Is.EqualTo(5)); Assert.That(events, Is.EqualTo(4));
+        Assert.That(lastIndex, Is.EqualTo(5)); Assert.That(events, Is.EqualTo(3));
         Assert.That(Call(seeds, "GetSeedCountInSlot", 5), Is.EqualTo(3));
         Assert.That(Identity(session, "GetCommittedPlant", 0), Is.EqualTo(Seed(3)));
         Assert.That(Identity(session, "GetCommittedPlant", 1), Is.EqualTo(Seed(7)));

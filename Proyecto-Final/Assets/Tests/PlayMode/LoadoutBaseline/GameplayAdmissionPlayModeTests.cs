@@ -355,11 +355,11 @@ public sealed class GameplayAdmissionPlayModeTests
             foreach (int position in new[] { 0, 2, 1 })
             {
                 Emit("OnSlotSelected", position);
-                int expected = position == 0 ? 0 : position == 2 ? 1 : -1;
+                int expected = position == 0 ? 0 : 1; // Empty position 2 retains position 3's selection.
                 Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(expected));
                 Assert.That(lastIndex, Is.EqualTo(expected));
             }
-            Assert.That(events, Is.EqualTo(before + 3));
+            Assert.That(events, Is.EqualTo(before + 2));
             Emit("OnSlotSelected", 0); // Invalid numbers must retain a usable previous selection.
             int afterValid = events;
             foreach (int invalid in new[] { -1, 3, 4, 5, 6, 7, 8, 9, 20 }) Emit("OnSlotSelected", invalid);
@@ -400,17 +400,17 @@ public sealed class GameplayAdmissionPlayModeTests
     }
 
     [UnityTest]
-    public IEnumerator EmptyAndUnavailableEquipmentNumbersClearPreviousRawSelectionAndCannotAuthorizePlanting()
+    public IEnumerator EmptyNumbersPreserveSelectionButUnavailableStockStillCannotAuthorizePlanting()
     {
         foreach (int position in new[] { 1, 2 })
         {
             Emit("OnSlotSelected", 0);
             Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.Zero);
             Emit("OnSlotSelected", position);
-            Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(-1));
-            Assert.That(Call(seeds, "GetSelectedPlantSlot"), Is.Null);
-            StartPlant(); yield return new WaitForSeconds(0.12f);
-            AssertNoPlant(3, 100f);
+            Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.Zero);
+            Assert.That(Call(seeds, "GetSelectedPlantSlot"), Is.SameAs(Call(seeds, "GetPlantSlot", 0)));
+            yield return null;
+            AssertNoPlant(3, 100f); // Selection alone must not consume or plant anything.
             Assert.That(Call(seeds, "GetSeedCountInSlot", 1), Is.EqualTo(2));
             Assert.That(Call(seeds, "GetSeedCountInSlot", 2), Is.Zero);
             Assert.That(Call(ability, "IsBusy"), Is.EqualTo(false));
@@ -444,9 +444,13 @@ public sealed class GameplayAdmissionPlayModeTests
         Call(ability, "SetAbility", Enum.ToObject(Type("PlayerAbility"), 3)); // Digging
         Emit("OnCycleInput", 1); Assert.That(Property(ability, "CurrentAbility").ToString(), Is.EqualTo("Planting"));
         Emit("OnCycleInput", -1); Assert.That(Property(ability, "CurrentAbility").ToString(), Is.EqualTo("Digging"));
-        Call(cycle, "StartNight"); Emit("OnSlotSelected", 0);
+        Call(cycle, "StartNight");
+        Emit("OnSlotSelected", 0); Emit("OnSlotSelected", 1); Emit("OnSlotSelected", 2);
+        Assert.That(spellEvents, Is.Zero, "Plant shortcuts must not select spells at night");
+        Assert.That(seedEvents, Is.EqualTo(1));
+        Emit("OnSlotSelected", 3);
         Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(4)); Assert.That(spellEvents, Is.EqualTo(1));
-        Emit("OnSlotSelected", 1); Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(1));
+        Emit("OnSlotSelected", 4); Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(1));
         Assert.That(spellEvents, Is.EqualTo(2)); Assert.That(seedEvents, Is.EqualTo(1));
         Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(5));
         Emit("OnCycleInput", 1);

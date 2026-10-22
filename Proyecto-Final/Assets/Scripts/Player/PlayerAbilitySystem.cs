@@ -216,9 +216,17 @@ public class PlayerAbilitySystem : MonoBehaviour
         CycleAbility(direction);
     }
 
-    private void HandleEquipmentSlotInput(int position) => TrySelectEquipmentPosition(position);
+    private void HandleEquipmentSlotInput(int keyIndex)
+    {
+        var flow = GameFlowController.Instance;
+        if (flow == null) return;
+        if (keyIndex >= 0 && keyIndex < 3 && flow.CurrentPhase == GamePhase.Day)
+            TrySelectEquipmentPosition(keyIndex);
+        else if (keyIndex >= 3 && keyIndex < 6 && flow.CurrentPhase == GamePhase.Night)
+            TrySelectEquipmentPosition(keyIndex - 3);
+    }
 
-    // Shared by number keys and existing equipment HUD clicks, with identical action gates.
+    // Keyboard shortcuts translate categories above; HUD clicks retain local positions and these same action gates.
     public bool TrySelectEquipmentPosition(int position)
     {
         var player = GetComponent<PlayerController>();

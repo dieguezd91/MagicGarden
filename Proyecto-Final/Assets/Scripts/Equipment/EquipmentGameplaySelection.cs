@@ -40,14 +40,14 @@ public sealed class EquipmentGameplaySelection
         {
             if (seeds == null) return false;
             if (plantResult == EquipmentAdmissionResult.Allowed) seeds.SelectSlot(plant.InventoryIndex);
-            else seeds.ClearSelection();
+            else if (plantResult != EquipmentAdmissionResult.EmptyPosition) seeds.ClearSelection();
             return plantResult == EquipmentAdmissionResult.Allowed;
         }
         var spellResult = session.Admission.CheckSpellPosition(position, out var spell);
         if (spellResult == EquipmentAdmissionResult.WrongPhase || spellResult == EquipmentAdmissionResult.SessionUnavailable || spells == null)
             return false;
         if (spellResult == EquipmentAdmissionResult.Allowed) spells.SelectSlot(spell.InventoryIndex);
-        else spells.ClearSelection();
+        else if (spellResult != EquipmentAdmissionResult.EmptyPosition) spells.ClearSelection();
         return spellResult == EquipmentAdmissionResult.Allowed;
     }
 

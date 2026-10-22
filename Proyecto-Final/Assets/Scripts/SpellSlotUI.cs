@@ -81,7 +81,7 @@ public class SpellSlotUI : ImprovedUIButton, IPointerEnterHandler, IPointerExitH
 
         if (slotNumberText != null)
         {
-            slotNumberText.text = (index + 1).ToString();
+            slotNumberText.text = (index + 4).ToString();
         }
 
         if (cooldownOverlay != null)
