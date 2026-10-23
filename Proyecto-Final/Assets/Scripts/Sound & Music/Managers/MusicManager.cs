@@ -98,14 +98,14 @@ public class MusicManager : MonoBehaviour
     {
         string sceneName = SceneManager.GetActiveScene().name;
 
-        if (sceneName == "RefactorMenu")
+        if (sceneName == "Menu")
         {
             lastOfficialGameState = GamePhase.None;
             PlayMusic(menuMusic);
             return;
         }
 
-        if (sceneName == "SampleScene" || sceneName == "GameScene" || sceneName == "TreeScene")
+        if (sceneName == "SampleScene" || sceneName == "Game" || sceneName == "TreeScene")
         {
             if (LevelManager.Instance != null)
             {
