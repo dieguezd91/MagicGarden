@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,17 +16,14 @@ public class VolumeController : MonoBehaviour
     private float _savedMusicVolume;
     private float _savedSFXVolume;
 
-    private bool isMuted = false;
-    private float previousMasterVolume;
-    private float previousMusicVolume;
-    private float previousSFXVolume;
-
     private void Awake()
     {
         var settings = GameManager.Instance.SettingsManager;
+
         _savedMasterVolume = settings.GetMasterVolume();
         _savedMusicVolume = settings.GetMusicVolume();
         _savedSFXVolume = settings.GetSFXVolume();
+
         Application.quitting += OnApplicationQuit;
     }
 
@@ -71,47 +69,69 @@ public class VolumeController : MonoBehaviour
         GameManager.Instance.SettingsManager.SetSFXVolume(volume);
     }
 
-    private void OnApplicationQuit()
-    {
-        GameManager.Instance.SettingsManager.Save();
-    }
-
     private void ToggleMute()
     {
-        isMuted = !isMuted;
+        bool hasAnyVolume =
+            _savedMasterVolume > 0f ||
+            _savedMusicVolume > 0f ||
+            _savedSFXVolume > 0f;
 
-        if (isMuted)
+        if (hasAnyVolume)
         {
-            previousMasterVolume = _savedMasterVolume;
-            previousMusicVolume = _savedMusicVolume;
-            previousSFXVolume = _savedSFXVolume;
+            if (_savedMasterVolume > 0f)
+            {
+                SetMasterVolume(0f);
 
-            SetMasterVolume(0f);
-            SetMusicVolume(0f);
-            SetSFXVolume(0f);
+                if (volumeSlider != null)
+                    volumeSlider.SetValueWithoutNotify(0f);
+            }
 
-            if (volumeSlider != null) volumeSlider.value = 0f;
-            if (musicSlider != null) musicSlider.value = 0f;
-            if (sfxSlider != null) sfxSlider.value = 0f;
+            if (_savedMusicVolume > 0f)
+            {
+                SetMusicVolume(0f);
+
+                if (musicSlider != null)
+                    musicSlider.SetValueWithoutNotify(0f);
+            }
+
+            if (_savedSFXVolume > 0f)
+            {
+                SetSFXVolume(0f);
+
+                if (sfxSlider != null)
+                    sfxSlider.SetValueWithoutNotify(0f);
+            }
         }
         else
         {
-            SetMasterVolume(previousMasterVolume);
-            SetMusicVolume(previousMusicVolume);
-            SetSFXVolume(previousSFXVolume);
+            SetMasterVolume(1f);
+            SetMusicVolume(1f);
+            SetSFXVolume(1f);
 
-            if (volumeSlider != null) volumeSlider.value = previousMasterVolume;
-            if (musicSlider != null) musicSlider.value = previousMusicVolume;
-            if (sfxSlider != null) sfxSlider.value = previousSFXVolume;
+            if (volumeSlider != null)
+                volumeSlider.SetValueWithoutNotify(1f);
+
+            if (musicSlider != null)
+                musicSlider.SetValueWithoutNotify(1f);
+
+            if (sfxSlider != null)
+                sfxSlider.SetValueWithoutNotify(1f);
         }
+    }
+
+    private void OnApplicationQuit()
+    {
+        GameManager.Instance.SettingsManager.Save();
     }
 
     private void OnDestroy()
     {
         if (volumeSlider != null)
             volumeSlider.onValueChanged.RemoveListener(SetMasterVolume);
+
         if (musicSlider != null)
             musicSlider.onValueChanged.RemoveListener(SetMusicVolume);
+
         if (sfxSlider != null)
             sfxSlider.onValueChanged.RemoveListener(SetSFXVolume);
 
