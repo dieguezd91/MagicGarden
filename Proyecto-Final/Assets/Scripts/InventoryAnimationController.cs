@@ -184,6 +184,8 @@ public class InventoryAnimationController : MonoBehaviour
         if (pendingPage.HasValue)
         {
             ShowPage(pendingPage.Value);
+
+            OnPageReadyToShow?.Invoke();
         }
     }
 

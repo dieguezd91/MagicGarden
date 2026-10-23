@@ -24,21 +24,32 @@ public class InventoryUI : MonoBehaviour
 
     public bool IsInventoryOpen => inventoryPanel != null && inventoryPanel.activeSelf;
 
-    private void Start()
+    private void Awake()
     {
         if (slotsContainer == null)
             slotsContainer = transform.Find("SlotsContainer");
 
         InitializeSlots();
+    }
 
+    private void Start()
+    {
         if (InventoryManager.Instance != null)
         {
             InventoryManager.Instance.onMaterialChanged += OnMaterialChanged;
             InventoryManager.Instance.onGoldChanged += UpdateGoldDisplay;
         }
 
-        UpdateGoldDisplay(InventoryManager.Instance != null ? InventoryManager.Instance.GetGold() : 0);
+        UpdateGoldDisplay(
+            InventoryManager.Instance != null
+                ? InventoryManager.Instance.GetGold()
+                : 0
+        );
+
         ClearDescriptionPanel();
+
+        UpdateAllSlots();
+        SelectFirstItem();
     }
 
     private void OnEnable()
