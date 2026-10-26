@@ -47,8 +47,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   useContinuousHordeSystem: 1
   baseEnemiesPerNight: 6
-  enemiesPerNightIncrement: 7
-  difficultyScalingFactor: 1.7
+  enemiesPerNightIncrement: 4
+  difficultyScalingFactor: 1.6
   baseSpawnInterval: 3
   minSpawnInterval: 0.6
   spawnIntervalDecreasePerDay: 0.1
@@ -83,6 +83,7 @@ MonoBehaviour:
       weight: 0.06
     - prefab: {fileID: 7894955776486503493, guid: 0c6645d7ba9ecec4f9d92c49f3fb21ca, type: 3}
       weight: 0.06
+  firstNightSkeletonPrefab: {fileID: 654258422932643597, guid: cbec6260f6e304b499c47224480c584f, type: 3}
   bossNightManager: {fileID: 0}
   onHordeStart:
     m_PersistentCalls:

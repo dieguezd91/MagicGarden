@@ -40,6 +40,9 @@ public class EnemiesSpawner : MonoBehaviour
     [Header("ENEMY HORDES")]
     [SerializeField] private List<EnemyHorde> enemyHordes = new List<EnemyHorde>();
 
+    [Header("FIRST NIGHT")]
+    [SerializeField] private GameObject firstNightSkeletonPrefab;
+
     private int currentEnemyHorde = 0;
 
     [Header("BOSS")]
@@ -458,9 +461,31 @@ public class EnemiesSpawner : MonoBehaviour
     {
         enemyRoulette.Clear();
 
+        if (DayCycleController.Instance != null &&
+            DayCycleController.Instance.TotalNights == 1)
+        {
+            if (firstNightSkeletonPrefab == null)
+            {
+                Debug.LogError(
+                    "[EnemiesSpawner] Assign the Skeleton prefab for the first night."
+                );
+                return;
+            }
+
+            enemyRoulette.Add(firstNightSkeletonPrefab, 1f);
+
+            Debug.Log(
+                "[EnemiesSpawner] First night: spawning Skeletons only."
+            );
+
+            return;
+        }
+
         if (enemyHordes.Count == 0)
         {
-            Debug.LogWarning("[EnemiesSpawner] No hay hordas de enemigos configuradas.");
+            Debug.LogWarning(
+                "[EnemiesSpawner] No enemy hordes configured."
+            );
             return;
         }
 
@@ -481,7 +506,7 @@ public class EnemiesSpawner : MonoBehaviour
         }
 
         Debug.Log(
-            $"[EnemiesSpawner] Usando horda de enemigos: {selectedHorde.hordeName}"
+            $"[EnemiesSpawner] Using enemy horde: {selectedHorde.hordeName}"
         );
     }
 
