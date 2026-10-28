@@ -100,7 +100,6 @@ GameObject:
   - component: {fileID: -423141327818144447}
   - component: {fileID: 4056967381266269935}
   - component: {fileID: -6049931174826635575}
-  - component: {fileID: 8111814060142438202}
   m_Layer: 9
   m_Name: Storm Rose
   m_TagString: Plant
@@ -241,7 +240,6 @@ MonoBehaviour:
   dropScatterDistance: 0.5
   explosionForce: 3
   dotSoundCooldown: 0.2
-  isRespawning: 0
   isEnemy: 0
   isPlayer: 0
   isPlant: 1
@@ -390,30 +388,6 @@ MonoBehaviour:
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
---- !u!114 &8111814060142438202
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6736001113723686055}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b76ee89222e2f5647a996583a8b84a6c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  radius: 2.5
-  initialDamage: 5
-  cooldown: 2
-  areaDuration: 4
-  areaCheckInterval: 0.1
-  poisonDamagePerTick: 5
-  poisonDuration: 5
-  poisonTickRate: 1
-  enemyLayer:
-    serializedVersion: 2
-    m_Bits: 256
-  floatingDamagePrefab: {fileID: 8011744024934345175, guid: b18d5e020de9918429f62b516be2ef30, type: 3}
 --- !u!1001 &388355786806792738
 PrefabInstance:
   m_ObjectHideFlags: 0

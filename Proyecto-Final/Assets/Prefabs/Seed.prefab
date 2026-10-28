@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3401855302532294677}
   - component: {fileID: 2630281534700287372}
   - component: {fileID: 4330913303722794977}
-  - component: {fileID: 3603939268316707299}
+  - component: {fileID: 3374056947521103294}
   m_Layer: 0
   m_Name: Seed
   m_TagString: Untagged
@@ -159,7 +159,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &3603939268316707299
+--- !u!114 &3374056947521103294
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -168,11 +168,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 8215708087478250761}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c0271f9491eaeee40942933582ebe493, type: 3}
+  m_Script: {fileID: 11500000, guid: a1627d168572e0549a377bd958a915b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 12
+  damage: 0
   lifeTime: 10
   floatingDamagePrefab: {fileID: 8011744024934345175, guid: b18d5e020de9918429f62b516be2ef30, type: 3}
   impactParticlesPrefab: {fileID: 491567316690014037, guid: b4718f9f977adb740a54a6ea904ae4f7, type: 3}
   speed: 10
+  returnSpeed: 14
+  gripPointName: PlantGripPoint
+  fallbackAttachOffset: {x: 0, y: 0, z: 0}
+  attackParticles: {fileID: 0}

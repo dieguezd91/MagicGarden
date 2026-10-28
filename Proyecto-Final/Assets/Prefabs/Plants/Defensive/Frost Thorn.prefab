@@ -205,15 +205,15 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   detectionRange: 6
-  attachRange: 2
+  projectilePrefab: {fileID: 3374056947521103294, guid: 7be1d34f96524d146b1731c0190452b8, type: 3}
+  firePoint: {fileID: 5461837167220732977}
+  projectileSpeed: 10
+  returnSpeed: 14
   attackDamagePerSecond: 5
   attackDuration: 3
   attackCooldown: 1
-  attachSpeed: 12
-  returnSpeed: 10
   gripPointName: PlantGripPoint
   fallbackAttachOffset: {x: 0, y: 0, z: 0}
-  attackParticles: {fileID: 0}
 --- !u!114 &-6367904559843964520
 MonoBehaviour:
   m_ObjectHideFlags: 0

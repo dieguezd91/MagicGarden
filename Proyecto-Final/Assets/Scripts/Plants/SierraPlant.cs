@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 public class SierraPlant : Plant
@@ -7,287 +6,182 @@ public class SierraPlant : Plant
     [SerializeField] private LayerMask enemyLayer;
     [SerializeField] private float detectionRange = 6f;
 
-    [Header("ATTACK RANGE")]
-    [SerializeField] private float attachRange = 1.5f;
+    [Header("PROJECTILE")]
+    [SerializeField] private SierraProjectile projectilePrefab;
+    [SerializeField] private Transform firePoint;
+    [SerializeField] private float projectileSpeed = 12f;
+    [SerializeField] private float returnSpeed = 8f;
 
     [Header("ATTACK")]
     [SerializeField] private float attackDamagePerSecond = 5f;
     [SerializeField] private float attackDuration = 3f;
     [SerializeField] private float attackCooldown = 2f;
 
-    [Header("MOVEMENT")]
-    [SerializeField] private float attachSpeed = 12f;
-    [SerializeField] private float returnSpeed = 8f;
-
     [Header("ATTACHMENT")]
     [SerializeField] private string gripPointName = "PlantGripPoint";
     [SerializeField] private Vector3 fallbackAttachOffset = Vector3.zero;
 
-    [Header("VFX")]
-    [SerializeField] private ParticleSystem attackParticles;
-
-    public override MagicGarden.Target DescribeUpgradeTarget()
-    {
-        var target = base.DescribeUpgradeTarget();
-        target.Bases[MagicGarden.Stat.Damage] = attackDamagePerSecond;
-        target.Bases[MagicGarden.Stat.AttackSpeed] = 1 / Mathf.Max(0.001f, attackCooldown);
-        target.Bases[MagicGarden.Stat.Range] = attachRange;
-        return target;
-    }
-    private Transform originalParent;
-    private Vector3 originalLocalPosition;
-    private Quaternion originalLocalRotation;
-
-    private Transform currentTarget;
-    private LifeController currentTargetLife;
-
-    private bool isAttacking = false;
-    private bool isReturning = false;
+    private SierraProjectile activeProjectile;
 
     private float cooldownTimer = 0f;
     private float previousEffectiveCooldown;
 
-    private new void Awake()
+    public override MagicGarden.Target DescribeUpgradeTarget()
     {
-        originalParent = transform.parent;
-        originalLocalPosition = transform.localPosition;
-        originalLocalRotation = transform.localRotation;
+        var target = base.DescribeUpgradeTarget();
+
+        target.Bases[MagicGarden.Stat.Damage] = attackDamagePerSecond;
+        target.Bases[MagicGarden.Stat.AttackSpeed] =
+            1f / Mathf.Max(0.001f, attackCooldown);
+        target.Bases[MagicGarden.Stat.Range] = detectionRange;
+
+        return target;
     }
 
     protected override void Update()
     {
-        if (UpgradeRuntime.GameplayBlocked) return;
+        if (UpgradeRuntime.GameplayBlocked)
+            return;
+
         base.Update();
 
         if (!IsFullyGrown())
             return;
 
-        float effective = UpgradedCooldown(attackCooldown);
-        if (previousEffectiveCooldown > 0 && previousEffectiveCooldown != effective)
-            cooldownTimer *= effective / previousEffectiveCooldown;
-        previousEffectiveCooldown = effective;
+        float effectiveCooldown = UpgradedCooldown(attackCooldown);
+
+        if (previousEffectiveCooldown > 0f &&
+            !Mathf.Approximately(previousEffectiveCooldown, effectiveCooldown))
+        {
+            cooldownTimer *= effectiveCooldown / previousEffectiveCooldown;
+        }
+
+        previousEffectiveCooldown = effectiveCooldown;
+
         if (cooldownTimer > 0f)
         {
             cooldownTimer -= Time.deltaTime;
             return;
         }
 
-        if (isAttacking || isReturning)
+        if (activeProjectile != null)
             return;
 
-        DetectAndCheckTarget();
+        DetectAndShootTarget();
     }
 
-    private void DetectAndCheckTarget()
+    private void DetectAndShootTarget()
     {
+        float effectiveRange = Upgraded(
+            MagicGarden.Stat.Range,
+            detectionRange
+        );
+
         Collider2D[] enemies = Physics2D.OverlapCircleAll(
             transform.position,
-            Upgraded(MagicGarden.Stat.Range, detectionRange),
+            effectiveRange,
             enemyLayer
         );
 
         float closestDistance = Mathf.Infinity;
-        Transform closestEnemy = null;
+        LifeController closestLife = null;
 
         foreach (Collider2D enemy in enemies)
         {
             if (enemy == null)
                 continue;
 
-            LifeController life = enemy.GetComponent<LifeController>();
+            LifeController life = enemy.GetComponentInParent<LifeController>();
 
             if (life == null || !life.IsAlive())
                 continue;
 
             float distance = Vector2.Distance(
                 transform.position,
-                enemy.transform.position
+                life.transform.position
             );
 
             if (distance < closestDistance)
             {
                 closestDistance = distance;
-                closestEnemy = enemy.transform;
+                closestLife = life;
             }
         }
 
-        if (closestEnemy == null)
+        if (closestLife == null || projectilePrefab == null)
             return;
 
-        if (closestDistance <= Upgraded(MagicGarden.Stat.Range, attachRange))
-        {
-            StartCoroutine(AttackEnemy(closestEnemy));
-        }
+        ShootAtTarget(closestLife);
     }
 
-    private IEnumerator AttackEnemy(Transform target)
+    private void ShootAtTarget(LifeController targetLife)
     {
-        if (target == null)
-            yield break;
+        if (targetLife == null || !targetLife.IsAlive())
+            return;
 
-        LifeController life = target.GetComponent<LifeController>();
+        Transform spawnTransform = firePoint != null
+            ? firePoint
+            : transform;
 
-        if (life == null || !life.IsAlive())
-            yield break;
+        Vector3 spawnPosition = spawnTransform.position;
 
-        isAttacking = true;
+        Vector2 direction = (
+            (Vector2)targetLife.transform.position -
+            (Vector2)spawnPosition
+        ).normalized;
 
-        currentTarget = target;
-        currentTargetLife = life;
+        SierraProjectile projectile = Instantiate(
+            projectilePrefab,
+            spawnPosition,
+            Quaternion.identity
+        );
 
-        transform.SetParent(null);
+        activeProjectile = projectile;
 
-        while (currentTarget != null &&
-               currentTargetLife != null &&
-               currentTargetLife.IsAlive() &&
-               Vector2.Distance(transform.position, currentTarget.position) > 0.1f)
-        {
-            transform.position = Vector3.MoveTowards(
-                transform.position,
-                currentTarget.position,
-                attachSpeed * Time.deltaTime
-            );
+        float effectiveDamage = Upgraded(
+            MagicGarden.Stat.Damage,
+            attackDamagePerSecond
+        );
 
-            yield return null;
-        }
+        float effectiveRange = Upgraded(
+            MagicGarden.Stat.Range,
+            detectionRange
+        );
 
-        if (currentTarget == null ||
-            currentTargetLife == null ||
-            !currentTargetLife.IsAlive())
-        {
-            yield return ReturnToPlantPosition();
-            FinishAttack();
-            yield break;
-        }
+        projectile.Initialize(
+            this,
+            spawnTransform,
+            targetLife.transform,
+            effectiveDamage,
+            attackDuration,
+            effectiveRange,
+            projectileSpeed,
+            returnSpeed,
+            gripPointName,
+            fallbackAttachOffset
+        );
 
-        AttachToEnemy(currentTarget);
-
-        if (attackParticles != null)
-            attackParticles.Play();
-
-        float elapsed = 0f;
-
-        while (elapsed < attackDuration &&
-               currentTarget != null &&
-               currentTargetLife != null &&
-               currentTargetLife.IsAlive())
-        {
-            float damage =
-                Upgraded(MagicGarden.Stat.Damage, attackDamagePerSecond) * Time.deltaTime;
-
-            currentTargetLife.TakeDamage(
-                damage,
-                LifeController.DamageType.DamageOverTime
-            );
-
-            elapsed += Time.deltaTime;
-
-            yield return null;
-        }
-
-        if (attackParticles != null)
-        {
-            attackParticles.Stop(
-                true,
-                ParticleSystemStopBehavior.StopEmittingAndClear
-            );
-        }
-
-        yield return ReturnToPlantPosition();
-
-        FinishAttack();
+        projectile.Cast(direction, spawnPosition);
     }
 
-    private void AttachToEnemy(Transform enemy)
+    public void NotifyProjectileFinished(SierraProjectile projectile)
     {
-        Transform gripPoint = enemy.Find(gripPointName);
+        if (activeProjectile != projectile)
+            return;
 
-        if (gripPoint != null)
-        {
-            transform.SetParent(gripPoint);
-            transform.localPosition = Vector3.zero;
-            transform.localRotation = Quaternion.identity;
-        }
-        else
-        {
-            transform.SetParent(enemy);
-            transform.localPosition = fallbackAttachOffset;
-            transform.localRotation = Quaternion.identity;
-        }
-    }
-
-    private IEnumerator ReturnToPlantPosition()
-    {
-        isReturning = true;
-
-        transform.SetParent(null);
-
-        Vector3 targetPosition =
-            originalParent != null
-                ? originalParent.TransformPoint(originalLocalPosition)
-                : originalLocalPosition;
-
-        while (Vector2.Distance(transform.position, targetPosition) > 0.05f)
-        {
-            transform.position = Vector3.MoveTowards(
-                transform.position,
-                targetPosition,
-                returnSpeed * Time.deltaTime
-            );
-
-            yield return null;
-        }
-
-        if (originalParent != null)
-        {
-            transform.SetParent(originalParent);
-            transform.localPosition = originalLocalPosition;
-            transform.localRotation = originalLocalRotation;
-        }
-        else
-        {
-            transform.position = targetPosition;
-            transform.rotation = originalLocalRotation;
-        }
-
-        isReturning = false;
-    }
-
-    private void FinishAttack()
-    {
-        currentTarget = null;
-        currentTargetLife = null;
+        activeProjectile = null;
 
         cooldownTimer = UpgradedCooldown(attackCooldown);
         previousEffectiveCooldown = cooldownTimer;
-        isAttacking = false;
-    }
-
-    protected override void OnDestroy()
-    {
-        if (attackParticles != null)
-        {
-            attackParticles.Stop(
-                true,
-                ParticleSystemStopBehavior.StopEmittingAndClear
-            );
-        }
-
-        base.OnDestroy();
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
+
         Gizmos.DrawWireSphere(
             transform.position,
             detectionRange
-        );
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(
-            transform.position,
-            attachRange
         );
     }
 }
