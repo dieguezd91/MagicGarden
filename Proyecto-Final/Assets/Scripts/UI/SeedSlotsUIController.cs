@@ -78,15 +78,45 @@ public class SeedSlotsUIController : UIControllerBase
         for (int i = 0; i < seedSlots.Length && i < 3; i++) RefreshSlotDisplay(i);
         UpdateSelectedSlotUI(-1);
     }
+
     public void RefreshSlotDisplay(int position)
     {
-        if (position < 0 || position >= 3 || position >= seedSlots.Length || seedSlots[position] == null) return;
-        var assignment = session != null && session.IsReady ? session.GetCommittedPlant(position) : default;
-        var data = assignment.HasValue ? catalog.FindPlant(assignment.Identity) : null;
-        var resolution = assignment.HasValue ? session.ResolvePlant(assignment.Identity) : default;
-        seedSlots[position].UpdateEquipmentDisplay(data, resolution.Slot != null ? resolution.Slot.seedCount : 0,
-            resolution.InventoryIndex);
+        if (position < 0 ||
+            position >= 3 ||
+            position >= seedSlots.Length ||
+            seedSlots[position] == null)
+        {
+            return;
+        }
+
+        var assignment =
+            session != null && session.IsReady
+                ? session.GetCommittedPlant(position)
+                : default;
+
+        var data = assignment.HasValue
+            ? catalog.FindPlant(assignment.Identity)
+            : null;
+
+        var resolution = assignment.HasValue && session != null
+            ? session.ResolvePlant(assignment.Identity)
+            : default;
+
+        int seedCount = resolution.Slot != null
+            ? resolution.Slot.seedCount
+            : 0;
+
+        int inventoryIndex = seedCount > 0
+            ? resolution.InventoryIndex
+            : -1;
+
+        seedSlots[position].UpdateEquipmentDisplay(
+            data,
+            seedCount,
+            inventoryIndex
+        );
     }
+
     private void UpdateSelectedSlotUI(int ignored)
     {
         int selected = GetSelectedSlotIndex();

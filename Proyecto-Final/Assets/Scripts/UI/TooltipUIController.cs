@@ -107,17 +107,26 @@ public class TooltipUIController : UIControllerBase
         }
     }
 
+
     private void OnTooltipRequested(int slotIndex)
     {
-        if (abilitySystem == null || abilitySystem.CurrentAbility != PlayerAbility.Planting)
+        if (abilitySystem == null ||
+            abilitySystem.CurrentAbility != PlayerAbility.Planting)
         {
+            ForceHide();
+            return;
+        }
+
+        PlantSlot slot = SeedInventory.Instance?.GetPlantSlot(slotIndex);
+
+        if (slot == null || slot.seedCount <= 0 || slot.data == null)
+        {
+            ForceHide();
             return;
         }
 
         if (isTooltipVisible && currentSlotIndex == slotIndex)
-        {
             return;
-        }
 
         CancelHide();
 
@@ -129,6 +138,7 @@ public class TooltipUIController : UIControllerBase
 
         ScheduleShow(slotIndex);
     }
+
 
     private void OnTooltipHideRequested()
     {
