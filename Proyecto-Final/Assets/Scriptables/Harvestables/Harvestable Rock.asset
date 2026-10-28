@@ -18,12 +18,9 @@ MonoBehaviour:
   interactionRange: 2
   harvestDuration: 1.5
   lootTable:
-  - pickupPrefab: {fileID: 1768544347340343859, guid: fe6532703752be5499a1180381f39d28, type: 3}
-    weight: 1
-    chance: 50%
   - pickupPrefab: {fileID: 1768544347340343859, guid: ddd012612fde9aa498b6b0e45792abb8, type: 3}
     weight: 1
-    chance: 50%
+    chance: 100%
   lootScatterForce: 3
   animatorController: {fileID: 22100000, guid: 64c2e71986ac4fbb891f81cf33d21ccf, type: 2}
   harvestingParticles: {fileID: 8184296318486604401, guid: d76fc3d7a42a9b442ab148cc5df611e2, type: 3}

@@ -159,28 +159,15 @@ MonoBehaviour:
   manaPickupPrefab: {fileID: 5772987197591363074, guid: 83d9a560608ef2e438e8562bff94e850, type: 3}
   manaDropChance: 0.9
   lootTable:
-  - name: Eternal Ember
-    itemPrefab: {fileID: 1768544347340343859, guid: b63ac3ac3aacbd048a4daf47582e04b1, type: 3}
-    dropChance: 40
-  - name: Lunar Essence
-    itemPrefab: {fileID: 1768544347340343859, guid: 67ea33d18346e1c4cb1511c379367dd3, type: 3}
-    dropChance: 25
   - name: Spectral Crystal
     itemPrefab: {fileID: 1768544347340343859, guid: fe6532703752be5499a1180381f39d28, type: 3}
-    dropChance: 35
+    dropChance: 80
   - name: Stellar Fragment
     itemPrefab: {fileID: 1768544347340343859, guid: ddd012612fde9aa498b6b0e45792abb8, type: 3}
     dropChance: 25
-  - name: Voltaic Core
-    itemPrefab: {fileID: 1768544347340343859, guid: ced455dd92788e4498d1907f2d7fabfc, type: 3}
-    dropChance: 40
-  - name: Windwalker Essence
-    itemPrefab: {fileID: 1768544347340343859, guid: 7419d92434dcb4f40aa3be3f64cc669d, type: 3}
-    dropChance: 35
   dropScatterDistance: 0.5
   explosionForce: 5
   dotSoundCooldown: 0.2
-  isRespawning: 0
   isEnemy: 1
   isPlayer: 0
   isPlant: 0
