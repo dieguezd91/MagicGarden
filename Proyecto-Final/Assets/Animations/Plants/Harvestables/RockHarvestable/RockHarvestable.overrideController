@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: RockHarvestable
+  m_Controller: {fileID: 9100000, guid: 1de088ecf26842aba128b51d01e046f3, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: 7af3308e502142b5b426c69e509d1918, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: ffc6d847000e90d4ea99e29bb8e580f5, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 8adea240fa5e45f9b8f69788d1bd37b8, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: e151237d769baff4b9b6b6c8fbc6c2de, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: b9a424a2f6e44f949dacd934e8e8941b, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 37c3ef77549136b4194c2e2276c9b6ae, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 35a1e3aeaa6849bca70d33070d3628ad, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 9a8c593040d78dd4a9bdc763b451c452, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 65110daa7ffb47ddb97694c21b35aa6c, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 134b4dc84008c18469f88fb258403d41, type: 2}

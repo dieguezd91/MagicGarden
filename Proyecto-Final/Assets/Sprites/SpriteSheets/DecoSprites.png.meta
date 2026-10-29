@@ -2320,8 +2320,8 @@ TextureImporter:
         y: 256
         width: 29
         height: 43
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.4827586, y: 0.5116279}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -2341,8 +2341,8 @@ TextureImporter:
         y: 256
         width: 29
         height: 34
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.4827586, y: 0.64705884}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -2362,8 +2362,8 @@ TextureImporter:
         y: 255
         width: 31
         height: 45
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.48387095, y: 0.51111114}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -2480,6 +2480,48 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: DecoSprites_68
+      rect:
+        serializedVersion: 2
+        x: 65
+        y: 64
+        width: 3
+        height: 2
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6610d1251ee07b34285c1159b5111fe6
+      internalID: 462066262
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DecoSprites_69
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 63
+        width: 3
+        height: 2
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2f7a7f8d513aa58449e5ae23fd09ec8e
+      internalID: -819209660
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -2584,6 +2626,8 @@ TextureImporter:
       DecoSprites_65: 1859610636
       DecoSprites_66: -1454370460
       DecoSprites_67: 911920898
+      DecoSprites_68: 462066262
+      DecoSprites_69: -819209660
       DecoSprites_7: -6405655
       DecoSprites_8: 521314461
       DecoSprites_9: 1275317391

@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BushHarvestable
+  m_Controller: {fileID: 9100000, guid: 1de088ecf26842aba128b51d01e046f3, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: 7af3308e502142b5b426c69e509d1918, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 6fdc55c0e3866dd44bca6895536d82f2, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 8adea240fa5e45f9b8f69788d1bd37b8, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: c13470122c7a58e4aa74c12ce0563354, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: b9a424a2f6e44f949dacd934e8e8941b, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: bda7cd15c3ce36c4f970c7997e3b3ffb, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 35a1e3aeaa6849bca70d33070d3628ad, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: b84930bb83536644ea2edc918f4e58af, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 65110daa7ffb47ddb97694c21b35aa6c, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 6b8fba9423344b94cbaad3ace380aca1, type: 2}

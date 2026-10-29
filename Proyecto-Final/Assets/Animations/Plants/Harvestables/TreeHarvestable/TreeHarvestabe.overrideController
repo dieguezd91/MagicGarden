@@ -6,7 +6,7 @@ AnimatorOverrideController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Placeholder Harvestable
+  m_Name: TreeHarvestabe
   m_Controller: {fileID: 9100000, guid: 1de088ecf26842aba128b51d01e046f3, type: 2}
   m_Clips:
   - m_OriginalClip: {fileID: 7400000, guid: 8adea240fa5e45f9b8f69788d1bd37b8, type: 2}
