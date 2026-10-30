@@ -206,4 +206,29 @@ public class DayNightLightController : MonoBehaviour
 
         transitionCoroutine = StartCoroutine(TransitionVisuals(targetLight, targetColor, targetBloom, targetExposure, targetVignette, duration));
     }
+
+
+    public void ApplyDayVisualsImmediately()
+    {
+        if (transitionCoroutine != null)
+        {
+            StopCoroutine(transitionCoroutine);
+            transitionCoroutine = null;
+        }
+
+        if (globalLight != null)
+        {
+            globalLight.intensity = dayLightIntensity;
+            globalLight.color = dayLightColor;
+        }
+
+        if (bloomComponent != null)
+            bloomComponent.intensity.value = dayGlobalVolumeIntensity;
+
+        if (colorAdjustmentsComponent != null)
+            colorAdjustmentsComponent.postExposure.value = dayExposure;
+
+        if (vignetteComponent != null)
+            vignetteComponent.intensity.value = dayVignetteIntensity;
+    }
 }

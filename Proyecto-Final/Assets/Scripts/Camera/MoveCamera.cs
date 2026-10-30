@@ -28,6 +28,14 @@ public class MoveCamera : MonoBehaviour
     [SerializeField] private float arrowHeadLength = 0.5f;
     [SerializeField] private float arrowHeadAngle = 20f;
 
+    [Header("DAY TRANSITION")]
+    [SerializeField] private float dayTransitionFocusSpeed = 8f;
+
+    private bool dayTransitionFocusActive = false;
+    private bool dayTransitionFocusReached = false;
+
+    public bool HasReachedDayTransitionFocus => dayTransitionFocusReached;
+
     private Camera cam;
     private Transform ritualTarget;
     private float originalCameraSize;
@@ -44,6 +52,13 @@ public class MoveCamera : MonoBehaviour
 
     private void LateUpdate()
     {
+
+        if (dayTransitionFocusActive)
+        {
+            HandleDayTransitionFocus();
+            return;
+        }
+
         if (abilitySystem != null && (abilitySystem.IsDigging() || abilitySystem.IsHarvesting()))
             return;
 
@@ -156,6 +171,43 @@ public class MoveCamera : MonoBehaviour
                 DrawArrow(playerPos, toMouse.normalized * Mathf.Min(toMouse.magnitude, maxOffsetDistance + deadZoneRadius), directionArrowColor);
             }
         }
+    }
+
+
+    private void HandleDayTransitionFocus()
+    {
+        if (mainChar == null)
+        {
+            dayTransitionFocusReached = true;
+            return;
+        }
+
+        Vector3 targetPosition = mainChar.position;
+        targetPosition.z = transform.position.z;
+
+        transform.position = Vector3.MoveTowards(
+            transform.position,
+            targetPosition,
+            dayTransitionFocusSpeed * Time.unscaledDeltaTime
+        );
+
+        if (Vector3.Distance(transform.position, targetPosition) <= 0.03f)
+        {
+            transform.position = targetPosition;
+            dayTransitionFocusReached = true;
+        }
+    }
+
+    public void BeginDayTransitionFocus()
+    {
+        dayTransitionFocusReached = false;
+        dayTransitionFocusActive = true;
+    }
+
+    public void EndDayTransitionFocus()
+    {
+        dayTransitionFocusActive = false;
+        dayTransitionFocusReached = false;
     }
 
     private void DrawArrow(Vector3 start, Vector3 direction, Color color)

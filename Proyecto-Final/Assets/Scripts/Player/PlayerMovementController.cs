@@ -50,6 +50,7 @@ public class PlayerMovementController : MonoBehaviour
     private bool movementEnabled = true;
     private bool hasMovedForTutorial = false;
     private bool tutorialBlocksMovement;
+    private bool dayTransitionBlocked = false;
 
     public float BaseMoveSpeed => maxSpeed;
     public bool IsMovementEnabled => movementEnabled;
@@ -104,6 +105,20 @@ public class PlayerMovementController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (dayTransitionBlocked)
+        {
+            moveInput = Vector2.zero;
+            currentVelocity = Vector2.zero;
+
+            if (rb != null)
+                rb.velocity = Vector2.zero;
+
+            if (animator != null)
+                animator.SetBool("IsMoving", false);
+
+            return;
+        }
+
         if (UpgradeRuntime.GameplayBlocked || (UIManager.Instance?.Flow != null && UIManager.Instance.Flow.HasOpenModal))
         {
             currentVelocity = Vector2.zero;
@@ -356,5 +371,22 @@ public class PlayerMovementController : MonoBehaviour
     public void ResetHasMovedForTutorial()
     {
         hasMovedForTutorial = false;
+    }
+
+    public void SetDayTransitionBlocked(bool blocked)
+    {
+        dayTransitionBlocked = blocked;
+
+        if (blocked)
+        {
+            moveInput = Vector2.zero;
+            currentVelocity = Vector2.zero;
+
+            if (rb != null)
+                rb.velocity = Vector2.zero;
+
+            if (animator != null)
+                animator.SetBool("IsMoving", false);
+        }
     }
 }

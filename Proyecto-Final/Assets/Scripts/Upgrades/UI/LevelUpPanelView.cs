@@ -24,6 +24,7 @@ public sealed class LevelUpPanelView : MonoBehaviour
             return true;
         }
     }
+    public bool IsVisible => root != null && root.activeInHierarchy;
     public bool Show(IList<LevelUpCardData> offers, int pending)
     {
         if (!IsConfigured || offers == null || offers.Count > cards.Length) return false;

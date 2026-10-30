@@ -48,6 +48,9 @@ public class EnemiesSpawner : MonoBehaviour
     [Header("BOSS")]
     [SerializeField] private BossNightManager bossNightManager;
 
+    [Header("DAY TRANSITION")]
+    [SerializeField] private NightToDayTransitionController nightToDayTransition;
+
     [Header("EVENTS")]
     public UnityEvent onHordeStart;
     public UnityEvent onHordeEnd;
@@ -68,6 +71,7 @@ public class EnemiesSpawner : MonoBehaviour
     private bool playerHasLeftHouse = false;
     private DayTimerController dayTimerController;
 
+
     private WeightedRoulette<GameObject> enemyRoulette = new WeightedRoulette<GameObject>();
 
     void Start()
@@ -87,6 +91,9 @@ public class EnemiesSpawner : MonoBehaviour
         dayTimerController = FindObjectOfType<DayTimerController>();
 
         ResetHordeCounters();
+
+        if (nightToDayTransition == null)
+            nightToDayTransition = FindObjectOfType<NightToDayTransitionController>();
     }
 
     void Update()
@@ -148,6 +155,7 @@ public class EnemiesSpawner : MonoBehaviour
         int currentDay = DayCycleController.Instance.CurrentDay;
         return bossNightManager.IsBossNightDay(currentDay);
     }
+    public bool IsBossNightActive => IsBossNight();
 
     private void StartBossNight()
     {
@@ -371,7 +379,21 @@ public class EnemiesSpawner : MonoBehaviour
 
             if (!IsBossNight())
             {
-                GameFlowController.Instance.SetPhase(GamePhase.Day);
+                if (nightToDayTransition != null)
+                {
+                    nightToDayTransition.StartTransition();
+                }
+                else
+                {
+                    Debug.LogWarning(
+                        "[EnemiesSpawner] No NightToDayTransitionController assigned. Starting day immediately."
+                    );
+
+                    if (DayCycleController.Instance != null)
+                        DayCycleController.Instance.StartDay();
+                    else
+                        GameFlowController.Instance.SetPhase(GamePhase.Day);
+                }
             }
         }
     }
