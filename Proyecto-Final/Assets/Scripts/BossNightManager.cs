@@ -31,6 +31,7 @@ public class BossNightManager : MonoBehaviour
     private int lastBossNightDay = -1;
 
     private int currentBossIndex = 0;
+    private bool bossNightCompleted = false;
 
     public bool IsBossNight => isBossNight;
     public bool IsBossActive => currentBoss != null;
@@ -120,6 +121,7 @@ public class BossNightManager : MonoBehaviour
 
         isBossNight = true;
         bossDefeated = false;
+        bossNightCompleted = false;
         onBossNightStart?.Invoke();
 
         StartCoroutine(BossNightSequence());
@@ -134,7 +136,15 @@ public class BossNightManager : MonoBehaviour
             SpawnBoss();
         }
 
+        if (!bossHasSpawnedThisNight)
+        {
+            Debug.LogError("[BossNightManager] Boss could not be spawned.");
+            yield break;
+        }
+
         yield return new WaitUntil(() => bossDefeated);
+
+        CompleteBossNight();
     }
 
     private void SpawnBoss()
@@ -215,10 +225,11 @@ public class BossNightManager : MonoBehaviour
 
     private void OnBossDefeated(GameObject defeatedBoss)
     {
+        if (bossDefeated)
+            return;
+
         bossDefeated = true;
         currentBoss = null;
-
-        currentBossIndex++;
 
         if (enemiesSpawner != null)
         {
@@ -246,7 +257,14 @@ public class BossNightManager : MonoBehaviour
 
     private void CompleteBossNight()
     {
+        if (bossNightCompleted || !bossDefeated)
+            return;
+
+        bossNightCompleted = true;
+
+
         ResetBossNightState();
+
         onBossNightComplete?.Invoke();
 
         if (enemiesSpawner != null)

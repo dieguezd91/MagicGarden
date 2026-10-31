@@ -19,6 +19,7 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private List<SpawnPointAnimator> spawnpoints = new List<SpawnPointAnimator>();
     [SerializeField] private AmbienceSoundManager ambienceSoundManager;
     [SerializeField] private PlayerExperienceSystem playerExperienceSystem;
+    [SerializeField] private NightToDayTransitionController nightToDayTransition;
 
     public AmbienceSoundManager AmbienceSoundManager => ambienceSoundManager;
 
@@ -61,6 +62,11 @@ public class LevelManager : MonoBehaviour
                 playerExperienceSystem = player.GetComponent<PlayerExperienceSystem>();
         }
 
+        if (nightToDayTransition == null)
+        {
+            nightToDayTransition = FindObjectOfType<NightToDayTransitionController>();
+        }
+
         DayCycleController.Instance?.StartDay();
     }
 
@@ -85,18 +91,20 @@ public class LevelManager : MonoBehaviour
             var player = GameObject.FindGameObjectWithTag("Player");
 
             if (player != null)
+            {
                 playerExperienceSystem = player.GetComponent<PlayerExperienceSystem>();
+            }
         }
 
         playerExperienceSystem?.GrantNightCompletionExperience();
 
-        
-        if (waveSpawner != null && waveSpawner.IsBossNightActive)
+        if (nightToDayTransition != null)
+        {
+            nightToDayTransition.StartTransition();
+        }
+        else
         {
             DayCycleController.Instance?.StartDay();
-
-            if (forceEndingNight)
-                bossDayStartedDuringForceEnd = true;
         }
     }
 
@@ -129,7 +137,9 @@ public class LevelManager : MonoBehaviour
     public void ForceEndNight()
     {
         foreach (var altar in FindObjectsOfType<RitualAltar>())
+        {
             altar.ForceStopRitual();
+        }
 
         var spawner = waveSpawner != null
             ? waveSpawner
@@ -137,24 +147,10 @@ public class LevelManager : MonoBehaviour
 
         if (spawner != null)
         {
-            bool isBossNight = spawner.IsBossNightActive;
-
-            forceEndingNight = true;
-            bossDayStartedDuringForceEnd = false;
-
             spawner.EndNight();
-
-            forceEndingNight = false;
-
-            if (isBossNight && !bossDayStartedDuringForceEnd)
-                DayCycleController.Instance?.StartDay();
-
             return;
         }
 
-        if (DayCycleController.Instance != null)
-            DayCycleController.Instance.StartDay();
-        else
-            GameFlowController.Instance?.SetPhase(GamePhase.Day);
+        DayCycleController.Instance?.StartDay();
     }
 }

@@ -147,7 +147,7 @@ Rigidbody2D:
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 0
-  m_AngularDrag: 0.05
+  m_AngularDrag: 0
   m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -174,22 +174,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   materialData: {fileID: 11400000, guid: 02e86cd5ad9edfc4da347177e4ef0f66, type: 2}
   attractionSpeed: 8
-  isSpecialItem: 1
+  isSpecialItem: 0
   onSpecialItemCollected:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 4567890123456789012, guid: c68f09f55d630784685d3037f66de11d, type: 3}
-        m_TargetAssemblyTypeName: GameOverController, Assembly-CSharp
-        m_MethodName: ShowContinuePanel
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!1001 &3154655224512849441
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -252,4 +240,3 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3422231911648800970, guid: 2c4ddf793d5db2e4885b15a888f8aafb, type: 3}
   m_PrefabInstance: {fileID: 3154655224512849441}
   m_PrefabAsset: {fileID: 0}
-

@@ -376,27 +376,9 @@ public class EnemiesSpawner : MonoBehaviour
         if (completed)
         {
             onHordeEnd?.Invoke();
-
-            if (!IsBossNight())
-            {
-                if (nightToDayTransition != null)
-                {
-                    nightToDayTransition.StartTransition();
-                }
-                else
-                {
-                    Debug.LogWarning(
-                        "[EnemiesSpawner] No NightToDayTransitionController assigned. Starting day immediately."
-                    );
-
-                    if (DayCycleController.Instance != null)
-                        DayCycleController.Instance.StartDay();
-                    else
-                        GameFlowController.Instance.SetPhase(GamePhase.Day);
-                }
-            }
         }
     }
+
 
     public int GetRemainingEnemies()
     {
