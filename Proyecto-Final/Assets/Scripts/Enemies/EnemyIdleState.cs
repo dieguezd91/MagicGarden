@@ -37,6 +37,8 @@ public class EnemyChaseState : IState
 
     private void DetectAttackRange()
     {
+        if (enemy is SniperBoss sniperBoss) 
+            attackRange = sniperBoss.SniperAttackRange;
         if (enemy is Skeleton skeleton)
             attackRange = skeleton.attackRange;
         else if (enemy is Infernum infernum)
@@ -50,6 +52,7 @@ public class EnemyChaseState : IState
     public void OnUpdate()
     {
         var target = enemy.GetCurrentTarget();
+
         if (target == null)
         {
             enemy.StateMachine.ChangeState<EnemyIdleState>();
@@ -58,7 +61,14 @@ public class EnemyChaseState : IState
 
         if (enemy.GetDistanceToTarget() <= attackRange)
         {
-            enemy.StateMachine.ChangeState<EnemyAttackState>();
+            if (enemy is SniperBoss)
+            {
+                enemy.StateMachine.ChangeState<SniperBossAttackState>();
+            }
+            else
+            {
+                enemy.StateMachine.ChangeState<EnemyAttackState>();
+            }
         }
     }
 
@@ -307,11 +317,19 @@ public class EnemySpawnMinionState : IState
         boss.StopMovement();
         boss.isCurrentlyAttacking = false;
         boss.isSpawningMinions = true;
+
         spawnRoutine = boss.StartCoroutine(SpawnRoutine());
     }
 
     private IEnumerator SpawnRoutine()
     {
+        boss.KillAllMinions();
+
+        yield return new WaitForSeconds(boss.MinionCleanupDelay);
+
+        if (boss.IsDead)
+            yield break;
+
         if (boss.animator != null)
         {
             boss.animator.SetTrigger("SpawnMinions");
@@ -319,8 +337,13 @@ public class EnemySpawnMinionState : IState
 
         yield return new WaitForSeconds(1.5f);
 
+        if (boss.IsDead)
+            yield break;
+
         boss.ResetSpawnCooldown();
         boss.isSpawningMinions = false;
+
+        spawnRoutine = null;
 
         boss.StateMachine.ChangeState<EnemyIdleState>();
     }
@@ -334,6 +357,77 @@ public class EnemySpawnMinionState : IState
         boss.isSpawningMinions = false;
 
         if (spawnRoutine != null)
+        {
             boss.StopCoroutine(spawnRoutine);
+            spawnRoutine = null;
+        }
+    }
+}
+
+
+
+
+public class SniperBossAttackState : IState
+{
+    private readonly SniperBoss boss;
+    private float nextAttackTime;
+
+    public SniperBossAttackState(SniperBoss boss)
+    {
+        this.boss = boss;
+    }
+
+    public void OnEnter()
+    {
+        boss.StopMovement();
+        boss.isCurrentlyAttacking = false;
+
+        nextAttackTime = Time.time;
+    }
+
+    public void OnUpdate()
+    {
+        if (boss.IsDead)
+        {
+            boss.StateMachine.ChangeState<EnemyDeadState>();
+            return;
+        }
+
+        if (boss.isCurrentlyAttacking)
+            return;
+
+        Transform target = boss.GetCurrentTarget();
+
+        if (target == null)
+        {
+            boss.StateMachine.ChangeState<EnemyIdleState>();
+            return;
+        }
+
+        float distance = boss.GetDistanceToTarget();
+
+        if (distance > boss.SniperAttackRange + 0.5f)
+        {
+            boss.StateMachine.ChangeState<EnemyChaseState>();
+            return;
+        }
+
+        if (Time.time >= nextAttackTime)
+        {
+            boss.TryStartSniperAttack(target);
+
+            nextAttackTime = Time.time + boss.ShotInterval;
+        }
+    }
+
+    public void OnFixedUpdate()
+    {
+        // The sniper boss never moves while attacking.
+    }
+
+    public void OnExit()
+    {
+        boss.CancelSniperAttack();
+        boss.StopMovement();
     }
 }

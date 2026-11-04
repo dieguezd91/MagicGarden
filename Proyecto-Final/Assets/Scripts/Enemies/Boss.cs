@@ -11,6 +11,13 @@ public class Boss : EnemyBase
     [SerializeField] private Transform[] minionSpawnPoints;
     private Coroutine currentAttackCoroutine;
 
+    [Header("MINION WAVES")]
+    [SerializeField] private float minionCleanupDelay = 0.25f;
+
+    public float MinionCleanupDelay => minionCleanupDelay;
+
+    protected virtual bool UseTimedMinionWaves => false;
+
     public Transform[] MinionSpawnPoints => minionSpawnPoints;
     public GameObject MinionPrefab => minionPrefab;
     public List<GameObject> CurrentMinions => currentMinions;
@@ -95,12 +102,29 @@ public class Boss : EnemyBase
     {
         currentMinions.RemoveAll(m => m == null);
 
-        if (!isCurrentlyAttacking && !isSpawningMinions && currentMinions.Count == 0)
+        if (isDead || isCurrentlyAttacking || isSpawningMinions)
+            return;
+
+        if (UseTimedMinionWaves)
         {
             spawnCooldownTimer += Time.deltaTime;
+
             if (spawnCooldownTimer >= spawnDelayAfterMinionsDie)
             {
                 StateMachine.ChangeState<EnemySpawnMinionState>();
+            }
+        }
+        else
+        {
+            // Original behavior for the other bosses.
+            if (currentMinions.Count == 0)
+            {
+                spawnCooldownTimer += Time.deltaTime;
+
+                if (spawnCooldownTimer >= spawnDelayAfterMinionsDie)
+                {
+                    StateMachine.ChangeState<EnemySpawnMinionState>();
+                }
             }
         }
     }
@@ -122,18 +146,21 @@ public class Boss : EnemyBase
         StateMachine.ChangeState<EnemyDeadState>();
     }
 
-    private void KillAllMinions()
+    public void KillAllMinions()
     {
         foreach (GameObject minion in currentMinions)
         {
-            if (minion == null) continue;
+            if (minion == null)
+                continue;
 
             LifeController life = minion.GetComponent<LifeController>();
+
             if (life != null)
                 life.Die();
             else
                 Destroy(minion);
         }
+
         currentMinions.Clear();
     }
 
@@ -231,10 +258,13 @@ public class Boss : EnemyBase
 
     public void OnSpawnMinionsAnimationEvent()
     {
+        PlayEnemySound(
+            EnemySoundType.Special,
+            SoundSourceType.Localized,
+            transform
+        );
 
-        PlayEnemySound(EnemySoundType.Special, SoundSourceType.Localized, transform);
-        Debug.LogWarning("Sonidoos");
-        if (isSpawningMinions)
+        if (isSpawningMinions && !isDead)
         {
             SpawnMinions();
         }
@@ -242,13 +272,21 @@ public class Boss : EnemyBase
 
     private void SpawnMinions()
     {
+        if (isDead)
+            return;
+
         foreach (Transform spawnPoint in minionSpawnPoints)
         {
-            if (spawnPoint != null && minionPrefab != null)
-            {
-                GameObject minion = Instantiate(minionPrefab, spawnPoint.position, Quaternion.identity);
-                currentMinions.Add(minion);
-            }
+            if (spawnPoint == null || minionPrefab == null)
+                continue;
+
+            GameObject minion = Instantiate(
+                minionPrefab,
+                spawnPoint.position,
+                Quaternion.identity
+            );
+
+            currentMinions.Add(minion);
         }
     }
 }

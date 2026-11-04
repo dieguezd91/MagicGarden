@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1037a61a317e42e41b187dd7f92bc456, type: 3}
+  m_Name: SniperBossData
+  m_EditorClassIdentifier: 
+  enemyName: Crystal Golem
+  enemyIcon: {fileID: 556223337, guid: 02e9e136476970f47a8a74f769b492de, type: 3}
+  description: 
+  maxHealth: 50
+  moveSpeed: 3
+  detectionRange: 50
+  playerPriority: 1.2
+  plantPriority: 1
+  homePriority: 1.5
+  footstepCooldown: 1
+  experienceReward: 0
+  manaDropChance: 0.5
+  bossMaxHealth: 1600
+  minAttackDistance: 1.5
+  meleeRadius: 1.2
+  specialRadius: 2.5
+  meleeDamage: 10
+  specialDamage: 20
+  attackCooldown: 1
+  meleeDelay: 0.5
+  specialDelay: 0.7
+  minionPrefab: {fileID: 654258422932643597, guid: 37023b10428f5c54694cf40bfcb73928, type: 3}
+  minionCount: 8
+  spawnDelayAfterMinionsDie: 6
+  sniperAttackRange: 8
+  aimDuration: 1.2
+  shotInterval: 3.5
+  recoveryDuration: 0.3
+  projectilePrefab: {fileID: 0}
+  projectileSpeed: 14
+  projectileDamage: 25
+  projectileLifetime: 5

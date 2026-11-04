@@ -75,7 +75,7 @@ GameObject:
   - component: {fileID: 5633985108502546552}
   - component: {fileID: 8947831693628458650}
   - component: {fileID: 4167715457539083562}
-  - component: {fileID: 2274362802430721429}
+  - component: {fileID: 7520758251093862044}
   - component: {fileID: 8102336949729422656}
   - component: {fileID: -2459830002070391110}
   m_Layer: 8
@@ -270,12 +270,11 @@ MonoBehaviour:
   dropScatterDistance: 0.5
   explosionForce: 3
   dotSoundCooldown: 0.2
-  isRespawning: 0
   isEnemy: 1
   isPlayer: 0
   isPlant: 0
   hasDeathAnimation: 0
---- !u!114 &2274362802430721429
+--- !u!114 &7520758251093862044
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -284,7 +283,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2501910690517604512}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6b2305390559c94eb8e335f76d5952d, type: 3}
+  m_Script: {fileID: 11500000, guid: ebbc45e92118d1d4ab4874e71a731c6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   spriteRenderer: {fileID: 7905766180791579066}
@@ -302,8 +301,8 @@ MonoBehaviour:
   attackCooldown: 0
   idleSoundMinTime: 5
   idleSoundMaxTime: 15
-  bossData: {fileID: 11400000, guid: ddb8ff2f6ecbeb84095c6b44485fbad9, type: 2}
-  attackPoint: {fileID: 324195009587380907}
+  bossData: {fileID: 11400000, guid: fdb5c1556f19b6047868d0db239e9383, type: 2}
+  attackPoint: {fileID: 0}
   minionSpawnPoints:
   - {fileID: 2383357137646065240}
   - {fileID: 9053484454607534713}
@@ -313,6 +312,10 @@ MonoBehaviour:
   - {fileID: 8477042811649829947}
   - {fileID: 3595517476380334143}
   - {fileID: 1968491905923262681}
+  minionCleanupDelay: 0.25
+  aimPivot: {fileID: 324195009587380907}
+  firePoint: {fileID: 324195009587380907}
+  aimRotationOffset: -90
 --- !u!95 &8102336949729422656
 Animator:
   serializedVersion: 5
@@ -484,7 +487,7 @@ Transform:
   m_GameObject: {fileID: 4430775818049188217}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 1.61, y: -0.17, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
