@@ -36,11 +36,11 @@ MonoBehaviour:
   minionPrefab: {fileID: 654258422932643597, guid: 37023b10428f5c54694cf40bfcb73928, type: 3}
   minionCount: 8
   spawnDelayAfterMinionsDie: 6
-  sniperAttackRange: 8
+  sniperAttackRange: 12
   aimDuration: 1.2
   shotInterval: 3.5
   recoveryDuration: 0.3
-  projectilePrefab: {fileID: 0}
-  projectileSpeed: 14
-  projectileDamage: 25
+  projectilePrefab: {fileID: 8215708087478250761, guid: 7d517a555b198114eb62b7a282d5970d, type: 3}
+  projectileSpeed: 20
+  projectileDamage: 200
   projectileLifetime: 5
