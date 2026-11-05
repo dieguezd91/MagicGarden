@@ -264,11 +264,10 @@ MonoBehaviour:
   lootTable:
   - name: BossHeart
     itemPrefab: {fileID: 1768544347340343859, guid: 6e5cf5dfd5e5d05449e7ddfe43c96b0d, type: 3}
-    dropChance: 100
+    dropChance: 0
   dropScatterDistance: 0.5
   explosionForce: 3
   dotSoundCooldown: 0.2
-  isRespawning: 0
   isEnemy: 1
   isPlayer: 0
   isPlant: 0
@@ -309,6 +308,7 @@ MonoBehaviour:
   - {fileID: 3881544068041907327}
   - {fileID: 8601602631486866943}
   - {fileID: 8477042811649829947}
+  minionCleanupDelay: 0.25
 --- !u!95 &8102336949729422656
 Animator:
   serializedVersion: 5

@@ -174,7 +174,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   materialData: {fileID: 11400000, guid: 02e86cd5ad9edfc4da347177e4ef0f66, type: 2}
   attractionSpeed: 8
-  isSpecialItem: 0
+  isSpecialItem: 1
   onSpecialItemCollected:
     m_PersistentCalls:
       m_Calls: []
