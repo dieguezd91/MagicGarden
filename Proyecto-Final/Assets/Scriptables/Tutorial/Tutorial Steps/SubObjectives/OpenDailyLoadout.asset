@@ -14,9 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: OpenRestoration
   stepOrder: 12
-  instructionText: '<b>FOREST:</b> Approach the Sacred Tree loadout station and press <sprite name="FKey">. Select at least one plant and one spell, then press Confirm when satisfied. Confirmation spends no stock and grants no seeds. Close the panel when done; closing alone does not confirm.'
+  instructionText: <b>FOREST:</b> Approach the Sacred Tree loadout station and press
+    <sprite name="FKey"> . Select at least one plant and one spell, then press Confirm
+    when satisfied. Confirmation spends no stock and grants no seeds. Close the panel
+    when done; closing alone does not confirm.
   stepImage: {fileID: 0}
   objectiveType: 28
   requiredCount: 1
   isGatedStep: 0
+  allowNightTransition: 0
   waitDuration: 1
+  useConfiguredCompletion: 0
+  conditionCombination: 0
+  conditions: []
+  waitMode: 0
+  hint: {fileID: 0}
+  enterActions: 
