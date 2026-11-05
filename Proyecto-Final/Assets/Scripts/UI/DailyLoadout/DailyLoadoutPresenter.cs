@@ -397,7 +397,10 @@ namespace MagicGarden.LoadoutUI
             CancelDrag();
             // Do not clear/rebuild the draft before attempting the authoritative transaction.
             bool confirmed = activeSession.TryConfirm();
-            feedback = confirmed ? "Loadout confirmed." : "Confirmation rejected. Draft and daily allowance unchanged.";
+            feedback = confirmed ? "Loadout confirmed."
+                : activeSession.CanConfigure && activeSession.IsTutorialLoadoutRequired && !activeSession.HasUsableDraft
+                    ? DailyLoadoutSession.TutorialLoadoutRequiredMessage
+                    : "Confirmation rejected. Draft and daily allowance unchanged.";
             lastConfirmed = activeSession.HasConfirmedToday;
             Refresh();
         }

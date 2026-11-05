@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: ChangeTool
   stepOrder: 2
-  instructionText: Use the <sprite name="QKey"> and <sprite name="EKey"> keys or
-    <sprite name="ScrollMouse"> to cycle through <u>your active spells, shown on
-    the left.</u>
+  instructionText: 'Forest: Try changing your spell. Use <sprite name="QKey"> and
+    <sprite name="EKey"> or <sprite name="ScrollMouse"> to cycle through <u>your active
+    spells, shown on the left.</u>'
   stepImage: {fileID: 0}
   objectiveType: 27
   requiredCount: 1

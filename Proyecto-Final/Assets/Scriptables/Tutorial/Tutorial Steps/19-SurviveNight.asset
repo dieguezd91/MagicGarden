@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: SurviveNight
   stepOrder: 18
-  instructionText: Hold the line until dawn breaks! Protect the Sacred Tree from
-    all threats until morning light returns.
+  instructionText: 'Forest: Hold on until dawn, Summerlimbs. Protect the Sacred
+    Tree through the night. The garden you prepared can help you defend it.'
   objectiveType: 10
   requiredCount: 1
   isGatedStep: 0

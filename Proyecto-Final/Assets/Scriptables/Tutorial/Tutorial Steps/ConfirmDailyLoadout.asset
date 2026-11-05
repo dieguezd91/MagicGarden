@@ -10,15 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cfcb4ccc532b709488bc7e73f2917f2c, type: 3}
-  m_Name: 8-Teleport
+  m_Name: ConfirmDailyLoadout
   m_EditorClassIdentifier: 
-  stepID: Teleport
-  stepOrder: 7
-  instructionText: You can also teleport! <u>Press <sprite name="SpaceKey"> to move
-    quickly in your direction or toward the mouse.</u> It's the only spell you can
-    use during the day.
+  stepID: CastSpell
+  stepOrder: 16
+  instructionText: '<b>FOREST:</b> Your daily choices must be confirmed before practice. If you closed without confirming, reopen the loadout, select a plant and a spell, press Confirm, then close it. Empty slots are not filled for you.'
   stepImage: {fileID: 0}
-  objectiveType: 25
+  objectiveType: 30
   requiredCount: 1
   isGatedStep: 0
   waitDuration: 3

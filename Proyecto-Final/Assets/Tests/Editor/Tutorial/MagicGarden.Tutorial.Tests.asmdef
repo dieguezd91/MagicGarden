@@ -1,0 +1,1 @@
+{"name":"MagicGarden.Tutorial.Tests","references":["MagicGarden.DailyLoadoutUI.TestSupport"],"includePlatforms":["Editor"],"optionalUnityReferences":["TestAssemblies"]}

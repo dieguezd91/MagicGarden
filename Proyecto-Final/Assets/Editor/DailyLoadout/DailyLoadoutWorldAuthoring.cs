@@ -15,7 +15,7 @@ public static class DailyLoadoutWorldAuthoring
     public const string PanelPath = "Assets/Prefabs/UI/DailyLoadout/DailyLoadoutPanel.prefab";
     public const string GamePath = "Assets/Scenes/Game.unity";
     public const string FindStepPath = "Assets/Scriptables/Tutorial/Tutorial Steps/SubObjectives/12-FindRestorationAltar.asset";
-    public const string OpenStepPath = "Assets/Scriptables/Tutorial/Tutorial Steps/SubObjectives/13-OpenRestoration.asset";
+    public const string OpenStepPath = "Assets/Scriptables/Tutorial/Tutorial Steps/SubObjectives/OpenDailyLoadout.asset";
     public const string HintPath = "Assets/Scriptables/Tutorial/Hints/Restoration.asset";
     public const string FindText = "Seek the Sacred Tree to prepare your daily loadout.";
     public const string OpenText = "Press F at the Sacred Tree to inspect and configure your daily loadout. Confirm once per day, or close without confirming. You can inspect your confirmed loadout again.";

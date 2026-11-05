@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: ChangeTool
   stepOrder: 2
-  instructionText: <u>Remember that every spell consumes your mana.</u>
+  instructionText: 'Forest: Your magic has limits, Summerlimbs. <u>Every spell consumes
+    mana.</u> Keep that in mind as you learn to survive here.'
   stepImage: {fileID: 0}
   objectiveType: 15
   requiredCount: 1

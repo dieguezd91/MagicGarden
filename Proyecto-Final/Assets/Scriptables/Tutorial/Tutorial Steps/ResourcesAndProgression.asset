@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cfcb4ccc532b709488bc7e73f2917f2c, type: 3}
-  m_Name: 15-UseRitualAltar
+  m_Name: ResourcesAndProgression
   m_EditorClassIdentifier: 
-  stepID: UseRitualAltar
-  stepOrder: 14
-  instructionText: When you're ready to face the darkness, approach the Ritual Altar
-    and interact with it to begin the night cycle.
+  stepID: Harvest
+  stepOrder: 21
+  instructionText: '<b>FOREST:</b> Surviving nights earns experience and levels unlock more choices. Resource-producing plants can supply later preparations when ready. Explore these options in your own time; you need not harvest or spend anything to finish this lesson.'
   stepImage: {fileID: 0}
-  objectiveType: 7
+  objectiveType: 15
   requiredCount: 1
   isGatedStep: 1
+  allowNightTransition: 1
   waitDuration: 3

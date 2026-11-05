@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: DefensivePlant
   stepOrder: 4
-  instructionText: <u>Select the seed from the bottom bar on your screen.</u> You
-    can hover the cursor over any seed to see more information about it.
+  instructionText: 'Forest: Learn what each seed can offer. <u>Select a seed from
+    the bottom bar.</u> Hover over any seed to read about it before planting.'
   stepImage: {fileID: 668908640, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   objectiveType: 23
   requiredCount: 1

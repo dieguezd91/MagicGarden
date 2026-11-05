@@ -77,3 +77,4 @@ MonoBehaviour:
   tutorialUI: {fileID: 0}
   enableTutorial: 1
   bufferProcessDelay: 0.3
+  sequence: {fileID: 11400000, guid: 88f9c3d859b74b6eb643ba940bccbbd3, type: 2}

@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cfcb4ccc532b709488bc7e73f2917f2c, type: 3}
-  m_Name: 23-TutorialComplete
+  m_Name: Dig
   m_EditorClassIdentifier: 
-  stepID: TutorialComplete
-  stepOrder: 22
-  instructionText: You have mastered the basics, young druid! Your true journey begins
-    now. Good luck!
-  objectiveType: 15
+  stepID: Dig
+  stepOrder: 3
+  instructionText: '<b>FOREST:</b> Select the shovel on your ability bar. Aim at nearby clear garden ground and <sprite name="MouseClick"> to dig one planting space. You can cycle abilities with <sprite name="QKey"> / <sprite name="EKey"> or the <sprite name="ScrollMouse">.'
+  stepImage: {fileID: -1576750221, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
+  objectiveType: 2
   requiredCount: 1
   isGatedStep: 0
   waitDuration: 3

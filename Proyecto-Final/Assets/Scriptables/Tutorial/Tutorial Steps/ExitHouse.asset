@@ -10,15 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cfcb4ccc532b709488bc7e73f2917f2c, type: 3}
-  m_Name: 13-OpenRestoration
+  m_Name: ExitHouse
   m_EditorClassIdentifier: 
-  stepID: OpenRestoration
-  stepOrder: 12
-  instructionText: Press F at the Sacred Tree to inspect and configure your daily
-    loadout. Confirm once per day, or close without confirming. You can inspect your
-    confirmed loadout again.
-  stepImage: {fileID: 0}
-  objectiveType: 28
+  stepID: LeaveHouse
+  stepOrder: 15
+  instructionText: '<b>FOREST:</b> Your confirmed loadout is equipped and locked for today. Reopening it only lets you inspect it. Walk out through the doorway to return to the garden.'
+  objectiveType: 31
   requiredCount: 1
-  isGatedStep: 1
-  waitDuration: 1
+  isGatedStep: 0
+  waitDuration: 3

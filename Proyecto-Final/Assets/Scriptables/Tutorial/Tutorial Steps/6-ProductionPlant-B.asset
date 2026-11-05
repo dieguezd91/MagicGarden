@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: ProductionPlant
   stepOrder: 5
-  instructionText: You will find your seeds on the bottom bar. Remember to hover
-    over them to read and learn their details.
+  instructionText: 'Forest: Keep learning from the seeds on your bottom bar. Hover
+    over them to read their details and plan the garden you will care for, Summerlimbs.'
   stepImage: {fileID: -473241699, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   objectiveType: 15
   requiredCount: 1

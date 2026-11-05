@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: FifthNightWarning
   stepOrder: 19
-  instructionText: Prepare your defenses and grow your strength, for the forest relies
-    on you.
+  instructionText: 'Forest: Keep cultivating the garden and gathering resources,
+    Summerlimbs. Each day is a chance to prepare for the next night. We will face it
+    together.'
   stepImage: {fileID: 0}
   objectiveType: 15
   requiredCount: 1

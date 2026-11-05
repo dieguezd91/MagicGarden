@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cfcb4ccc532b709488bc7e73f2917f2c, type: 3}
-  m_Name: 1-Welcome-A
+  m_Name: PrepareForNight
   m_EditorClassIdentifier: 
-  stepID: Welcome
-  stepOrder: 0
-  instructionText: Welcome, young druid! This sacred forest is now your responsibility.
+  stepID: Teleport
+  stepOrder: 7
+  instructionText: '<b>FOREST:</b> Prepare before calling night. <sprite name="SpaceKey"> teleports; <sprite name="TABKey"> or <sprite name="IKey"> opens your inventory. At night, use a filled spell slot with 4-6 and <sprite name="MouseClick"> to cast. Keep moving and protect the ancestral tree until dawn.'
   stepImage: {fileID: 0}
   objectiveType: 15
   requiredCount: 1
-  isGatedStep: 0
-  waitDuration: 5
+  isGatedStep: 1
+  waitDuration: 3

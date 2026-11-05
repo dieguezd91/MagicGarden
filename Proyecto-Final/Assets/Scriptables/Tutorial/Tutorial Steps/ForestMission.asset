@@ -10,13 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cfcb4ccc532b709488bc7e73f2917f2c, type: 3}
-  m_Name: 1-Welcome-B
+  m_Name: ForestMission
   m_EditorClassIdentifier: 
   stepID: Welcome
   stepOrder: 0
-  instructionText: By day, use your magic to <u>cultivate</u> the land. By night,
-    you must <u>defend</u> it from the corrupt creatures that emerge from the shadows.
-    Let's begin.
+  instructionText: '<b>FOREST:</b> I will teach you to prepare the garden by day and defend the ancestral tree by night. Infernal creatures attack it, but I do not know why.'
   stepImage: {fileID: 0}
   objectiveType: 15
   requiredCount: 1

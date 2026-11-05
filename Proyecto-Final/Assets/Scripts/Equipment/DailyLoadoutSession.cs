@@ -2,8 +2,8 @@ using System;
 using MagicGarden.Loadout;
 
 /// <summary>
-/// Run-owned equipment coordination at the Assembly-CSharp boundary. No gameplay
-/// admission, inventory selection/mutation, UI, singleton or cooldown ownership.
+/// Run-owned equipment coordination at the Assembly-CSharp boundary. Applies the
+/// active tutorial's opt-in confirmation policy without owning UI, inventory or cooldowns.
 /// </summary>
 public sealed class DailyLoadoutSession : IDisposable
 {
@@ -63,9 +63,30 @@ public sealed class DailyLoadoutSession : IDisposable
             ? default : EquipmentAssignment<SpellDataSO>.For(identity));
     }
 
+    public const string TutorialLoadoutRequiredMessage =
+        "Select at least one plant and one spell before confirming your tutorial loadout.";
+
+    public bool HasUsableDraft => HasBothCategories(false);
+    public bool HasUsableCommitted => HasBothCategories(true);
+    public bool IsTutorialLoadoutRequired => TutorialManager.Instance != null &&
+        TutorialManager.Instance.RequiresUsableLoadout;
+
+    private bool HasBothCategories(bool committed)
+    {
+        bool plant = false, spell = false;
+        for (int i = 0; i < DailyLoadoutState<SeedsEnum, SpellDataSO>.SlotsPerCategory; i++)
+        {
+            plant |= (committed ? GetCommittedPlant(i) : GetDraftPlant(i)).HasValue;
+            var assignment = committed ? GetCommittedSpell(i) : GetDraftSpell(i);
+            spell |= assignment.HasValue && assignment.Identity != null;
+        }
+        return plant && spell;
+    }
+
     public bool TryConfirm()
     {
         if (!CanConfigure) return false;
+        if (IsTutorialLoadoutRequired && !HasUsableDraft) return false;
         // Eligibility can change after editing (e.g. a progression rebuild). Reject
         // without touching committed state or the daily allowance. Stock is not eligibility.
         for (int i = 0; i < DailyLoadoutState<SeedsEnum, SpellDataSO>.SlotsPerCategory; i++)

@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: OpenInventory
   stepOrder: 6
-  instructionText: Your journal keeps track of all resources you've gathered. <u>Press
-    <sprite name="TABKey"> or <sprite name="IKey"> to check your inventory.</u>
+  instructionText: 'Forest: Your journal records the resources you gather here.
+    <u>Press <sprite name="TABKey"> or <sprite name="IKey"> to check your inventory.</u>
+    Knowing what you have will help you prepare.'
   stepImage: {fileID: 0}
   objectiveType: 11
   requiredCount: 1

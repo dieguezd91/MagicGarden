@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: OpenCrafting
   stepOrder: 10
-  instructionText: Here, the elements converge. Approach the Cauldron to forge the
-    seeds that will guard our land.
+  instructionText: 'Forest: Approach the Cauldron and inspect the seeds you can
+    craft. Close the crafting panel when you have finished, and we will continue
+    preparing our home.'
   stepImage: {fileID: 0}
   objectiveType: 12
   requiredCount: 1

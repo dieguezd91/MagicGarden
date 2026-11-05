@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: ProductionPlant
   stepOrder: 5
-  instructionText: <u>Plant your first Production seed.</u> These plants yield valuable
-    resources to harvest. <u>BE CAREFUL, THEY CANNOT DEFEND THEMSELVES.</u>
+  instructionText: 'Forest: Now <u>plant a Production seed.</u> These plants provide
+    resources for you to harvest as you prepare each day. <u>Be careful: they cannot
+    defend themselves.</u>'
   stepImage: {fileID: -473241699, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   objectiveType: 16
   requiredCount: 1

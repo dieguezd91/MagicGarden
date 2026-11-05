@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: DefeatEnemy
   stepOrder: 17
-  instructionText: The first corrupted creature approaches! Strike down the threat
-    to defend the Sacred Tree.
+  instructionText: 'Forest: An infernal creature approaches the ancestral tree!
+    Strike it down, Summerlimbs, and protect the home you are learning to care for.'
   objectiveType: 9
   requiredCount: 1
   isGatedStep: 0

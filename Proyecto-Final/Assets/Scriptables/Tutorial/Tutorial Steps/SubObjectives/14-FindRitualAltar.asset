@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: FindRitualAltar
   stepOrder: 13
-  instructionText: Finally, seek the Ritual Altar. It is there you shall summon the
-    night when you are ready to face the trial.
+  instructionText: 'Forest: Finally, find the Ritual Altar. When your preparations
+    are complete, you can use it to begin the night.'
   stepImage: {fileID: 1845753906, guid: d5879276d50f47440a06b03dcf0a46db, type: 3}
   objectiveType: 21
   requiredCount: 1

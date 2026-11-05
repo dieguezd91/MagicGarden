@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: FindCraftingCauldron
   stepOrder: 9
-  instructionText: Within these walls lies your ancestral power. Seek first the Cauldron,
-    where alchemy breathes life into your defenses.
+  instructionText: 'Forest: This home also holds tools for your preparation. First,
+    seek the Cauldron. There you can craft seeds to help defend the garden.'
   stepImage: {fileID: 1046542882, guid: d5879276d50f47440a06b03dcf0a46db, type: 3}
   objectiveType: 19
   requiredCount: 1

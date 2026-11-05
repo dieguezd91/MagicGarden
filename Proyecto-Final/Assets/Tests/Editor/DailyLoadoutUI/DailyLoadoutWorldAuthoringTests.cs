@@ -63,7 +63,7 @@ public sealed class DailyLoadoutWorldAuthoringTests
     {
         Assert.DoesNotThrow(() => Invoke("ValidateInstalled"),
             "Run Tools/Magic Garden/Daily Loadout/Wire Sacred Tree (Stage 4C) first. This test does not modify production assets.");
-        foreach (string name in new[] { "12-FindRestorationAltar", "13-OpenRestoration" })
+        foreach (string name in new[] { "12-FindRestorationAltar", "OpenDailyLoadout" })
         {
             var step = AssetDatabase.LoadMainAssetAtPath("Assets/Scriptables/Tutorial/Tutorial Steps/SubObjectives/" + name + ".asset");
             string text = (string)F.Field(step, "instructionText");

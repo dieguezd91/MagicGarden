@@ -10,15 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cfcb4ccc532b709488bc7e73f2917f2c, type: 3}
-  m_Name: 4-Dig
+  m_Name: EnterHouse
   m_EditorClassIdentifier: 
-  stepID: Dig
-  stepOrder: 3
-  instructionText: The earth responds to your touch. To use this ability, first <u>select
-    the shovel icon on your ability bar.</u> Then, <sprite name="MouseClick"> to
-    <u>dig</u> and prepare the soil for planting.
-  stepImage: {fileID: -1576750221, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
-  objectiveType: 2
+  stepID: EnterHouse
+  stepOrder: 8
+  instructionText: '<b>FOREST:</b> First, enter the house inside the ancestral tree. Walk through its doorway to prepare your daily loadout.'
+  objectiveType: 6
   requiredCount: 1
   isGatedStep: 0
-  waitDuration: 3
+  waitDuration: 1

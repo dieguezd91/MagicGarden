@@ -10,14 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cfcb4ccc532b709488bc7e73f2917f2c, type: 3}
-  m_Name: 5-DefensivePlant-B
+  m_Name: TutorialComplete
   m_EditorClassIdentifier: 
-  stepID: DefensivePlant
-  stepOrder: 4
-  instructionText: It is time to protect your garden. <u>Plant a Defensive seed.</u>
-    These plants will watch over your garden during the night.
-  stepImage: {fileID: 668908640, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
-  objectiveType: 17
+  stepID: TutorialComplete
+  stepOrder: 22
+  instructionText: '<b>FOREST:</b> Summerlimbs, this place is your home. Each day, prepare your garden and confirm your daily choices inside the house. Each night, defend the ancestral tree. Keep learning; I will be here with you.'
+  objectiveType: 15
   requiredCount: 1
-  isGatedStep: 0
-  waitDuration: 2
+  isGatedStep: 1
+  allowNightTransition: 1
+  waitDuration: 3

@@ -10,14 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cfcb4ccc532b709488bc7e73f2917f2c, type: 3}
-  m_Name: 17-CastSpell
+  m_Name: Awakening
   m_EditorClassIdentifier: 
-  stepID: CastSpell
-  stepOrder: 16
-  instructionText: <u>Channel your magic! <sprite name="MouseClick"> to cast spells
-    and defend the Sacred Tree</u> from corrupted creatures.
+  stepID: Welcome
+  stepOrder: 0
+  instructionText: '<b>FOREST:</b> Awaken, Summerlimbs. I am the forest. I created you, an ENT, to help defend our home. You do not know this place yet, but this place knows you.'
   stepImage: {fileID: 0}
-  objectiveType: 5
+  objectiveType: 15
   requiredCount: 1
   isGatedStep: 0
-  waitDuration: 3
+  waitDuration: 5

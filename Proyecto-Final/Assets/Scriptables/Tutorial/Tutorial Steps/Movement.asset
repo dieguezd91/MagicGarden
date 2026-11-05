@@ -10,14 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cfcb4ccc532b709488bc7e73f2917f2c, type: 3}
-  m_Name: 22-Harvest
+  m_Name: Movement
   m_EditorClassIdentifier: 
-  stepID: Harvest
-  stepOrder: 21
-  instructionText: With the new day comes growth. <u>Harvest</u> your mature plants
-    by left-clicking on them to gather resources.
-  stepImage: {fileID: -1594061710, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
-  objectiveType: 4
+  stepID: Move
+  stepOrder: 1
+  instructionText: '<b>FOREST:</b> Take your first steps, Summerlimbs. Move with <sprite name="WASDKeys"> or <sprite name="ArrowKeys">. This is your home now.'
+  stepImage: {fileID: 0}
+  objectiveType: 1
   requiredCount: 1
   isGatedStep: 0
   waitDuration: 3

@@ -34,6 +34,12 @@ public class TutorialUI : MonoBehaviour
     [SerializeField] private float sizeDeltaX_WithImage = -230f;
     [SerializeField] private float anchoredPosX_WithImage = -80f;
 
+    [Header("ADAPTIVE DIALOGUE")]
+    [SerializeField, Range(0.25f, 1f)] private float maximumViewportHeight = 0.75f;
+    private Vector2 lastLayoutParentSize;
+    private float authoredWidthDelta;
+    private bool dialogueLayoutReady;
+
     [Header("ANIMATION SETTINGS")]
     [SerializeField] private float fadeSpeed = 0.5f;
     [SerializeField] private float scaleAnimDuration = 0.3f;
@@ -90,6 +96,7 @@ public class TutorialUI : MonoBehaviour
                 continueButtonTMPLabel = continueButton.GetComponentInChildren<TMP_Text>();
         }
 
+        EnsureDialogueScroll();
         if (textScrollRect != null) textScrollRect.onValueChanged.AddListener(OnScrollValueChanged);
 
         if (scrollIndicator != null)
@@ -134,24 +141,24 @@ public class TutorialUI : MonoBehaviour
 
     public void ShowStep(TutorialStep step)
     {
-        // If inventory or pause is active, defer showing until they are closed
-        // Also check the LevelManager game state in case the Inventory/Pause events haven't fired yet.
-        var lm = LevelManager.Instance;
-        bool isInInventoryState = (lm != null && (UIManager.Instance?.Flow != null && UIManager.Instance.Flow.HasOpenModal)) || inventoryOpenFlag;
-        bool isInPausedState = (lm != null && (pauseController != null && pauseController.IsPaused)) || pauseOpenFlag;
-
-        if (isInInventoryState || isInPausedState)
-        {
-            pendingStep = step;
-            hasPendingStep = true;
-            return;
-        }
-
         DoShowStep(step);
     }
 
     private void DoShowStep(TutorialStep step)
     {
+        // Every presentation route, including force-show and legacy close callbacks,
+        // respects modal ownership even before a LevelManager exists.
+        if (inventoryOpenFlag || pauseOpenFlag ||
+            (UIManager.Instance?.Flow != null && UIManager.Instance.Flow.HasOpenModal) ||
+            (pauseController != null && pauseController.IsPaused))
+        {
+            pendingStep = step;
+            hasPendingStep = true;
+            HideStepImmediate();
+            return;
+        }
+        pendingStep = null;
+        hasPendingStep = false;
         _currentStepObjectiveType = step.objectiveType;
         var soundController = FindObjectOfType<TutorialSoundBase>();
         if (soundController != null) tutorialSoundBase.PlaySound(TutorialSoundType.ShowPanel);
@@ -213,7 +220,10 @@ public class TutorialUI : MonoBehaviour
             }
         }
 
-        typewriterCoroutine = StartCoroutine(TypewriterEffect(step.instructionText));
+        instructionText.text = step.DisplayText;
+        instructionText.maxVisibleCharacters = 0;
+        FitDialogue();
+        typewriterCoroutine = StartCoroutine(TypewriterEffect(step.DisplayText));
         typingActive = true;
 
         // Animate panel in (fade + scale) — ensure we bring scale from zero to one
@@ -240,7 +250,126 @@ public class TutorialUI : MonoBehaviour
         }
     }
 
-    // Force display of a tutorial step, bypassing internal inventory/pause deferral checks.
+    // Upgrade the existing viewport in place; retain prefab text, button and art references.
+    private void EnsureDialogueScroll()
+    {
+        if (dialogueLayoutReady || panelTransform == null || textScrollViewport == null || instructionText == null) return;
+        authoredWidthDelta = panelTransform.sizeDelta.x;
+        if (textScrollRect == null)
+        {
+            textScrollRect = panelTransform.GetComponent<ScrollRect>();
+            if (textScrollRect == null) textScrollRect = panelTransform.gameObject.AddComponent<ScrollRect>();
+        }
+        if (textScrollViewport.GetComponent<RectMask2D>() == null)
+            textScrollViewport.gameObject.AddComponent<RectMask2D>();
+        var hitArea = textScrollViewport.GetComponent<Image>();
+        if (hitArea == null)
+        {
+            hitArea = textScrollViewport.gameObject.AddComponent<Image>();
+            hitArea.color = Color.clear;
+        }
+        hitArea.raycastTarget = true;
+        textScrollRect.viewport = textScrollViewport;
+        textScrollRect.content = instructionText.rectTransform;
+        textScrollRect.horizontal = false;
+        textScrollRect.vertical = true;
+        textScrollRect.movementType = ScrollRect.MovementType.Clamped;
+        textScrollRect.inertia = false;
+        textScrollRect.scrollSensitivity = 48f;
+        instructionText.alignment = TextAlignmentOptions.TopLeft;
+        instructionText.overflowMode = TextOverflowModes.Overflow;
+        instructionText.margin = new Vector4(8, 8, 8, 8);
+        var content = instructionText.rectTransform;
+        content.anchorMin = new Vector2(0, 1);
+        content.anchorMax = Vector2.one;
+        content.pivot = new Vector2(0.5f, 1);
+        content.sizeDelta = Vector2.zero;
+        dialogueLayoutReady = true;
+    }
+
+    private void FitDialogue()
+    {
+        if (!dialogueLayoutReady || !(panelTransform.parent is RectTransform parent)) return;
+        lastLayoutParentSize = parent.rect.size;
+        float width = Mathf.Min(parent.rect.width - 48f, Mathf.Max(760f, parent.rect.width + authoredWidthDelta));
+        panelTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Max(1f, width));
+        textScrollViewport.anchorMin = Vector2.zero;
+        textScrollViewport.anchorMax = Vector2.one;
+        // Reserve the existing button row even while Continue is temporarily hidden.
+        textScrollViewport.offsetMin = new Vector2(textScrollViewport.offsetMin.x, 76f);
+        textScrollViewport.offsetMax = new Vector2(textScrollViewport.offsetMax.x, -24f);
+        Canvas.ForceUpdateCanvases();
+        var content = instructionText.rectTransform;
+        var margin = new Vector4(8f, 8f, 8f, 8f);
+        instructionText.margin = margin;
+        // Preferred height is only a seed: rich-text/sprite metrics and the final
+        // margin-constrained wrapping can place the last glyph below that estimate.
+        float textHeight = Mathf.Ceil(instructionText.GetPreferredValues(instructionText.text,
+            textScrollViewport.rect.width, Mathf.Infinity).y);
+        content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(1f, textHeight));
+        int visibleCharacters = instructionText.maxVisibleCharacters;
+        instructionText.maxVisibleCharacters = int.MaxValue;
+        instructionText.ForceMeshUpdate();
+        // Inline sprites and bold glyphs can draw beyond their pen advances. Reserve
+        // those measured overhangs before reflowing, without changing shared metrics.
+        float leftOverhang = 0f, rightOverhang = 0f;
+        for (int i = 0; i < instructionText.textInfo.characterCount; i++)
+        {
+            var character = instructionText.textInfo.characterInfo[i];
+            if (!character.isVisible) continue;
+            leftOverhang = Mathf.Max(leftOverhang, character.origin - character.bottomLeft.x);
+            rightOverhang = Mathf.Max(rightOverhang, character.topRight.x - character.xAdvance);
+        }
+        margin.x += Mathf.Ceil(leftOverhang);
+        margin.z += Mathf.Ceil(rightOverhang);
+        instructionText.margin = margin;
+        instructionText.ForceMeshUpdate();
+        float bottom = content.rect.yMax - instructionText.margin.y;
+        var textInfo = instructionText.textInfo;
+        for (int i = 0; i < textInfo.characterCount; i++)
+        {
+            var character = textInfo.characterInfo[i];
+            if (character.isVisible) bottom = Mathf.Min(bottom, character.bottomLeft.y);
+        }
+        // Line descenders also retain the final line's typographic space (including
+        // trailing blank lines); glyph bounds above include inline sprite geometry.
+        for (int i = 0; i < textInfo.lineCount; i++)
+            bottom = Mathf.Min(bottom, textInfo.lineInfo[i].descender);
+        textHeight = Mathf.Ceil(content.rect.yMax - bottom + instructionText.margin.w);
+        instructionText.maxVisibleCharacters = visibleCharacters;
+        float imageHeight = stepImageDisplay != null && stepImageDisplay.gameObject.activeSelf
+            ? stepImageDisplay.rectTransform.rect.height + 48f : 0f;
+        float limit = Mathf.Max(1f, Mathf.Min(parent.rect.height - 48f, parent.rect.height * maximumViewportHeight));
+        float height = Mathf.Min(limit, Mathf.Max(textHeight + 100f, imageHeight + 100f));
+        panelTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+        content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(textHeight, textScrollViewport.rect.height));
+        content.anchoredPosition = Vector2.zero;
+        // Clamp the resolved nested prefab's right offset to the current viewport too.
+        var corners = new Vector3[4];
+        // Fit the settled geometry, never a partially hidden/animated scale.
+        Vector3 animatedScale = panelTransform.localScale;
+        panelTransform.localScale = Vector3.one;
+        panelTransform.GetWorldCorners(corners);
+        panelTransform.localScale = animatedScale;
+        Vector2 min = parent.InverseTransformPoint(corners[0]);
+        Vector2 max = parent.InverseTransformPoint(corners[2]);
+        Vector2 correction = new Vector2(
+            Mathf.Max(0, parent.rect.xMin + 24f - min.x) - Mathf.Max(0, max.x - parent.rect.xMax + 24f),
+            Mathf.Max(0, parent.rect.yMin + 24f - min.y) - Mathf.Max(0, max.y - parent.rect.yMax + 24f));
+        panelTransform.anchoredPosition += correction;
+        instructionText.ForceMeshUpdate();
+        textScrollRect.StopMovement();
+        textScrollRect.verticalNormalizedPosition = 1f;
+        UpdateScrollIndicator();
+    }
+
+    private void LateUpdate()
+    {
+        if (isVisible && dialogueLayoutReady && panelTransform.parent is RectTransform parent &&
+            parent.rect.size != lastLayoutParentSize) FitDialogue();
+    }
+
+    // Re-present the current step without overriding modal ownership.
     public void ForceShowStep(TutorialStep step)
     {
         DoShowStep(step);
@@ -271,8 +400,7 @@ public class TutorialUI : MonoBehaviour
 
     public void HideStepImmediate()
     {
-        if (!isVisible) return;
-
+        // A fading panel may still be active after isVisible becomes false.
         KillAllAnimations();
         isVisible = false;
 
@@ -328,10 +456,10 @@ public class TutorialUI : MonoBehaviour
         // final reveal ensure
         instructionText.maxVisibleCharacters = totalCharacters;
 
-        // Update scrollbar/indicator once without forcing layout rebuilds. In most cases the scrollrect will have correct size.
+        // Keep the beginning readable after natural typing; wheel/drag can reach the rest.
         if (textScrollRect != null)
         {
-            textScrollRect.verticalNormalizedPosition = 0f;
+            textScrollRect.verticalNormalizedPosition = 1f;
             UpdateScrollIndicator();
         }
 
@@ -360,6 +488,15 @@ public class TutorialUI : MonoBehaviour
         continueCooldownCoroutine = null;
     }
 
+    public void CancelPendingStep()
+    {
+        pendingStep = null;
+        hasPendingStep = false;
+        if (continueCooldownCoroutine != null) StopCoroutine(continueCooldownCoroutine);
+        continueCooldownCoroutine = null;
+        continueCooldownActive = false;
+    }
+
     public void HideImmediate()
     {
         HideStepImmediate();
@@ -375,7 +512,8 @@ public class TutorialUI : MonoBehaviour
         if (scrollIndicator == null || textScrollRect == null || indicatorCanvasGroup == null) return;
 
         bool atBottom = textScrollRect.verticalNormalizedPosition <= 0.01f;
-        bool contentOverflows = textScrollRect.verticalScrollbar.size < 0.99f;
+        bool contentOverflows = textScrollRect.content != null && textScrollRect.viewport != null &&
+            textScrollRect.content.rect.height > textScrollRect.viewport.rect.height + 1f;
 
         bool showIndicator = contentOverflows && !atBottom;
 
@@ -423,6 +561,7 @@ public class TutorialUI : MonoBehaviour
 
     private void KillAllAnimations()
     {
+        if (textScrollRect != null) textScrollRect.StopMovement();
         if (currentSequence != null && currentSequence.IsActive())
         {
             currentSequence.Kill();
@@ -495,10 +634,10 @@ public class TutorialUI : MonoBehaviour
         {
             instructionText.maxVisibleCharacters = instructionText.text.Length;
 
-            // Ensure scroll is at the bottom and update the indicator; avoid forcing a full layout rebuild.
+            // Reveal all content without skipping the beginning of a long dialogue.
             if (textScrollRect != null)
             {
-                textScrollRect.verticalNormalizedPosition = 0f;
+                textScrollRect.verticalNormalizedPosition = 1f;
                 UpdateScrollIndicator();
             }
         }
@@ -576,8 +715,8 @@ public class TutorialUI : MonoBehaviour
     private void OnInventoryOpened()
     {
         inventoryOpenFlag = true;
-        // hide any visible tutorial while inventory is open
-        HideStep();
+        // Do not leave a fading dialogue behind the newly opened modal.
+        HideStepImmediate();
         // inform manager to pause tutorial state
         TutorialManager.Instance?.PauseTutorial();
     }
@@ -600,7 +739,7 @@ public class TutorialUI : MonoBehaviour
     private void OnPauseMenuRequested()
     {
         pauseOpenFlag = true;
-        HideStep();
+        HideStepImmediate();
         TutorialManager.Instance?.PauseTutorial();
     }
 

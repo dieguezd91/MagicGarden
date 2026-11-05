@@ -14,6 +14,18 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private bool enableTutorial = true;
     [SerializeField] private float bufferProcessDelay = 0.3f;
 
+    [Tooltip("Optional explicit list order. Empty sequence falls back to legacy stepOrder sorting.")]
+    [SerializeField] private TutorialSequence sequence;
+    private int[] conditionProgress;
+    private bool configuredConditionsMet;
+    private bool configuredWaitFinished;
+    private float configuredElapsed;
+    private bool configuredClockStarted;
+    private bool firstPlantReadyObserved;
+    private bool loadoutConfirmedObserved;
+    private bool houseExitObserved;
+    private bool houseExitedDuringTutorial;
+
     private TutorialStep currentStep;
     private int currentStepIndex = 0;
     private int currentProgress = 0;
@@ -25,6 +37,7 @@ public class TutorialManager : MonoBehaviour
     private bool _houseExitReleaseSubscribed = false;
 
     private bool isPausedByMenu = false;
+    private UIFlowController observedModalFlow;
     private bool nextStepDeferred = false;
     private bool nextStepPending = false;
 
@@ -33,11 +46,20 @@ public class TutorialManager : MonoBehaviour
     private PlayerMovementController playerMovementController;
 
     public bool IsTutorialActive() => tutorialActive;
+    public bool RequiresUsableLoadout => tutorialActive && sequence != null && sequence.requireUsableLoadout;
+
+    public bool CanStartTutorialNight(int legacyMinimumStepOrder)
+    {
+        if (!tutorialActive) return true;
+        if (sequence != null && sequence.useExplicitNightPermission)
+            return currentStep != null && currentStep.allowNightTransition;
+        return GetCurrentStepOrder() >= legacyMinimumStepOrder;
+    }
     public bool CanAcceptPlayerInput()
     {
         if (!tutorialActive) return true;
 
-        if (!canAcceptInput) return false;
+        if (isPausedByMenu || !canAcceptInput) return false;
 
         if (currentStep != null && currentStep.objectiveType == TutorialObjectiveType.UseRitualAltar && tutorialUI != null && tutorialUI.IsTyping)
             return false;
@@ -104,23 +126,26 @@ public class TutorialManager : MonoBehaviour
     private void DisplayStep(TutorialStep step, bool force = false)
     {
         if (step == null) return;
+        if (isPausedByMenu) return;
 
         ApplyInputGatingForStep(step);
         ArmMoveTriggerIfNeeded(step);
 
+        bool hide = step.enterActions != null && step.enterActions.Count > 0 &&
+            step.enterActions[step.enterActions.Count - 1] == TutorialStepAction.HidePanel;
         if (tutorialUI != null)
         {
-            if (force)
-                tutorialUI.ForceShowStep(step);
-            else
-                tutorialUI.ShowStep(step);
+            if (hide) tutorialUI.HideStepImmediate();
+            else if (force) tutorialUI.ForceShowStep(step);
+            else tutorialUI.ShowStep(step);
         }
 
         // Remove stale movement events that might have occurred before the step became visible
         RemoveBufferedObjective(TutorialObjectiveType.Move);
 
         // Special case: for the Ritual Altar step we must prevent player input until the UI finishes typing
-        if (step.objectiveType == TutorialObjectiveType.UseRitualAltar && tutorialUI != null)
+        // A deliberately hidden panel cannot emit TypingFinished; do not arm a typing gate.
+        if (!hide && step.objectiveType == TutorialObjectiveType.UseRitualAltar && tutorialUI != null)
         {
             // Subscribe before disabling input to avoid missing the event
             if (!_enableInputAfterTypingSubscribed)
@@ -162,7 +187,7 @@ public class TutorialManager : MonoBehaviour
     {
         InitializePlayerController();
 
-        if (enableTutorial && tutorialSteps != null && tutorialSteps.Count > 0)
+        if (enableTutorial && ((sequence != null && sequence.steps.Count > 0) || (tutorialSteps != null && tutorialSteps.Count > 0)))
         {
             Invoke(nameof(StartTutorial), 0.5f);
         }
@@ -176,6 +201,28 @@ public class TutorialManager : MonoBehaviour
     private void OnDisable()
     {
         UnsubscribeFromEvents();
+        ResetStepWork();
+        tutorialActive = false;
+        currentStep = null;
+        if (playerController != null) playerController.SetTutorialActionBlocked(false);
+        if (playerMovementController != null) playerMovementController.SetTutorialMovementBlocked(false);
+        if (tutorialUI != null) tutorialUI.HideStepImmediate();
+    }
+
+    private void ResetStepWork()
+    {
+        CancelInvoke();
+        StopAllCoroutines();
+        ClearTypingSubscriptionIfNeeded();
+        UIEvents.OnInventoryClosed -= ShowPendingStepFromMenu;
+        UIEvents.OnPauseMenuClosed -= ShowPendingStepFromMenu;
+        if (tutorialUI != null) tutorialUI.CancelPendingStep();
+        TutorialEvents.OnHouseExited -= OnHouseExitedToReleaseNextStep;
+        _houseExitReleaseSubscribed = false;
+        eventBuffer.Clear();
+        firstPlantReadyObserved = false;
+        loadoutConfirmedObserved = houseExitObserved = houseExitedDuringTutorial = false;
+        nextStepDeferred = nextStepPending = isPausedByMenu = false;
     }
 
     private void SubscribeToEvents()
@@ -197,6 +244,7 @@ public class TutorialManager : MonoBehaviour
 
         TutorialEvents.OnInventoryOpened += CheckObjective_InventoryOpened;
         TutorialEvents.OnHouseEntered += CheckObjective_HouseEntered;
+        TutorialEvents.OnHouseExited += CheckObjective_HouseExited;
         TutorialEvents.OnCraftingClosed += CheckObjective_CraftingOpened;
         TutorialEvents.OnRestorationClosed += CheckObjective_RestorationOpened;
         TutorialEvents.OnDailyLoadoutOpened += CheckObjective_DailyLoadoutOpened;
@@ -205,10 +253,8 @@ public class TutorialManager : MonoBehaviour
         TutorialEvents.OnSeedTooltipDisplayed += CheckObjective_SeedTooltipDisplayed;
 
         TutorialEvents.OnProductionPlantPlanted += CheckObjective_ProductionPlantPlanted;
-        TutorialEvents.OnProductionPlantPlanted += CheckObjective_SeedPlanted;
 
         TutorialEvents.OnDefensivePlantPlanted += CheckObjective_DefensivePlantPlanted;
-        TutorialEvents.OnDefensivePlantPlanted += CheckObjective_SeedPlanted;
 
         TutorialEvents.OnCraftingProximity += CheckObjective_CraftingProximity;
         TutorialEvents.OnRestorationProximity += CheckObjective_RestorationProximity;
@@ -219,8 +265,25 @@ public class TutorialManager : MonoBehaviour
         TutorialEvents.OnTeleportCasted += CheckObjective_TeleportCasted;
     }
 
+    private void RefreshModalSubscription()
+    {
+        var flow = UIManager.Instance != null ? UIManager.Instance.Flow : null;
+        if (observedModalFlow == flow) return;
+        if (observedModalFlow != null) observedModalFlow.ModalChanged -= OnModalChanged;
+        observedModalFlow = flow;
+        if (observedModalFlow != null) observedModalFlow.ModalChanged += OnModalChanged;
+    }
+
+    private void OnModalChanged(UIModal modal)
+    {
+        if (!tutorialActive) return;
+        if (modal != UIModal.None) PauseTutorial();
+        else if (isPausedByMenu && !IsLevelPausedOrInInventory()) ShowPendingStepFromMenu();
+    }
+
     private void SubscribeUIEventHandlers()
     {
+        RefreshModalSubscription();
         UIEvents.OnPauseMenuRequested += PauseTutorial;
         UIEvents.OnPauseMenuClosed += ResumeTutorial;
         UIEvents.OnInventoryOpened += PauseTutorial;
@@ -245,6 +308,7 @@ public class TutorialManager : MonoBehaviour
 
         TutorialEvents.OnInventoryOpened -= CheckObjective_InventoryOpened;
         TutorialEvents.OnHouseEntered -= CheckObjective_HouseEntered;
+        TutorialEvents.OnHouseExited -= CheckObjective_HouseExited;
         TutorialEvents.OnCraftingClosed -= CheckObjective_CraftingOpened;
         TutorialEvents.OnRestorationClosed -= CheckObjective_RestorationOpened;
         TutorialEvents.OnDailyLoadoutOpened -= CheckObjective_DailyLoadoutOpened;
@@ -253,10 +317,8 @@ public class TutorialManager : MonoBehaviour
         TutorialEvents.OnSeedTooltipDisplayed -= CheckObjective_SeedTooltipDisplayed;
 
         TutorialEvents.OnProductionPlantPlanted -= CheckObjective_ProductionPlantPlanted;
-        TutorialEvents.OnProductionPlantPlanted -= CheckObjective_SeedPlanted;
 
         TutorialEvents.OnDefensivePlantPlanted -= CheckObjective_DefensivePlantPlanted;
-        TutorialEvents.OnDefensivePlantPlanted -= CheckObjective_SeedPlanted;
 
         TutorialEvents.OnCraftingProximity -= CheckObjective_CraftingProximity;
         TutorialEvents.OnRestorationProximity -= CheckObjective_RestorationProximity;
@@ -276,6 +338,8 @@ public class TutorialManager : MonoBehaviour
 
     private void UnsubscribeUIEventHandlers()
     {
+        if (observedModalFlow != null) observedModalFlow.ModalChanged -= OnModalChanged;
+        observedModalFlow = null;
         UIEvents.OnPauseMenuRequested -= PauseTutorial;
         UIEvents.OnPauseMenuClosed -= ResumeTutorial;
         UIEvents.OnInventoryOpened -= PauseTutorial;
@@ -284,7 +348,12 @@ public class TutorialManager : MonoBehaviour
 
     public void StartTutorial()
     {
-        if (tutorialSteps == null || tutorialSteps.Count == 0)
+        ResetStepWork();
+        tutorialActive = false;
+        currentStep = null;
+        if (sequence != null && sequence.steps.Count > 0)
+            tutorialSteps = new List<TutorialStep>(sequence.steps);
+        if (tutorialSteps == null || tutorialSteps.Count == 0 || tutorialSteps.Any(s => s == null))
         {
             return;
         }
@@ -292,7 +361,9 @@ public class TutorialManager : MonoBehaviour
         TutorialEvents.ResetTutorialEventFlags();
 
         tutorialActive = true;
-        tutorialSteps = tutorialSteps.OrderBy(s => s.stepOrder).ToList();
+        RefreshModalSubscription();
+        if (sequence == null || sequence.steps.Count == 0)
+            tutorialSteps = tutorialSteps.OrderBy(s => s.stepOrder).ToList();
 
         TutorialEvents.InvokeTutorialStarted();
         ShowStep(0);
@@ -312,7 +383,8 @@ public class TutorialManager : MonoBehaviour
         int nextIndex = currentStepIndex + 1;
         if (currentStep != null && currentStep.objectiveType == TutorialObjectiveType.EnterHouse
             && tutorialSteps != null && nextIndex < tutorialSteps.Count
-            && tutorialSteps[nextIndex].objectiveType == TutorialObjectiveType.CastSpell)
+            && tutorialSteps[nextIndex].objectiveType == TutorialObjectiveType.CastSpell
+            && !UsesExplicitHouseFlow())
         {
             DeferNextStep();
             if (!_houseExitReleaseSubscribed)
@@ -324,6 +396,14 @@ public class TutorialManager : MonoBehaviour
 
         // Centralized scheduling for showing the next step
         ScheduleShowNextStep();
+    }
+
+    private bool UsesExplicitHouseFlow()
+    {
+        return sequence != null && (sequence.useExplicitNightPermission ||
+            sequence.steps.Any(step => step != null && (step.objectiveType == TutorialObjectiveType.ExitHouse ||
+                (step.useConfiguredCompletion && step.conditions != null && step.conditions.Any(condition =>
+                    condition != null && condition.objective == TutorialObjectiveType.ExitHouse)))));
     }
 
     private void OnHouseExitedToReleaseNextStep()
@@ -393,7 +473,12 @@ public class TutorialManager : MonoBehaviour
     
     private void ShowStep(int index)
     {
+        CancelInvoke(nameof(ShowNextStepDelayed));
+        CancelInvoke(nameof(DelayedForceShowCurrentStep));
+        CancelInvoke(nameof(ProcessBufferAndEnableInput));
+        StopAllCoroutines();
         ClearTypingSubscriptionIfNeeded();
+        eventBuffer.Clear();
 
         if (index >= tutorialSteps.Count)
         {
@@ -404,10 +489,24 @@ public class TutorialManager : MonoBehaviour
         currentStepIndex = index;
         currentStep = tutorialSteps[index];
         currentProgress = 0;
+        firstPlantReadyObserved = false;
+        loadoutConfirmedObserved = houseExitObserved = false;
+        conditionProgress = new int[currentStep.conditions == null ? 0 : currentStep.conditions.Count];
+        configuredConditionsMet = conditionProgress.Length == 0;
+        configuredWaitFinished = currentStep.waitMode == TutorialWaitMode.None;
+        configuredElapsed = 0f;
+        configuredClockStarted = false;
         isTransitioning = false;
         canAcceptInput = false;
+        if (currentStep.useConfiguredCompletion) StartCoroutine(ConfiguredStepClock());
+        if (tutorialUI == null)
+        {
+            ApplyInputGatingForStep(currentStep);
+            Invoke(nameof(ProcessBufferAndEnableInput), bufferProcessDelay);
+            return;
+        }
         
-        if (tutorialUI != null && string.IsNullOrEmpty(currentStep.instructionText))
+        if (tutorialUI != null && string.IsNullOrEmpty(currentStep.DisplayText))
         {
             HandleTrackingOnlyStep(currentStep);
             return;
@@ -415,9 +514,9 @@ public class TutorialManager : MonoBehaviour
 
         if (tutorialUI != null)
         {
-            if (!string.IsNullOrEmpty(currentStep.instructionText))
+            if (!string.IsNullOrEmpty(currentStep.DisplayText))
             {
-                if (IsLevelPausedOrInInventory())
+                if (isPausedByMenu || IsLevelPausedOrInInventory())
                 {
                     RegisterPendingStepShowHandlers();
                 }
@@ -456,8 +555,8 @@ public class TutorialManager : MonoBehaviour
 
     private bool IsLevelPausedOrInInventory()
     {
-        var lm = LevelManager.Instance;
-        return lm != null && ((UIManager.Instance?.Flow != null && UIManager.Instance.Flow.HasOpenModal) || (pauseController != null && pauseController.IsPaused));
+        return (UIManager.Instance?.Flow != null && UIManager.Instance.Flow.HasOpenModal) ||
+            (pauseController != null && pauseController.IsPaused);
     }
 
     private void HandleTrackingOnlyStep(TutorialStep step)
@@ -471,7 +570,16 @@ public class TutorialManager : MonoBehaviour
 
     private void ProcessBufferAndEnableInput()
     {
+        if (!tutorialActive || currentStep == null || isTransitioning || isPausedByMenu) return;
         canAcceptInput = true;
+        if (currentStep.useConfiguredCompletion)
+        {
+            configuredClockStarted = true;
+            while (eventBuffer.Count > 0 && !isTransitioning)
+                RecordConfiguredEvent(eventBuffer.Dequeue());
+            TryCompleteConfiguredStep();
+            return;
+        }
 
         List<TutorialObjectiveType> remainingEvents = new List<TutorialObjectiveType>();
 
@@ -523,8 +631,15 @@ public class TutorialManager : MonoBehaviour
 
     public void ConfirmWaitStep()
     {
-        if (tutorialActive && !isTransitioning && currentStep != null && currentStep.objectiveType == TutorialObjectiveType.Wait)
+        if (tutorialActive && !isTransitioning && !isPausedByMenu && currentStep != null && currentStep.objectiveType == TutorialObjectiveType.Wait)
         {
+            if (currentStep.useConfiguredCompletion)
+            {
+                if (!configuredConditionsMet || currentStep.waitMode != TutorialWaitMode.Continue || (tutorialUI != null && tutorialUI.IsTyping)) return;
+                configuredWaitFinished = true;
+                TryCompleteConfiguredStep();
+                return;
+            }
             CompleteCurrentStep();
         }
     }
@@ -532,6 +647,25 @@ public class TutorialManager : MonoBehaviour
     private void CheckObjective(TutorialObjectiveType type)
     {
         if (!tutorialActive || currentStep == null) return;
+
+        if (currentStep.useConfiguredCompletion)
+        {
+            if (isTransitioning) return;
+            if (isPausedByMenu)
+            {
+                // The station emits its opening objective after acquiring the modal.
+                // Keep that observation without advancing configured lessons behind it.
+                if (type == TutorialObjectiveType.OpenDailyLoadout) eventBuffer.Enqueue(type);
+                return;
+            }
+            if (!canAcceptInput) eventBuffer.Enqueue(type);
+            else
+            {
+                RecordConfiguredEvent(type);
+                TryCompleteConfiguredStep();
+            }
+            return;
+        }
 
         if (currentStep.objectiveType == TutorialObjectiveType.Wait) return;
 
@@ -553,6 +687,45 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    private void RecordConfiguredEvent(TutorialObjectiveType type)
+    {
+        for (int i = 0; i < conditionProgress.Length; i++)
+        {
+            var condition = currentStep.conditions[i];
+            bool plantAlias = condition.objective == TutorialObjectiveType.Plant &&
+                (type == TutorialObjectiveType.PlantProduction || type == TutorialObjectiveType.PlantDefensive);
+            if (condition.objective == type || plantAlias)
+                conditionProgress[i] = Mathf.Min(conditionProgress[i] + 1, Mathf.Max(1, condition.requiredCount));
+        }
+        configuredConditionsMet = conditionProgress.Length == 0 ||
+            (currentStep.conditionCombination == TutorialConditionCombination.All
+                ? Enumerable.Range(0, conditionProgress.Length).All(i => conditionProgress[i] >= Mathf.Max(1, currentStep.conditions[i].requiredCount))
+                : Enumerable.Range(0, conditionProgress.Length).Any(i => conditionProgress[i] >= Mathf.Max(1, currentStep.conditions[i].requiredCount)));
+    }
+
+    private void TryCompleteConfiguredStep()
+    {
+        if (!tutorialActive || isTransitioning || isPausedByMenu || !configuredClockStarted) return;
+        if (configuredConditionsMet && configuredWaitFinished && (tutorialUI == null || !tutorialUI.IsTyping))
+            CompleteCurrentStep();
+    }
+
+    private IEnumerator ConfiguredStepClock()
+    {
+        var owner = currentStep;
+        while (tutorialActive && currentStep == owner && !isTransitioning)
+        {
+            yield return null;
+            if (isPausedByMenu || !configuredClockStarted || (tutorialUI != null && tutorialUI.IsTyping)) continue;
+            if (configuredConditionsMet && owner.waitMode == TutorialWaitMode.Duration)
+            {
+                configuredElapsed += Time.deltaTime;
+                configuredWaitFinished = configuredElapsed >= Mathf.Max(0f, owner.waitDuration);
+            }
+            TryCompleteConfiguredStep();
+        }
+    }
+
     private void ShowNextStepDelayed()
     {
         ShowStep(currentStepIndex + 1);
@@ -560,8 +733,10 @@ public class TutorialManager : MonoBehaviour
 
     private void CompleteTutorial()
     {
+        ResetStepWork();
         tutorialActive = false;
         canAcceptInput = false;
+        currentStep = null;
 
         if (tutorialUI != null)
         {
@@ -585,14 +760,31 @@ public class TutorialManager : MonoBehaviour
     private void CheckObjective_NightStarted() => CheckObjective(TutorialObjectiveType.StartNight);
     private void CheckObjective_EnemyDefeated() => CheckObjective(TutorialObjectiveType.DefeatEnemy);
     private void CheckObjective_NightSurvived() => CheckObjective(TutorialObjectiveType.SurviveNight);
-    private void CheckObjective_HouseEntered() => CheckObjective(TutorialObjectiveType.EnterHouse);
+    private void CheckObjective_HouseEntered()
+    {
+        houseExitedDuringTutorial = false;
+        CheckObjective(TutorialObjectiveType.EnterHouse);
+    }
+
+    private void CheckObjective_HouseExited()
+    {
+        if (!tutorialActive) return;
+        // Remember the actual callback across display delays, but never consume it while paused/typing.
+        houseExitedDuringTutorial = true;
+    }
     private void CheckObjective_CraftingOpened() => CheckObjective(TutorialObjectiveType.OpenCrafting);
     private void CheckObjective_RestorationOpened() => CheckObjective(TutorialObjectiveType.OpenRestoration);
     private void CheckObjective_DailyLoadoutOpened() => CheckObjective(TutorialObjectiveType.OpenDailyLoadout);
     private void CheckObjective_DailyLoadoutProximity() => CheckObjective(TutorialObjectiveType.DailyLoadoutProximity);
     private void CheckObjective_RitualAltarUsed() => CheckObjective(TutorialObjectiveType.UseRitualAltar);
-    private void CheckObjective_ProductionPlantPlanted() => CheckObjective(TutorialObjectiveType.PlantProduction);
-    private void CheckObjective_DefensivePlantPlanted() => CheckObjective(TutorialObjectiveType.PlantDefensive);
+    private void CheckObjective_ProductionPlantPlanted() => CheckPlantEvent(TutorialObjectiveType.PlantProduction);
+    private void CheckObjective_DefensivePlantPlanted() => CheckPlantEvent(TutorialObjectiveType.PlantDefensive);
+    private void CheckPlantEvent(TutorialObjectiveType type)
+    {
+        // One physical planting event; generic Plant is an alias, not a second event.
+        CheckObjective(currentStep != null && !currentStep.useConfiguredCompletion && currentStep.objectiveType == TutorialObjectiveType.Plant
+            ? TutorialObjectiveType.Plant : type);
+    }
     private void CheckObjective_CraftingProximity() => CheckObjective(TutorialObjectiveType.CraftingProximity);
     private void CheckObjective_RestorationProximity() => CheckObjective(TutorialObjectiveType.RestorationProximity);
     private void CheckObjective_RitualAltarProximity() => CheckObjective(TutorialObjectiveType.RitualAltarProximity);
@@ -654,7 +846,9 @@ public class TutorialManager : MonoBehaviour
 
     public void PauseTutorial()
     {
-        if (!tutorialActive || isPausedByMenu) return;
+        if (!tutorialActive) return;
+        CancelInvoke(nameof(DelayedForceShowCurrentStep));
+        if (isPausedByMenu) return;
 
         isPausedByMenu = true;
 
@@ -666,28 +860,25 @@ public class TutorialManager : MonoBehaviour
 
     public void ResumeTutorial()
     {
-        if (!tutorialActive || !isPausedByMenu) return;
+        if (!tutorialActive || !isPausedByMenu || IsLevelPausedOrInInventory()) return;
 
         isPausedByMenu = false;
 
-        if (tutorialUI != null && currentStep != null)
+        if (currentStep != null && !isTransitioning)
         {
-            ApplyInputGatingForStep(currentStep);
-            ArmMoveTriggerIfNeeded(currentStep);
-
-            tutorialUI.ForceShowStep(currentStep);
-            Invoke(nameof(ProcessBufferAndEnableInput), bufferProcessDelay);
+            DisplayStep(currentStep, true);
         }
     }
 
     private void ShowPendingStepFromMenu()
     {
+        if (!tutorialActive || IsLevelPausedOrInInventory()) return;
         UIEvents.OnInventoryClosed -= ShowPendingStepFromMenu;
         UIEvents.OnPauseMenuClosed -= ShowPendingStepFromMenu;
 
         isPausedByMenu = false;
 
-        if (tutorialUI != null && currentStep != null && !string.IsNullOrEmpty(currentStep.instructionText))
+        if (tutorialUI != null && currentStep != null && !string.IsNullOrEmpty(currentStep.DisplayText))
         {
             Invoke(nameof(DelayedForceShowCurrentStep), 0.05f);
         }
@@ -695,34 +886,14 @@ public class TutorialManager : MonoBehaviour
 
     private void DelayedForceShowCurrentStep()
     {
-        if (tutorialUI != null && currentStep != null && !string.IsNullOrEmpty(currentStep.instructionText))
+        if (IsLevelPausedOrInInventory())
         {
-            // Re-arm move trigger using existing helper to avoid code duplication
-            ArmMoveTriggerIfNeeded(currentStep);
-
-            tutorialUI.ForceShowStep(currentStep);
-            RemoveBufferedObjective(TutorialObjectiveType.Move);
-            // If this is the ritual altar step we must delay processing until typing finishes
-            if (currentStep.objectiveType == TutorialObjectiveType.UseRitualAltar)
-            {
-                if (!_enableInputAfterTypingSubscribed)
-                {
-                    tutorialUI.TypingFinished += OnUITypingFinishedToEnableInput;
-                    _enableInputAfterTypingSubscribed = true;
-                }
-
-                canAcceptInput = false;
-                if (playerController != null)
-                    if (playerController != null) playerController.SetTutorialActionBlocked(true);
-                // Cancel any scheduled buffer processing that might re-enable input prematurely
-                CancelInvoke(nameof(ProcessBufferAndEnableInput));
-                return;
-            }
-
-             // Otherwise, schedule buffer processing normally
-             Invoke(nameof(ProcessBufferAndEnableInput), bufferProcessDelay);
-         }
-     }
+            PauseTutorial();
+            return;
+        }
+        if (tutorialActive && !isTransitioning && currentStep != null)
+            DisplayStep(currentStep, true);
+    }
     
     private void RemoveBufferedObjective(TutorialObjectiveType type)
     {
@@ -736,8 +907,74 @@ public class TutorialManager : MonoBehaviour
         eventBuffer = newQueue;
     }
 
+    private void ReconcileFirstPlantReady()
+    {
+        // Wait until this step has initialized and can consume progress. In particular,
+        // do not spend the observation during typing, menu pause or house-exit deferral.
+        if (!tutorialActive || currentStep == null || firstPlantReadyObserved ||
+            isTransitioning || isPausedByMenu || !canAcceptInput || nextStepDeferred || nextStepPending ||
+            (tutorialUI != null && tutorialUI.IsTyping)) return;
+
+        bool needsReadiness = currentStep.useConfiguredCompletion
+            ? currentStep.conditions != null && currentStep.conditions.Any(condition =>
+                condition != null && condition.objective == TutorialObjectiveType.FirstPlantReady)
+            : currentStep.objectiveType == TutorialObjectiveType.FirstPlantReady;
+        if (!needsReadiness || PlantManager.Instance == null) return;
+        if (PlantManager.Instance.GetHarvestablePlants().Count == 0) return;
+
+        // Availability is one state observation per step, never a count of frames.
+        // Use existing progression without consuming the public event's global one-shot flag.
+        firstPlantReadyObserved = true;
+        CheckObjective(TutorialObjectiveType.FirstPlantReady);
+    }
+
+    private bool NeedsObjective(TutorialObjectiveType objective)
+    {
+        return currentStep.useConfiguredCompletion
+            ? currentStep.conditions != null && currentStep.conditions.Any(condition =>
+                condition != null && condition.objective == objective)
+            : currentStep.objectiveType == objective;
+    }
+
+    private void ReconcileLoadoutAndHouseState()
+    {
+        if (!tutorialActive || currentStep == null || isTransitioning || isPausedByMenu ||
+            !canAcceptInput || nextStepDeferred || nextStepPending ||
+            (tutorialUI != null && tutorialUI.IsTyping)) return;
+
+        if (!loadoutConfirmedObserved && NeedsObjective(TutorialObjectiveType.ConfirmDailyLoadout))
+        {
+            // Read the run owner's real transaction state, never CommittedChanged (also initialization).
+            // Include inactive owners so presentation activation is not an equipment prerequisite.
+            var owner = FindObjectOfType<PlayerContentUnlockSystem>(true);
+            var session = owner != null ? owner.Loadout : null;
+            if (session != null && session.IsReady && session.HasConfirmedToday && session.HasUsableCommitted)
+            {
+                loadoutConfirmedObserved = true;
+                CheckObjective(TutorialObjectiveType.ConfirmDailyLoadout);
+                // Completion can synchronously replace currentStep when no panel is installed.
+                return;
+            }
+        }
+
+        if (!houseExitObserved && NeedsObjective(TutorialObjectiveType.ExitHouse))
+        {
+            var world = FindObjectOfType<WorldTransitionAnimator>();
+            bool outside = world != null ? !world.IsInInterior && !world.IsTransitioning : houseExitedDuringTutorial;
+            if (outside)
+            {
+                houseExitObserved = true;
+                CheckObjective(TutorialObjectiveType.ExitHouse);
+            }
+        }
+    }
+
     private void Update()
     {
+        RefreshModalSubscription();
+        if (tutorialActive && observedModalFlow != null && observedModalFlow.HasOpenModal) PauseTutorial();
+        ReconcileFirstPlantReady();
+        ReconcileLoadoutAndHouseState();
         if (!isPausedByMenu) return;
 
         var lm = LevelManager.Instance;

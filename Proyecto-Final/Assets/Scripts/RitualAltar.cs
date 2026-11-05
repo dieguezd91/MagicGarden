@@ -90,9 +90,7 @@ public class RitualAltar : MonoBehaviour, IInteractable
 
         if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
         {
-            int currentStepOrder = TutorialManager.Instance.GetCurrentStepOrder();
-
-            if (currentStepOrder < tutorialStepOrderToUnlock)
+            if (!TutorialManager.Instance.CanStartTutorialNight(tutorialStepOrderToUnlock))
             {
                 return false;
             }

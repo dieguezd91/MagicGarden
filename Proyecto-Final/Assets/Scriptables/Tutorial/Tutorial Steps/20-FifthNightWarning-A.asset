@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: FifthNightWarning
   stepOrder: 19
-  instructionText: A great trial awaits you. The corruption in this forest coalesces,
-    and on the fifth night, <u>a powerful foe will rise to challenge your light.</u>
+  instructionText: 'Forest: The danger will grow. On the fifth night, <u>a powerful
+    foe will challenge your defenses.</u> Use the days ahead to prepare our home.'
   stepImage: {fileID: 0}
   objectiveType: 15
   requiredCount: 1

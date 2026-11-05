@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19420647a9844c72904ca29cac58343f, type: 3}
+  m_Name: SummerlimbsTutorial
+  m_EditorClassIdentifier: 
+  requireUsableLoadout: 1
+  useExplicitNightPermission: 1
+  steps:
+  - {fileID: 11400000, guid: b5b4175de3cb5684e8d3e96c0cd4112a, type: 2}
+  - {fileID: 11400000, guid: a31fc7518f137254b897040382fa3f24, type: 2}
+  - {fileID: 11400000, guid: d4710db85cc460f4599be7dbc410419f, type: 2}
+  - {fileID: 11400000, guid: cb7dacc489cc747499b90491e8aeff6e, type: 2}
+  - {fileID: 11400000, guid: 8e1e6aeb5954a88fda4ebc8c7222e39e, type: 2}
+  - {fileID: 11400000, guid: 70f3c369687ff3c49a0e32972ed1102f, type: 2}
+  - {fileID: 11400000, guid: ef553f94880ac5045877bec9009af927, type: 2}
+  - {fileID: 11400000, guid: 84611ffc204d3e0489d10fbf745a1469, type: 2}
+  - {fileID: 11400000, guid: 16ffda535a901394d8ffed95633194d3, type: 2}
+  - {fileID: 11400000, guid: 35354b9ca811854458056aa6d7ad6a5d, type: 2}
+  - {fileID: 11400000, guid: 32923ab09714fac4797e4fee3fcfd529, type: 2}
+  - {fileID: 11400000, guid: a546d1b43bc895247b7588f27571b808, type: 2}
+  - {fileID: 11400000, guid: 2fb5c407efd677244b021bb8ebf88593, type: 2}
+  - {fileID: 11400000, guid: d3178642d5f6f524caa68f9a44276f34, type: 2}
