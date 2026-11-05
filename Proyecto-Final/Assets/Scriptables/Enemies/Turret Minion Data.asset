@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d86324d532c70444fbd60b4e9e6241d4, type: 3}
+  m_Name: Turret Minion Data
+  m_EditorClassIdentifier: 
+  enemyName: MinionTurret
+  enemyIcon: {fileID: 842540238, guid: 02e9e136476970f47a8a74f769b492de, type: 3}
+  description: 
+  maxHealth: 50
+  moveSpeed: 0
+  detectionRange: 50
+  playerPriority: 1
+  plantPriority: 1.2
+  homePriority: 1.5
+  footstepCooldown: 1
+  experienceReward: 15
+  manaDropChance: 0.5
+  attackRange: 5
+  shotsPerBurst: 6
+  timeBetweenShots: 0.12
+  burstCooldown: 2
+  projectilePrefab: {fileID: 8215708087478250761, guid: 21ca4d9cc5163264794bc5e6144ef1a2, type: 3}
+  projectileSpeed: 14
+  projectileDamage: 5
+  projectileLifetime: 4

@@ -431,3 +431,52 @@ public class SniperBossAttackState : IState
         boss.StopMovement();
     }
 }
+
+
+
+
+
+public class TurretMinionAttackState : IState
+{
+    private readonly TurretMinion minion;
+
+    public TurretMinionAttackState(TurretMinion minion)
+    {
+        this.minion = minion;
+    }
+
+    public void OnEnter()
+    {
+        minion.StopMovement();
+    }
+
+    public void OnUpdate()
+    {
+        if (minion.IsDead || minion.IsBursting)
+            return;
+
+        Transform player = minion.GetPlayerTarget();
+
+        if (player == null)
+            return;
+
+        if (!minion.IsPlayerInAttackRange(player))
+            return;
+
+        if (Time.time >= minion.NextBurstTime)
+        {
+            minion.TryStartBurst(player);
+        }
+    }
+
+    public void OnFixedUpdate()
+    {
+        minion.StopMovement();
+    }
+
+    public void OnExit()
+    {
+        minion.StopMovement();
+    }
+}
+

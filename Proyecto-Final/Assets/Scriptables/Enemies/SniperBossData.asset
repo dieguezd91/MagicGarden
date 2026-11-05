@@ -33,7 +33,7 @@ MonoBehaviour:
   attackCooldown: 1
   meleeDelay: 0.5
   specialDelay: 0.7
-  minionPrefab: {fileID: 654258422932643597, guid: 37023b10428f5c54694cf40bfcb73928, type: 3}
+  minionPrefab: {fileID: 654258422932643597, guid: 76a10e6f880b75e46b754a2647eda77a, type: 3}
   minionCount: 8
   spawnDelayAfterMinionsDie: 6
   sniperAttackRange: 12
