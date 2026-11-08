@@ -10,14 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8489d19cee3c9134ea421acc03cf5431, type: 3}
-  m_Name: Ice Lotus
+  m_Name: Ice Thorn
   m_EditorClassIdentifier: 
-  plantName: Ice Lotus
-  plantPrefab: {fileID: 6736001113723686055, guid: a0286c64e2e6c4a4a9c4554ba174ecd3, type: 3}
-  plantIcon: {fileID: -1251527286, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
-  fullyGrownSprite: {fileID: -1251527286, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
+  upgradeLineId: 
+  plantName: Ice Thorn
+  plantPrefab: {fileID: 6736001113723686055, guid: 7ffe7863eb5fa3a439d4f853ad3b704b, type: 3}
+  plantIcon: {fileID: 430904352, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
+  fullyGrownSprite: {fileID: 430904352, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
   daysToGrow: 1
   description: hola soy ice
   seedType: 11
   slotIndex: 0
   hasDeathAnimation: 1
+  spriteFacesLeft: 0

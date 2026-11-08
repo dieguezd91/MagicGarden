@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -17,7 +18,6 @@ public class MusicManager : MonoBehaviour
 
     [SerializeField] private AudioSource audioSource;
 
-    
     private GamePhase lastOfficialGameState = GamePhase.None;
 
     private void Awake()
@@ -27,13 +27,16 @@ public class MusicManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
+
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
+
         audioSource.loop = true;
         audioSource.playOnAwake = false;
         audioSource.volume = 0.4f;
@@ -49,118 +52,101 @@ public class MusicManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+        if (Instance == this)
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            Instance = null;
+        }
     }
 
-    /// <summary>
-    /// Se dispara cada vez que se carga una nueva escena.
-    /// </summary>
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        lastOfficialGameState = GamePhase.None;
         PlayMusicAccordingToSceneOrState();
     }
 
     private void Update()
     {
-        if (LevelManager.Instance == null)
-            return;
-        GamePhase currentPhase = GameFlowController.Instance.CurrentPhase;
         string sceneName = SceneManager.GetActiveScene().name;
 
-        if (sceneName == "RefactorMenu")
+        if (!IsGameplayScene(sceneName))
             return;
 
-        if (sceneName == "SampleScene" || sceneName == "GameScene" || sceneName == "TreeScene")
+        if (GameFlowController.Instance == null)
+            return;
+
+        GamePhase currentPhase = GameFlowController.Instance.CurrentPhase;
+
+        if (currentPhase == GamePhase.Day)
         {
-            if (IsDaylikePhase(currentPhase))
-            {
-                if (lastOfficialGameState == GamePhase.Day)
-                    return;
-
-                lastOfficialGameState = GamePhase.Day;
-                PlayMusic(dayMusic);
-            }
-            else if (currentPhase == GamePhase.Night)
-            {
-                if (lastOfficialGameState == GamePhase.Night)
-                    return;
-
-                lastOfficialGameState = GamePhase.Night;
-                PlayMusic(nightMusic);
-            }
+            ChangeMusic(GamePhase.Day, dayMusic);
+        }
+        else if (currentPhase == GamePhase.Night)
+        {
+            ChangeMusic(GamePhase.Night, nightMusic);
         }
     }
 
-    /// <summary>
-    /// Reproduce la música correcta al cargar una escena o al iniciar el juego.
-    /// </summary>
     private void PlayMusicAccordingToSceneOrState()
     {
         string sceneName = SceneManager.GetActiveScene().name;
 
-        if (sceneName == "Menu")
+        if (IsMenuScene(sceneName))
         {
-            lastOfficialGameState = GamePhase.None;
-            PlayMusic(menuMusic);
+            ChangeMusic(GamePhase.None, menuMusic);
             return;
         }
 
-        if (sceneName == "SampleScene" || sceneName == "Game" || sceneName == "TreeScene")
-        {
-            if (LevelManager.Instance != null)
-            {
-                GamePhase current = GameFlowController.Instance.CurrentPhase;
+        if (!IsGameplayScene(sceneName))
+            return;
 
-                if (IsDaylikePhase(current))
-                {
-                    lastOfficialGameState = GamePhase.Day;
-                    PlayMusic(dayMusic);
-                }
-                else if (current == GamePhase.Night)
-                {
-                    lastOfficialGameState = GamePhase.Night;
-                    PlayMusic(nightMusic);
-                }
-                else
-                {
-                    lastOfficialGameState = GamePhase.Day;
-                    PlayMusic(dayMusic);
-                }
-            }
-            else
-            {
-                lastOfficialGameState = GamePhase.Day;
-                PlayMusic(dayMusic);
-            }
+        if (GameFlowController.Instance == null)
+        {
+            ChangeMusic(GamePhase.Day, dayMusic);
+            return;
         }
 
+        GamePhase currentPhase = GameFlowController.Instance.CurrentPhase;
+
+        if (currentPhase == GamePhase.Night)
+        {
+            ChangeMusic(GamePhase.Night, nightMusic);
+        }
+        else
+        {
+            ChangeMusic(GamePhase.Day, dayMusic);
+        }
     }
 
-    /// <summary>
-    /// Método auxiliar que devuelve true si el estado dado debe contarse como “día” a efectos de música.
-    /// </summary>
-    private bool IsDaylikePhase(GamePhase phase)
+    private bool IsMenuScene(string sceneName)
     {
-        return phase == GamePhase.Day;
+        return sceneName == "Menu" || sceneName == "RefactorMenu";
     }
 
-    /// <summary>
-    /// Asigna el clip al AudioSource y lo reproduce. Si ya era el mismo clip, no hace nada.
-    /// </summary>
-    private void PlayMusic(AudioClip clip)
+    private bool IsGameplayScene(string sceneName)
+    {
+        return sceneName == "SampleScene" ||
+               sceneName == "Game" ||
+               sceneName == "GameScene" ||
+               sceneName == "TreeScene";
+    }
+
+    private void ChangeMusic(GamePhase state, AudioClip clip)
     {
         if (clip == null)
         {
+            Debug.LogWarning($"[MusicManager] No hay un AudioClip asignado para el estado {state}.");
             return;
         }
 
-        if (audioSource.clip == clip && audioSource.isPlaying)
+        if (audioSource.clip != clip || !audioSource.isPlaying)
         {
-            return;
+            audioSource.clip = clip;
+            audioSource.Play();
+
+            Debug.Log($"[MusicManager] Cambiando música a: {state} ({clip.name})");
         }
 
-        audioSource.clip = clip;
-        audioSource.Play();
+        lastOfficialGameState = state;
     }
 }
-

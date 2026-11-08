@@ -63,36 +63,36 @@ MonoBehaviour:
     data: {fileID: 11400000, guid: f63882e6bad5d994d989aa1cbe877347, type: 2}
   - seedType: 3
     plantPrefab: {fileID: 3214456861987219935, guid: a3b61fa3938157140ad7b6fa0d84403f, type: 3}
-    plantName: Resource Plant
+    plantName: Support Plant
     plantIcon: {fileID: -473241699, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
     daysToGrow: 1
     description: 
     seedCount: 99999999
     data: {fileID: 11400000, guid: 7bf0f3ef8064cf34f964f20572723a42, type: 2}
-  - seedType: 0
-    plantPrefab: {fileID: 0}
-    plantName: 
-    plantIcon: {fileID: 0}
-    daysToGrow: 0
+  - seedType: 15
+    plantPrefab: {fileID: 6736001113723686055, guid: da9555e91a9d4f042bfca2e1721c0ec9, type: 3}
+    plantName: Defence Plant
+    plantIcon: {fileID: -2039217953, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
+    daysToGrow: 1
     description: 
     seedCount: 999999
-    data: {fileID: 0}
-  - seedType: 0
-    plantPrefab: {fileID: 0}
-    plantName: 
-    plantIcon: {fileID: 0}
-    daysToGrow: 0
+    data: {fileID: 11400000, guid: fefe1e14600e3314e8de70403c405ccb, type: 2}
+  - seedType: 8
+    plantPrefab: {fileID: 6736001113723686055, guid: be9f494d259d65d4aa9750c76596163d, type: 3}
+    plantName: Defence Plant
+    plantIcon: {fileID: 668908640, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
+    daysToGrow: 1
     description: 
     seedCount: 999999
-    data: {fileID: 0}
-  - seedType: 0
-    plantPrefab: {fileID: 0}
-    plantName: 
-    plantIcon: {fileID: 0}
-    daysToGrow: 0
+    data: {fileID: 11400000, guid: 20dce32adbdb5be4c9c66d28ffe0b695, type: 2}
+  - seedType: 11
+    plantPrefab: {fileID: 6736001113723686055, guid: 7ffe7863eb5fa3a439d4f853ad3b704b, type: 3}
+    plantName: Defence Plant
+    plantIcon: {fileID: 1701969414, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
+    daysToGrow: 1
     description: 
     seedCount: 999999
-    data: {fileID: 0}
+    data: {fileID: 11400000, guid: 8e9c788b085a9dd42965688e67d239d0, type: 2}
   - seedType: 0
     plantPrefab: {fileID: 0}
     plantName: 

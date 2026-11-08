@@ -70,42 +70,57 @@ public class RitualUIController : UIControllerBase
         ritualOverlayCoroutine = StartCoroutine(FadeRitualOverlay(currentAlpha, 0f));
     }
 
+
     private void UpdateRitualSpriteForCurrentMoonPhase()
     {
-        if (ritualMoonPhaseSprites == null || ritualMoonPhaseSprites.Length != 7)
+        if (ritualOverlayImage == null ||
+            ritualMoonPhaseSprites == null ||
+            ritualMoonPhaseSprites.Length == 0)
         {
             return;
         }
 
-        int assignedCount = 0;
-        for (int i = 0; i < ritualMoonPhaseSprites.Length; i++)
+        if (DayCycleController.Instance == null)
         {
-            if (ritualMoonPhaseSprites[i] != null)
-            {
-                assignedCount++;
-            }
-        }
-
-        if (LunarCycleManager.Instance == null)
-        {
+            Debug.LogWarning(
+                "[RitualUIController] DayCycleController not found."
+            );
             return;
         }
 
-        MoonPhase currentPhase = LunarCycleManager.Instance.GetCurrentMoonPhase();
-        int phaseIndex = (int)currentPhase;
+        int totalNights = DayCycleController.Instance.TotalNights;
 
-        if (phaseIndex >= 0 && phaseIndex < ritualMoonPhaseSprites.Length)
+        GamePhase currentPhase = GameFlowController.Instance != null
+            ? GameFlowController.Instance.CurrentPhase
+            : GamePhase.Day;
+
+        int targetNight = currentPhase == GamePhase.Night
+            ? totalNights
+            : totalNights + 1;
+
+        if (targetNight < 1)
+            targetNight = 1;
+
+        int phaseIndex = (targetNight - 1) % ritualMoonPhaseSprites.Length;
+
+        Sprite moonSprite = ritualMoonPhaseSprites[phaseIndex];
+
+        if (moonSprite == null)
         {
-            Sprite moonSprite = ritualMoonPhaseSprites[phaseIndex];
-
-            if (moonSprite != null)
-            {
-                ritualOverlayImage.sprite = moonSprite;
-
-                RectTransform rt = ritualOverlayImage.rectTransform;
-            }
+            Debug.LogWarning(
+                $"[RitualUIController] Missing moon sprite for night {targetNight}, index {phaseIndex}."
+            );
+            return;
         }
+
+        ritualOverlayImage.sprite = moonSprite;
+
+        Debug.Log(
+            $"[RitualUIController] Showing moon for night {targetNight}. " +
+            $"Sprite index: {phaseIndex}"
+        );
     }
+
 
     private IEnumerator FadeRitualOverlay(float from, float to)
     {
