@@ -70,6 +70,7 @@ public class EnemiesSpawner : MonoBehaviour
     private float currentSpawnInterval;
     private bool playerHasLeftHouse = false;
     private DayTimerController dayTimerController;
+    private int lastStartedNight = -1;
 
 
     private WeightedRoulette<GameObject> enemyRoulette = new WeightedRoulette<GameObject>();
@@ -98,10 +99,17 @@ public class EnemiesSpawner : MonoBehaviour
 
     void Update()
     {
-        if (GameFlowController.Instance.CurrentPhase == GamePhase.Night && lastPhase != GamePhase.Night)
+        if (GameFlowController.Instance == null)
+            return;
+
+        GamePhase currentPhase = GameFlowController.Instance.CurrentPhase;
+
+        if (currentPhase == GamePhase.Night &&
+            lastPhase != GamePhase.Night)
         {
-            
-            if (playerHasLeftHouse || (dayTimerController != null && dayTimerController.NightStartedByTimer))
+            if (playerHasLeftHouse ||
+                (dayTimerController != null &&
+                 dayTimerController.NightStartedByTimer))
             {
                 if (IsBossNight())
                 {
@@ -109,24 +117,16 @@ public class EnemiesSpawner : MonoBehaviour
                 }
                 else
                 {
-                    ConfigureEnemyRoulette();
                     StartContinuousHorde();
                 }
             }
         }
 
-        lastPhase = GameFlowController.Instance.CurrentPhase;
+        lastPhase = currentPhase;
 
-        if (!IsBossNight())
+        if (currentPhase == GamePhase.Night && !IsBossNight())
         {
-            if (GameFlowController.Instance.CurrentPhase == GamePhase.Night &&
-                totalEnemiesKilled >= totalEnemiesToKill &&
-                GetTrulyAliveEnemiesCount() <= 0 &&
-                !hordeCompleted)
-            {
-                hordeCompleted = true;
-                StopContinuousHorde(true);
-            }
+            TryCompleteNormalHorde();
         }
     }
 
@@ -159,7 +159,8 @@ public class EnemiesSpawner : MonoBehaviour
 
     private void StartBossNight()
     {
-        Debug.Log("Iniciando noche de jefe");
+        if (!TryRegisterNightStart())
+            return;
 
         ResetHordeCounters();
         onHordeStart?.Invoke();
@@ -181,6 +182,9 @@ public class EnemiesSpawner : MonoBehaviour
             return;
         }
 
+        if (!TryRegisterNightStart())
+            return;
+
         ResetHordeCounters();
 
         int totalNights = DayCycleController.Instance.TotalNights;
@@ -199,7 +203,8 @@ public class EnemiesSpawner : MonoBehaviour
         continuousSpawnCoroutine = StartCoroutine(SpawnEnemiesIndividually());
     }
 
-    IEnumerator SpawnEnemiesIndividually()
+
+    private IEnumerator SpawnEnemiesIndividually()
     {
         isSpawning = true;
         currentHordeTime = 0f;
@@ -215,10 +220,27 @@ public class EnemiesSpawner : MonoBehaviour
 
             float adjustedInterval = AdjustSpawnIntervalByTime();
 
-            SpawnEnemy();
+            bool spawnedSuccessfully = SpawnEnemy();
+
+            if (!spawnedSuccessfully)
+            {
+                Debug.LogError(
+                    "[EnemiesSpawner] Spawn failed. Horde spawning stopped to prevent incorrect completion."
+                );
+
+                isSpawning = false;
+                continuousSpawnCoroutine = null;
+                yield break;
+            }
+
             totalEnemiesSpawned++;
+
             onEnemySpawned?.Invoke();
-            onHordeProgress?.Invoke(totalEnemiesKilled, totalEnemiesToKill);
+
+            onHordeProgress?.Invoke(
+                totalEnemiesKilled,
+                totalEnemiesToKill
+            );
 
             yield return new WaitForSeconds(adjustedInterval);
         }
@@ -226,12 +248,9 @@ public class EnemiesSpawner : MonoBehaviour
         isSpawning = false;
         continuousSpawnCoroutine = null;
 
-        if (GetTrulyAliveEnemiesCount() <= 0 && !hordeCompleted && !IsBossNight())
-        {
-            hordeCompleted = true;
-            StopContinuousHorde(true);
-        }
+        TryCompleteNormalHorde();
     }
+
 
     private float AdjustSpawnIntervalByTime()
     {
@@ -247,19 +266,17 @@ public class EnemiesSpawner : MonoBehaviour
         return currentSpawnInterval;
     }
 
-    void SpawnEnemy()
+
+    private bool SpawnEnemy()
     {
-        if (spawnPoints.Count == 0 || enemyHordes.Count == 0)
+        if (spawnPoints == null || spawnPoints.Count == 0)
         {
-            Debug.Log("No hay puntos de spawn o hordas de enemigos asignadas");
-            return;
+            Debug.LogError("[EnemiesSpawner] No spawn points assigned.");
+            return false;
         }
 
         if (IsBossNight())
-        {
-            Debug.Log("Cancelando spawn de enemigo normal - Es noche de jefe");
-            return;
-        }
+            return false;
 
         Transform spawnPoint;
 
@@ -271,15 +288,23 @@ public class EnemiesSpawner : MonoBehaviour
 
                 foreach (Transform point in spawnPoints)
                 {
-                    if (Vector3.Distance(point.position, playerTransform.position) > playerCheckRadius)
+                    if (point != null &&
+                        Vector3.Distance(point.position, playerTransform.position) > playerCheckRadius)
                     {
                         validSpawnPoints.Add(point);
                     }
                 }
 
-                spawnPoint = (validSpawnPoints.Count > 0)
-                    ? validSpawnPoints[Random.Range(0, validSpawnPoints.Count)]
-                    : spawnPoints[Random.Range(0, spawnPoints.Count)];
+                if (validSpawnPoints.Count > 0)
+                {
+                    spawnPoint = validSpawnPoints[
+                        Random.Range(0, validSpawnPoints.Count)
+                    ];
+                }
+                else
+                {
+                    spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
+                }
             }
             else
             {
@@ -288,15 +313,23 @@ public class EnemiesSpawner : MonoBehaviour
         }
         else
         {
-            spawnPoint = spawnPoints[totalEnemiesSpawned % spawnPoints.Count];
+            spawnPoint = spawnPoints[
+                totalEnemiesSpawned % spawnPoints.Count
+            ];
         }
+
+        if (spawnPoint == null)
+            return false;
 
         GameObject selectedEnemyPrefab = enemyRoulette.Roll();
 
         if (selectedEnemyPrefab == null)
         {
-            Debug.LogWarning("No hay enemigos disponibles en la horda actual.");
-            return;
+            Debug.LogWarning(
+                "[EnemiesSpawner] No enemies available in the current roulette."
+            );
+
+            return false;
         }
 
         GameObject enemy = Instantiate(
@@ -305,16 +338,31 @@ public class EnemiesSpawner : MonoBehaviour
             spawnPoint.rotation
         );
 
-        enemy.transform.SetParent(this.transform);
-        activeEnemies.Add(enemy);
+        if (enemy == null)
+            return false;
 
         LifeController enemyLife = enemy.GetComponent<LifeController>();
 
-        if (enemyLife != null)
+        if (enemyLife == null)
         {
-            enemyLife.onDeath.AddListener(() => OnEnemyDeath(enemy));
+            Debug.LogError(
+                $"[EnemiesSpawner] Enemy {enemy.name} has no LifeController!",
+                enemy
+            );
+
+            Destroy(enemy);
+            return false;
         }
+
+        enemy.transform.SetParent(transform);
+
+        activeEnemies.Add(enemy);
+
+        enemyLife.onDeath.AddListener(() => OnEnemyDeath(enemy));
+
+        return true;
     }
+
 
     public void ResetHordeCounters()
     {
@@ -336,29 +384,32 @@ public class EnemiesSpawner : MonoBehaviour
         playerHasLeftHouse = false;
     }
 
-    void OnEnemyDeath(GameObject enemy)
+    private void OnEnemyDeath(GameObject enemy)
     {
+        if (enemy == null)
+            return;
+
+        if (!activeEnemies.Remove(enemy))
+        {
+            Debug.LogWarning(
+                $"[EnemiesSpawner] Ignored duplicate or untracked death: {enemy.name}"
+            );
+
+            return;
+        }
+
         totalEnemiesKilled++;
 
         TutorialEvents.InvokeEnemyDefeated();
 
-        if (activeEnemies.Contains(enemy))
-        {
-            activeEnemies.Remove(enemy);
-        }
         activeEnemies.RemoveAll(e => e == null);
 
-        onHordeProgress?.Invoke(totalEnemiesKilled, totalEnemiesToKill);
+        onHordeProgress?.Invoke(
+            totalEnemiesKilled,
+            totalEnemiesToKill
+        );
 
-        if (totalEnemiesKilled >= totalEnemiesToKill &&
-            GetTrulyAliveEnemiesCount() <= 0 &&
-            GameFlowController.Instance.CurrentPhase == GamePhase.Night &&
-            !hordeCompleted && !IsBossNight())
-        {
-            hordeCompleted = true;
-            RitualBuffManager.Instance?.ClearBuff();
-            StopContinuousHorde(true);
-        }
+        TryCompleteNormalHorde();
     }
 
     public void StopContinuousHorde(bool completed)
@@ -538,6 +589,74 @@ public class EnemiesSpawner : MonoBehaviour
             Debug.Log(
                 "[EnemiesSpawner] Ya se alcanzó la última horda de enemigos."
             );
+        }
+    }
+
+    private bool TryRegisterNightStart()
+    {
+        if (DayCycleController.Instance == null)
+            return false;
+
+        int currentNight = DayCycleController.Instance.TotalNights;
+
+        if (lastStartedNight == currentNight)
+        {
+            Debug.LogWarning(
+                $"[EnemiesSpawner] Horde already started for night {currentNight}."
+            );
+
+            return false;
+        }
+
+        lastStartedNight = currentNight;
+        return true;
+    }
+
+    private bool TryCompleteNormalHorde()
+    {
+        if (hordeCompleted)
+            return false;
+
+        if (GameFlowController.Instance == null ||
+            GameFlowController.Instance.CurrentPhase != GamePhase.Night)
+            return false;
+
+        if (IsBossNight())
+            return false;
+
+        if (totalEnemiesSpawned < totalEnemiesToKill)
+            return false;
+
+        if (totalEnemiesKilled < totalEnemiesToKill)
+            return false;
+
+        if (GetTrulyAliveEnemiesCount() > 0)
+            return false;
+
+        Debug.Log(
+            $"[EnemiesSpawner] Horde completed! " +
+            $"Killed: {totalEnemiesKilled}/{totalEnemiesToKill}"
+        );
+
+        hordeCompleted = true;
+
+        RitualBuffManager.Instance?.ClearBuff();
+
+        StopContinuousHorde(true);
+
+        return true;
+    }
+
+    public bool IsNormalHordeComplete
+    {
+        get
+        {
+            if (IsBossNight() || !hordeCompleted)
+                return false;
+
+            return totalEnemiesSpawned >= totalEnemiesToKill &&
+                   totalEnemiesKilled >= totalEnemiesToKill &&
+                   GetTrulyAliveEnemiesCount() == 0;
         }
     }
 

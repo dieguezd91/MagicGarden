@@ -27,6 +27,7 @@ public class LevelManager : MonoBehaviour
 
     private bool forceEndingNight;
     private bool bossDayStartedDuringForceEnd;
+    private int lastCompletedNight = -1;
 
     private void Awake()
     {
@@ -84,6 +85,37 @@ public class LevelManager : MonoBehaviour
 
     private void HandleHordeCompleted()
     {
+        if (waveSpawner == null ||
+            DayCycleController.Instance == null)
+        {
+            return;
+        }
+
+        int currentNight = DayCycleController.Instance.TotalNights;
+
+        if (lastCompletedNight == currentNight)
+            return;
+
+        bool isBossNight = waveSpawner.IsBossNightActive;
+
+        if (!isBossNight && !waveSpawner.IsNormalHordeComplete)
+        {
+            Debug.LogWarning(
+                "[LevelManager] Ignored premature horde completion event. " +
+                $"Killed: {waveSpawner.GetEnemiesKilled()}/" +
+                $"{waveSpawner.GetTotalTargetEnemies()}, " +
+                $"Alive: {waveSpawner.GetCurrentEnemiesAlive()}"
+            );
+
+            return;
+        }
+
+        lastCompletedNight = currentNight;
+
+        Debug.Log(
+            $"[LevelManager] Night {currentNight} successfully completed."
+        );
+
         RewardsSystem.Instance?.EvaluateAndGrantReward();
 
         if (playerExperienceSystem == null)
@@ -91,9 +123,7 @@ public class LevelManager : MonoBehaviour
             var player = GameObject.FindGameObjectWithTag("Player");
 
             if (player != null)
-            {
                 playerExperienceSystem = player.GetComponent<PlayerExperienceSystem>();
-            }
         }
 
         playerExperienceSystem?.GrantNightCompletionExperience();
@@ -104,7 +134,7 @@ public class LevelManager : MonoBehaviour
         }
         else
         {
-            DayCycleController.Instance?.StartDay();
+            DayCycleController.Instance.StartDay();
         }
     }
 
