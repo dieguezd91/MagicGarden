@@ -51,7 +51,7 @@ MonoBehaviour:
   difficultyScalingFactor: 1.6
   baseSpawnInterval: 3
   minSpawnInterval: 0.6
-  spawnIntervalDecreasePerDay: 0.1
+  spawnIntervalDecreasePerDay: 0.6
   spawnPoints:
   - {fileID: 0}
   - {fileID: 0}
@@ -85,6 +85,7 @@ MonoBehaviour:
       weight: 0.06
   firstNightSkeletonPrefab: {fileID: 654258422932643597, guid: cbec6260f6e304b499c47224480c584f, type: 3}
   bossNightManager: {fileID: 0}
+  nightToDayTransition: {fileID: 0}
   onHordeStart:
     m_PersistentCalls:
       m_Calls: []

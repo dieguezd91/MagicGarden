@@ -468,20 +468,26 @@ public class EnemiesSpawner : MonoBehaviour
         return $"Spawn cada {adjustedInterval:F1}s";
     }
 
+
     public void EndNight()
     {
-        var state = GameFlowController.Instance.CurrentPhase;
-
-        if (state != GamePhase.Night && state != GamePhase.OnRitual)
+        if (GameFlowController.Instance == null)
             return;
+
+        GamePhase currentPhase = GameFlowController.Instance.CurrentPhase;
+
+        if (currentPhase != GamePhase.Night &&
+            currentPhase != GamePhase.OnRitual)
+            return;
+
+        if (hordeCompleted)
+            return;
+
+        Debug.Log("[EnemiesSpawner] Force ending current night.");
 
         if (IsBossNight() && bossNightManager != null)
         {
             bossNightManager.ForceEndBossNight();
-
-            if (GameFlowController.Instance.CurrentPhase != GamePhase.Day)
-                GameFlowController.Instance.SetPhase(GamePhase.Day);
-
             return;
         }
 
@@ -491,26 +497,46 @@ public class EnemiesSpawner : MonoBehaviour
             continuousSpawnCoroutine = null;
         }
 
-        List<GameObject> enemiesCopy = new List<GameObject>(activeEnemies);
-        foreach (GameObject enemy in enemiesCopy)
-        {
-            if (enemy == null) continue;
+        isSpawning = false;
 
-            LifeController enemyLife = enemy.GetComponent<LifeController>();
-            if (enemyLife != null)
-                enemyLife.Kill();
-            else
-                OnEnemyDeath(enemy);
-        }
-
-        totalEnemiesKilled = totalEnemiesToKill;
-        activeEnemies.Clear();
         hordeCompleted = true;
 
-        StopContinuousHorde(true);
+        List<GameObject> enemiesCopy = new List<GameObject>(activeEnemies);
 
-        StopAllCoroutines();
+        foreach (GameObject enemy in enemiesCopy)
+        {
+            if (enemy == null)
+                continue;
+
+            LifeController enemyLife = enemy.GetComponent<LifeController>();
+
+            if (enemyLife != null && enemyLife.IsAlive())
+            {
+                enemyLife.Kill();
+            }
+            else if (enemyLife == null)
+            {
+                Destroy(enemy);
+            }
+        }
+
+        totalEnemiesSpawned = totalEnemiesToKill;
+        totalEnemiesKilled = totalEnemiesToKill;
+
+        activeEnemies.Clear();
+
+        RitualBuffManager.Instance?.ClearBuff();
+
+        onHordeProgress?.Invoke(
+            totalEnemiesKilled,
+            totalEnemiesToKill
+        );
+
+        Debug.Log("[EnemiesSpawner] All enemies removed. Horde force-completed.");
+
+        StopContinuousHorde(true);
     }
+
 
     private void ConfigureEnemyRoulette()
     {

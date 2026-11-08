@@ -73,11 +73,14 @@ public class LevelManager : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            ForceEndNight();
+            return;
+        }
+
         if (UpgradeRuntime.GameplayBlocked)
             return;
-
-        if (Input.GetKeyDown(KeyCode.K))
-            ForceEndNight();
 
         if (Input.GetKeyDown(KeyCode.L))
             InventoryManager.Instance?.AddGold(100);
@@ -166,21 +169,34 @@ public class LevelManager : MonoBehaviour
 
     public void ForceEndNight()
     {
+        if (GameFlowController.Instance == null)
+            return;
+
+        GamePhase currentPhase = GameFlowController.Instance.CurrentPhase;
+
+        if (currentPhase != GamePhase.Night &&
+            currentPhase != GamePhase.OnRitual)
+            return;
+
+        Debug.Log("[LevelManager] Force ending night with K key.");
+
         foreach (var altar in FindObjectsOfType<RitualAltar>())
         {
             altar.ForceStopRitual();
         }
 
-        var spawner = waveSpawner != null
-            ? waveSpawner
-            : FindObjectOfType<EnemiesSpawner>();
+        if (waveSpawner == null)
+            waveSpawner = FindObjectOfType<EnemiesSpawner>();
 
-        if (spawner != null)
+        if (waveSpawner != null)
         {
-            spawner.EndNight();
-            return;
+            waveSpawner.EndNight();
         }
-
-        DayCycleController.Instance?.StartDay();
+        else
+        {
+            Debug.LogError(
+                "[LevelManager] Cannot force end night: EnemiesSpawner not found."
+            );
+        }
     }
 }
