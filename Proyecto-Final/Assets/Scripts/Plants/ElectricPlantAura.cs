@@ -1,3 +1,4 @@
+
 using System.Collections;
 using UnityEngine;
 
@@ -18,14 +19,6 @@ public class ElectricPlantAura : Plant
         target.Capability = "ElectricPlantAura";
         target.Bases[MagicGarden.Stat.Damage] = damagePerSecond;
         target.Bases[MagicGarden.Stat.Area] = radius;
-    }
-    private Plant plant;
-    private LifeController lifeController;
-
-    private void Awake()
-    {
-        lifeController = GetComponent<LifeController>();
-        plant = GetComponent<Plant>();
     }
 
     private void OnEnable()
@@ -50,14 +43,18 @@ public class ElectricPlantAura : Plant
 
     private void ApplyAreaEffects()
     {
-        if (UpgradeRuntime.GameplayBlocked) return;
+        if (UpgradeRuntime.GameplayBlocked)
+            return;
+
         Collider2D[] hits = Physics2D.OverlapCircleAll(
             transform.position,
-            plant != null ? plant.Upgraded(MagicGarden.Stat.Area, radius) : radius,
+            Upgraded(MagicGarden.Stat.Area, radius),
             enemyLayer
         );
 
-        float damage = (plant != null ? plant.Upgraded(MagicGarden.Stat.Damage, damagePerSecond) : damagePerSecond) * areaCheckInterval;
+        float damage =
+            Upgraded(MagicGarden.Stat.Damage, damagePerSecond) *
+            areaCheckInterval;
 
         foreach (var hit in hits)
         {
@@ -103,6 +100,10 @@ public class ElectricPlantAura : Plant
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = new Color(0.2f, 1f, 0.4f, 0.6f);
-        Gizmos.DrawWireSphere(transform.position, radius);
+
+        Gizmos.DrawWireSphere(
+            transform.position,
+            radius
+        );
     }
 }

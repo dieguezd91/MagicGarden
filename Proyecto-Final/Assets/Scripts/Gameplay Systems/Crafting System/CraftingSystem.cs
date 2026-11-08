@@ -14,10 +14,10 @@ public enum SeedsEnum
 
     // Defensive Plants
     ThornedTendrils,
-    FireFlower,
+    ElectricOrchid,
     ShadowIvy,
     ExplosiveBulb,
-    IceLotus,
+    IceThorn,
     MoonLily,
     StellarOrchid,
 

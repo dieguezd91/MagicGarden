@@ -51,7 +51,7 @@ MonoBehaviour:
     plantIcon: {fileID: -1990512455, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
     daysToGrow: 1
     description: 
-    seedCount: 3
+    seedCount: 9999999
     data: {fileID: 11400000, guid: 7706c49d722e2f348a6ef0ec0be6ffcb, type: 2}
   - seedType: 7
     plantPrefab: {fileID: 6736001113723686055, guid: a0286c64e2e6c4a4a9c4554ba174ecd3, type: 3}
@@ -59,7 +59,7 @@ MonoBehaviour:
     plantIcon: {fileID: 668908640, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
     daysToGrow: 1
     description: 
-    seedCount: 3
+    seedCount: 99999999
     data: {fileID: 11400000, guid: f63882e6bad5d994d989aa1cbe877347, type: 2}
   - seedType: 3
     plantPrefab: {fileID: 3214456861987219935, guid: a3b61fa3938157140ad7b6fa0d84403f, type: 3}
@@ -67,7 +67,7 @@ MonoBehaviour:
     plantIcon: {fileID: -473241699, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
     daysToGrow: 1
     description: 
-    seedCount: 3
+    seedCount: 99999999
     data: {fileID: 11400000, guid: 7bf0f3ef8064cf34f964f20572723a42, type: 2}
   - seedType: 0
     plantPrefab: {fileID: 0}
@@ -75,7 +75,7 @@ MonoBehaviour:
     plantIcon: {fileID: 0}
     daysToGrow: 0
     description: 
-    seedCount: 0
+    seedCount: 999999
     data: {fileID: 0}
   - seedType: 0
     plantPrefab: {fileID: 0}
@@ -83,7 +83,7 @@ MonoBehaviour:
     plantIcon: {fileID: 0}
     daysToGrow: 0
     description: 
-    seedCount: 0
+    seedCount: 999999
     data: {fileID: 0}
   - seedType: 0
     plantPrefab: {fileID: 0}
@@ -91,7 +91,7 @@ MonoBehaviour:
     plantIcon: {fileID: 0}
     daysToGrow: 0
     description: 
-    seedCount: 0
+    seedCount: 999999
     data: {fileID: 0}
   - seedType: 0
     plantPrefab: {fileID: 0}
@@ -99,7 +99,7 @@ MonoBehaviour:
     plantIcon: {fileID: 0}
     daysToGrow: 0
     description: 
-    seedCount: 0
+    seedCount: 99999
     data: {fileID: 0}
   - seedType: 0
     plantPrefab: {fileID: 0}

@@ -35,7 +35,7 @@ public class Plant : MonoBehaviour
     protected int daysToGrow;
     protected Sprite plantSprite;
 
-    private LifeController lifeController;
+    private LifeController plantLifeController;
     [HideInInspector] public Vector3Int tilePosition;
 
     protected Animator animator;
@@ -112,16 +112,16 @@ public class Plant : MonoBehaviour
             plantSprite = plantData.plantIcon;
         }
 
-        lifeController = GetComponent<LifeController>();
-        if (lifeController == null)
+        plantLifeController = GetComponent<LifeController>();
+        if (plantLifeController == null)
         {
-            lifeController = gameObject.AddComponent<LifeController>();
+            plantLifeController = gameObject.AddComponent<LifeController>();
         }
 
         ConfigureLifeController();
 
-        lifeController.onDeath.AddListener(HandlePlantDeath);
-        lifeController.onHealthChanged.AddListener(HandleHealthChanged);
+        plantLifeController.onDeath.AddListener(HandlePlantDeath);
+        plantLifeController.onHealthChanged.AddListener(HandleHealthChanged);
 
         ScheduleNextIdleSound();
     }
@@ -133,10 +133,10 @@ public class Plant : MonoBehaviour
             GameFlowController.Instance.OnPhaseChanged -= HandleGameStateChanged;
         }
 
-        if (lifeController != null)
+        if (plantLifeController != null)
         {
-            lifeController.onDeath.RemoveListener(HandlePlantDeath);
-            lifeController.onHealthChanged.RemoveListener(HandleHealthChanged);
+            plantLifeController.onDeath.RemoveListener(HandlePlantDeath);
+            plantLifeController.onHealthChanged.RemoveListener(HandleHealthChanged);
         }
     }
 
@@ -288,12 +288,12 @@ public class Plant : MonoBehaviour
 
     protected virtual void OnMature()
     {
-        if (lifeController != null)
+        if (plantLifeController != null)
         {
-            float newMaxHealth = lifeController.maxHealth * 1.5f;
-            lifeController.maxHealth = newMaxHealth;
-            lifeController.currentHealth = newMaxHealth;
-            lifeController.onHealthChanged?.Invoke(lifeController.currentHealth, lifeController.maxHealth);
+            float newMaxHealth = plantLifeController.maxHealth * 1.5f;
+            plantLifeController.maxHealth = newMaxHealth;
+            plantLifeController.currentHealth = newMaxHealth;
+            plantLifeController.onHealthChanged?.Invoke(plantLifeController.currentHealth, plantLifeController.maxHealth);
         }
     }
 
@@ -334,7 +334,7 @@ public class Plant : MonoBehaviour
     private void ConfigureLifeController()
     {
         bool hasAnimation = plantData != null && plantData.hasDeathAnimation;
-        lifeController.ConfigureAsPlant(hasAnimation);
+        plantLifeController.ConfigureAsPlant(hasAnimation);
     }
 
     protected virtual void HandleGameStateChanged(GamePhase newPhase)
