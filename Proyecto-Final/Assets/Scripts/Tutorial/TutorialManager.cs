@@ -369,7 +369,7 @@ public class TutorialManager : MonoBehaviour
         ShowStep(0);
     }
 
-    private void CompleteCurrentStep()
+    public void CompleteCurrentStep()
     {
         if (isTransitioning) return;
         isTransitioning = true;
@@ -983,11 +983,6 @@ public class TutorialManager : MonoBehaviour
         if ((pauseController == null || !pauseController.IsPaused) && !(UIManager.Instance?.Flow != null && UIManager.Instance.Flow.HasOpenModal))
         {
             ShowPendingStepFromMenu();
-        }
-
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            CompleteCurrentStep();
         }
     }
 

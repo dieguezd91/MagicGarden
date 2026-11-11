@@ -98,13 +98,6 @@ public class LunarCycleManager : MonoBehaviour
         }
 
         lastPhase = currentPhase;
-
-        if (Input.GetKeyDown(KeyCode.M))
-        {
-            Debug.Log($"Fase ANTES: {currentMoonPhase}");
-            ForceNextPhase();
-            Debug.Log($"Fase DESPUÉS: {currentMoonPhase}");
-        }
     }
 
     private void OnNewDay(int dayCount) { }

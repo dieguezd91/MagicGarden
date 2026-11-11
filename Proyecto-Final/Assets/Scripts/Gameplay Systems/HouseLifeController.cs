@@ -41,7 +41,7 @@ public class HouseLifeController : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        if (isDestroyed)
+        if (isDestroyed || LifeController.PlayerInvulnerable) // god mode cheat covers the house too
             return;
 
         currentHealth -= damage;

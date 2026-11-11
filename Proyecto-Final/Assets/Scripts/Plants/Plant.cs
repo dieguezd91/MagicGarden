@@ -265,7 +265,7 @@ public class Plant : MonoBehaviour
         UpdateGrowthStatus(currentDay);
     }
 
-    private void CompleteGrowth()
+    public void CompleteGrowth()
     {
         if (growthCompleted)
             return;
