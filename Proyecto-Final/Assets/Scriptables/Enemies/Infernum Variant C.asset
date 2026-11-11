@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 572e411c09bd7914e80ed2343ea2bd76, type: 3}
+  m_Name: Infernum Variant C
+  m_EditorClassIdentifier: 
+  enemyName: Infernum
+  enemyIcon: {fileID: -2141980523, guid: 494fce19c09feb14ebcd3992662734f6, type: 3}
+  description: 
+  maxHealth: 50
+  moveSpeed: 1
+  detectionRange: 50
+  playerPriority: 1
+  plantPriority: 1.2
+  homePriority: 1.5
+  footstepCooldown: 0.4
+  manaDropChance: 0.5
+  experienceReward: 25
+  shootingRange: 6
+  fireRate: 0.5
+  bulletForce: 5
+  aimYOffset: 0.5
