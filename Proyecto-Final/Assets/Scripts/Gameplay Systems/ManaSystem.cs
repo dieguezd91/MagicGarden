@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class ManaSystem : MonoBehaviour
 {
+    // Infinite mana cheat (CheatManager). Always false in release builds.
+    public static bool InfiniteMana;
+
     [Header("SETTINGS")]
     [SerializeField] private float baseMaxMana = 100f;
     [SerializeField] private float currentMana;
@@ -145,6 +148,13 @@ public class ManaSystem : MonoBehaviour
 
     public bool UseMana(float amount)
     {
+        // Infinite mana cheat: spending is free and the bar stays full, so callers' "enough mana?" checks pass too.
+        if (InfiniteMana)
+        {
+            SetMana(modifiedMaxMana);
+            return true;
+        }
+
         if (isNight && useLunarInfluence && lunarInfluenceManager != null)
         {
             float costModifier = lunarInfluenceManager.GetManaCostModifier();

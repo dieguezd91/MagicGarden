@@ -27,6 +27,9 @@ public class LifeController : MonoBehaviour
         Ice,
     }
 
+    // God mode cheat (CheatManager): protects the player and the house. Always false in release builds.
+    public static bool PlayerInvulnerable;
+
     [Header("HEALTH SETTINGS")]
     public float maxHealth = 100f;
     public float currentHealth;
@@ -92,6 +95,7 @@ public class LifeController : MonoBehaviour
     public void TakeDamage(float damage, DamageType damageType = DamageType.SingleTick, DamageElement damageElement = DamageElement.Normal)
     {
         if (isDead || UpgradeRuntime.GameplayBlocked) return;
+        if (isPlayer && PlayerInvulnerable) return;
 
         currentHealth -= damage;
         currentHealth = Mathf.Max(0f, currentHealth);

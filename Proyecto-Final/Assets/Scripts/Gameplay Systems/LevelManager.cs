@@ -71,21 +71,6 @@ public class LevelManager : MonoBehaviour
         DayCycleController.Instance?.StartDay();
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.K))
-        {
-            ForceEndNight();
-            return;
-        }
-
-        if (UpgradeRuntime.GameplayBlocked)
-            return;
-
-        if (Input.GetKeyDown(KeyCode.L))
-            InventoryManager.Instance?.AddGold(100);
-    }
-
     private void HandleHordeCompleted()
     {
         if (waveSpawner == null ||
@@ -178,7 +163,7 @@ public class LevelManager : MonoBehaviour
             currentPhase != GamePhase.OnRitual)
             return;
 
-        Debug.Log("[LevelManager] Force ending night with K key.");
+        Debug.Log("[LevelManager] Force ending night.");
 
         foreach (var altar in FindObjectsOfType<RitualAltar>())
         {

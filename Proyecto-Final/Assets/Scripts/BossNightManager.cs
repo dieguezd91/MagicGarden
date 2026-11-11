@@ -58,24 +58,16 @@ public class BossNightManager : MonoBehaviour
         }
     }
 
-    private void Update()
+    // Cheat entry point: turns the current day into a boss night (once per day).
+    public void ForceBossNight()
     {
-        if (Input.GetKeyDown(KeyCode.J))
-        {
-            ForceEndBossNight();
-        }
+        int currentDay = DayCycleController.Instance.CurrentDay;
+        if (currentDay == lastBossNightDay) return;
 
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            int currentDay = DayCycleController.Instance.CurrentDay;
-            if (currentDay != lastBossNightDay)
-            {
-                isBossNight = true;
-                bossHasSpawnedThisNight = false;
-                lastBossNightDay = currentDay;
-                StartBossNight();
-            }
-        }
+        isBossNight = true;
+        bossHasSpawnedThisNight = false;
+        lastBossNightDay = currentDay;
+        StartBossNight();
     }
 
     private void OnNewDay(int dayCount)
