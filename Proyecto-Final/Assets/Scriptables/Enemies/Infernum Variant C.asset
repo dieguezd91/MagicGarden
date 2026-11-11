@@ -15,16 +15,16 @@ MonoBehaviour:
   enemyName: Infernum
   enemyIcon: {fileID: -2141980523, guid: 494fce19c09feb14ebcd3992662734f6, type: 3}
   description: 
-  maxHealth: 50
-  moveSpeed: 1
+  maxHealth: 100
+  moveSpeed: 2
   detectionRange: 50
   playerPriority: 1
   plantPriority: 1.2
   homePriority: 1.5
-  footstepCooldown: 0.4
-  manaDropChance: 0.5
+  footstepCooldown: 0.6
   experienceReward: 25
-  shootingRange: 6
+  manaDropChance: 0.5
+  shootingRange: 8
   fireRate: 0.5
-  bulletForce: 5
+  bulletForce: 8
   aimYOffset: 0.5
