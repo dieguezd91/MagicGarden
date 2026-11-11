@@ -538,6 +538,71 @@ public class EnemiesSpawner : MonoBehaviour
     }
 
 
+    // Cheat: kills every living enemy; spawning continues. Bosses are skipped because killing one ends the night.
+    public void KillAllAlive()
+    {
+        foreach (EnemyBase enemy in FindObjectsOfType<EnemyBase>())
+        {
+            if (enemy is Boss) continue;
+
+            LifeController life = enemy.GetComponent<LifeController>();
+            if (life != null && life.IsAlive())
+                life.Kill();
+        }
+    }
+
+    // Cheat: spawns the rest of tonight's horde at once and kills it, so the night completes normally with all the loot.
+    public void SpawnRemainingAndKillAll()
+    {
+        if (GameFlowController.Instance == null ||
+            GameFlowController.Instance.CurrentPhase != GamePhase.Night ||
+            hordeCompleted)
+            return;
+
+        if (IsBossNight())
+        {
+            EndNight();
+            return;
+        }
+
+        StartCoroutine(SpawnRemainingAndKillAllRoutine());
+    }
+
+    private IEnumerator SpawnRemainingAndKillAllRoutine()
+    {
+        // Horde not started yet (e.g. player still inside the house): start it so counts and roulette are set.
+        if (DayCycleController.Instance != null &&
+            lastStartedNight != DayCycleController.Instance.TotalNights)
+            StartContinuousHorde();
+
+        if (continuousSpawnCoroutine != null)
+        {
+            StopCoroutine(continuousSpawnCoroutine);
+            continuousSpawnCoroutine = null;
+        }
+        isSpawning = false;
+
+        while (totalEnemiesSpawned < totalEnemiesToKill && SpawnEnemy())
+        {
+            totalEnemiesSpawned++;
+            onEnemySpawned?.Invoke();
+        }
+
+        if (totalEnemiesSpawned < totalEnemiesToKill)
+        {
+            Debug.LogError("[EnemiesSpawner] Spawn-all cheat could not spawn the full horde; force ending night instead.");
+            EndNight();
+            yield break;
+        }
+
+        onHordeProgress?.Invoke(totalEnemiesKilled, totalEnemiesToKill);
+
+        // Wait a frame so the new enemies run Start() (LifeController/animator init) before being killed.
+        yield return null;
+
+        KillAllAlive();
+    }
+
     private void ConfigureEnemyRoulette()
     {
         enemyRoulette.Clear();

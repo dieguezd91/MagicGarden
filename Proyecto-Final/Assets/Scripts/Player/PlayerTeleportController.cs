@@ -12,7 +12,7 @@ public class PlayerTeleportController : MonoBehaviour
 
     public event Action<float, float> OnTeleportCooldownChanged;
 
-    public float TeleportCooldown => UpgradeRuntime.Cooldown("ability:teleport", teleportCooldown, "TeleportSpell");
+    public float TeleportCooldown => SpellInventory.ApplyFastCooldowns(UpgradeRuntime.Cooldown("ability:teleport", teleportCooldown, "TeleportSpell"));
     public MagicGarden.Target DescribeUpgradeTarget()
     {
         var spell = teleportPrefab != null ? teleportPrefab.GetComponent<Spell>() : null;

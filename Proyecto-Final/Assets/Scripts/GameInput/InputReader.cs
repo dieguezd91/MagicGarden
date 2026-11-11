@@ -40,22 +40,6 @@ public class InputReader : MonoBehaviour
 
     public event Action<int> OnSlotSelected;
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-    /// <summary>[K]</summary>
-    public event Action OnDebugLevelUp;
-
-    /// <summary>[L]</summary>
-    public event Action OnDebugNextLevel;
-
-    /// <summary>[M]</summary>
-    public event Action OnDebugNextMoonPhase;
-
-    /// <summary>[B]</summary>
-    public event Action OnDebugSpawnBoss;
-
-    /// <summary>[J]</summary>
-    public event Action OnDebugBossJump;
-#endif
 
     private void Update()
     {
@@ -69,10 +53,6 @@ public class InputReader : MonoBehaviour
         ReadGameplayKeys();
         ReadUIKeys();
         ReadSlotKeys();
-
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-        ReadDebugKeys();
-#endif
     }
 
     private void ReadContinuousState()
@@ -85,7 +65,11 @@ public class InputReader : MonoBehaviour
 
     private void ReadGameplayKeys()
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (Input.GetMouseButtonDown(0) && !CheatManager.IsPointerOverPanel)
+#else
         if (Input.GetMouseButtonDown(0))
+#endif
             OnPrimaryPressed?.Invoke();
 
         if (Input.GetKeyDown(teleportKey))
@@ -129,14 +113,4 @@ public class InputReader : MonoBehaviour
         }
     }
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-    private void ReadDebugKeys()
-    {
-        if (Input.GetKeyDown(KeyCode.K)) OnDebugLevelUp?.Invoke();
-        if (Input.GetKeyDown(KeyCode.L)) OnDebugNextLevel?.Invoke();
-        if (Input.GetKeyDown(KeyCode.M)) OnDebugNextMoonPhase?.Invoke();
-        if (Input.GetKeyDown(KeyCode.B)) OnDebugSpawnBoss?.Invoke();
-        if (Input.GetKeyDown(KeyCode.J)) OnDebugBossJump?.Invoke();
-    }
-#endif
 }

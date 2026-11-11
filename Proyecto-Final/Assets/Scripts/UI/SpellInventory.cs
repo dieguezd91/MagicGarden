@@ -263,8 +263,14 @@ public class SpellInventory : MonoBehaviour
         var slot = GetSpellSlot(index);
         if (slot == null) return 0.001f;
         var spell = slot.spellPrefab != null ? slot.spellPrefab.GetComponent<Spell>() : null;
-        return UpgradeRuntime.Cooldown(slot.UpgradeId(index), slot.cooldown, spell != null ? spell.GetType().Name : "");
+        float cooldown = UpgradeRuntime.Cooldown(slot.UpgradeId(index), slot.cooldown, spell != null ? spell.GetType().Name : "");
+        return ApplyFastCooldowns(cooldown);
     }
+
+    // Fast cooldowns cheat (CheatManager): caps player spell/ability cooldowns. Always off in release builds.
+    public static bool FastCooldowns;
+    public const float FastCooldownCap = 0.5f;
+    public static float ApplyFastCooldowns(float cooldown) => FastCooldowns ? Mathf.Min(cooldown, FastCooldownCap) : cooldown;
 
     public void CycleSpell(int direction)
     {
