@@ -101,6 +101,35 @@ public static class UpgradeUIPrefabAuthoring
         AssetDatabase.SaveAssets();
         Debug.Log("Level-up reward prefab authored and nested above LevelUpPanel: " + path);
     }
+    [MenuItem("Tools/Magic Garden/Replace inventory blur with shared backdrop (once)")]
+    public static void ReplaceInventoryBlur()
+    {
+        foreach (string path in new[] { CanvasPath, "Assets/Prefabs/UI/Game UI.prefab" })
+        {
+            var contents = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                var controller = contents.GetComponentInChildren<GameStateUIController>(true);
+                var inventory = contents.GetComponentInChildren<InventoryUIController>(true);
+                if (controller == null || inventory == null) throw new InvalidOperationException("Missing GameStateUIController or InventoryUIController in " + path);
+                if (new SerializedObject(controller).FindProperty("inventoryBackdrop").objectReferenceValue != null)
+                    throw new InvalidOperationException("Inventory backdrop already wired in " + path);
+                foreach (var t in contents.GetComponentsInChildren<Transform>(true))
+                    if (t.name == "BackgroundBlur" && t.childCount == 0 && t.GetComponents<Component>().Length == 2)
+                    { UnityEngine.Object.DestroyImmediate(t.gameObject); break; }
+                var invRect = (RectTransform)inventory.transform;
+                bool isRoot = invRect == contents.transform;
+                var backdrop = CreateBackdrop(isRoot ? invRect : (RectTransform)invRect.parent);
+                backdrop.transform.SetSiblingIndex(isRoot ? 0 : invRect.GetSiblingIndex());
+                backdrop.gameObject.SetActive(false);
+                Ref(controller, "inventoryBackdrop", backdrop);
+                PrefabUtility.SaveAsPrefabAsset(contents, path);
+                Debug.Log("Inventory backdrop wired in " + path);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(contents); }
+        }
+        AssetDatabase.SaveAssets();
+    }
     // Shared dimmed backdrop (UIBackdrop): full-screen dark image that also blocks clicks to UI behind it.
     public static UIBackdrop CreateBackdrop(RectTransform parent)
     {

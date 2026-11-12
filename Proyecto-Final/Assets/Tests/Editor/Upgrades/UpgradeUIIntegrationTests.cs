@@ -265,6 +265,19 @@ public class UpgradeUIIntegrationTests
         var method = Production("UpgradeRuntime").GetMethod("LevelForPendingChoice", BindingFlags.Public | BindingFlags.Static);
         Assert.That(method.Invoke(null, new object[] { current, pending }), Is.EqualTo(expected));
     }
+    [TestCase("Assets/Prefabs/UI/Canvas/Canvas Game UI.prefab")]
+    [TestCase("Assets/Prefabs/UI/Game UI.prefab")]
+    public void InventoryUsesSharedBackdropInsteadOfDepthOfFieldBlur(string path)
+    {
+        var root = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+        var controller = root.GetComponentInChildren(Production("GameStateUIController"), true);
+        Assert.That(controller, Is.Not.Null);
+        Assert.That(controller.GetType().GetField("blurVolume", BindingFlags.Instance | BindingFlags.NonPublic), Is.Null);
+        var backdrop = (Component)Field(controller, "inventoryBackdrop");
+        Assert.That(backdrop, Is.Not.Null);
+        Assert.That(backdrop.GetType().Name, Is.EqualTo("UIBackdrop"));
+        Assert.That(backdrop.transform.IsChildOf(root.transform), Is.True);
+    }
     [Test] public void UnwiredViewsRejectDisplayWithoutConstructingFallbackObjects()
     {
         var root = new GameObject("Unwired view"); created.Add(root);

@@ -492,6 +492,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slotIndex: 2
+  equipmentMode: 0
 --- !u!1 &219625151174351265
 GameObject:
   m_ObjectHideFlags: 0
@@ -729,6 +730,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8fce14b6c0a6824ca7ca59be4cf2620, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _defaultState: 0
+  _currentState: 0
   manaBar: {fileID: 6348763443148639983}
   manaFillImage: {fileID: 1091095196879207996}
   manaGradient:
@@ -2278,6 +2281,7 @@ RectTransform:
   - {fileID: 8251966772324988080}
   - {fileID: 2172812055023422175}
   - {fileID: 1213882856172262318}
+  - {fileID: 6940258271611090906}
   - {fileID: 8575217949456988615}
   - {fileID: 3161357893034905635}
   - {fileID: 8673929148261284327}
@@ -2365,6 +2369,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5df826d0ecb382749a97e0511459e1c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pauseMenuController: {fileID: 0}
   healthUI: {fileID: 7916964000324652393}
   manaUI: {fileID: 5201880827596868220}
   inventoryUIController: {fileID: 6103283380706278239}
@@ -2372,8 +2377,18 @@ MonoBehaviour:
   gameStateUI: {fileID: 7674911416935625465}
   feedbackUI: {fileID: 4994741210068534376}
   tooltipUI: {fileID: 4448939358930901549}
+  spellSlotsUI: {fileID: 0}
+  hudAbilities: {fileID: 0}
+  ritualUI: {fileID: 0}
+  teleportAbilityUI: {fileID: 0}
   interfaceSounds: {fileID: 4455532361817896765}
+  uiFlowController: {fileID: 0}
+  dailyLoadout: {fileID: 0}
   gameOverPanel: {fileID: 1592641544793884352}
+  continuePanel: {fileID: 0}
+  continuePanelBackground: {fileID: 0}
+  continueText: {fileID: 0}
+  continueButtonsContainer: {fileID: 0}
   HUD: {fileID: 6859769298179411691}
   pausePanel: {fileID: 6695511775711624593}
   inventoryUI: {fileID: 1084500548850682471}
@@ -2538,17 +2553,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3246d8b072880c24390565b3776e3fd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _defaultState: 0
+  _currentState: 0
   HUD: {fileID: 6859769298179411691}
   gameOverPanel: {fileID: 1592641544793884352}
   pausePanel: {fileID: 6695511775711624593}
-  instructionsPanel: {fileID: 8749344219030651501}
-  seedSlots: {fileID: 7482967402910395387}
   dayControlPanel: {fileID: 0}
   abilityPanel: {fileID: 4512557391801552703}
-  instructionsButton: {fileID: 5979171169579846939}
-  closeInstructionsButton: {fileID: 1756268794627699696}
-  continueButton: {fileID: 2270460702644770177}
-  MainMenuButton: {fileID: 6403830633583592634}
+  inventoryBackdrop: {fileID: 4955155618842670534}
 --- !u!1 &947399483300580985
 GameObject:
   m_ObjectHideFlags: 0
@@ -4582,6 +4594,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slotIndex: 5
+  equipmentMode: 0
 --- !u!1 &1714333238828107909
 GameObject:
   m_ObjectHideFlags: 0
@@ -5533,12 +5546,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd17179c4197c1444900118349689c25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _defaultState: 0
+  _currentState: 0
+  pauseController: {fileID: 0}
   inventoryPanel: {fileID: 2224892212873134858}
   toggleInventoryKey: 105
   alternateToggleKey: 9
   closeInventoryOnEscape: 1
-  disablePlayerMovementWhenOpen: 1
   inventoryUI: {fileID: 1084500548850682471}
+  animationController: {fileID: 0}
+  waitForAnimationToComplete: 1
 --- !u!1 &2241465845216092254
 GameObject:
   m_ObjectHideFlags: 0
@@ -7651,6 +7668,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slotIndex: 1
+  equipmentMode: 0
 --- !u!1 &2921353464450283103
 GameObject:
   m_ObjectHideFlags: 0
@@ -7834,6 +7852,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slotIndex: 6
+  equipmentMode: 0
 --- !u!1 &2983292737618006335
 GameObject:
   m_ObjectHideFlags: 0
@@ -8124,55 +8143,6 @@ RectTransform:
   m_AnchoredPosition: {x: -5, y: 0}
   m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &3080756973882398800
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5724662214688349555}
-  - component: {fileID: 512035700202903210}
-  m_Layer: 0
-  m_Name: BackgroundBlur
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5724662214688349555
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3080756973882398800}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 308.62317, y: -48.736916, z: -24.467594}
-  m_LocalScale: {x: 0.22222227, y: 0.22222227, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7919979244732581513}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &512035700202903210
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3080756973882398800}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IsGlobal: 1
-  priority: 0
-  blendDistance: 0
-  weight: 1
-  sharedProfile: {fileID: 11400000, guid: 721cbc7c48fbaa74cbe77211fb4ec5ad, type: 2}
 --- !u!1 &3254555684593420579
 GameObject:
   m_ObjectHideFlags: 0
@@ -8235,6 +8205,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slotIndex: 4
+  equipmentMode: 0
 --- !u!1 &3262054868740011252
 GameObject:
   m_ObjectHideFlags: 0
@@ -10169,6 +10140,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slotIndex: 9
+  equipmentMode: 0
 --- !u!1 &4019716442163813658
 GameObject:
   m_ObjectHideFlags: 0
@@ -11266,17 +11238,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2347957e6bfe4c647832f8ed27f552a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  plantButton: {fileID: 7451385361418659395}
-  harvestButton: {fileID: 6575471498303534248}
-  digButton: {fileID: 7632742827436784804}
-  removeButton: {fileID: 4131811245011829233}
-  plantIcon: {fileID: 0}
-  harvestIcon: {fileID: 0}
-  digIcon: {fileID: 0}
-  removeIcon: {fileID: 0}
-  normalColor: {r: 0.80252695, g: 0.83137256, b: 0.2862745, a: 1}
-  selectedColor: {r: 0.5, g: 1, b: 0.5, a: 1}
-  disabledColor: {r: 0.8018868, g: 0.26099145, b: 0.26099145, a: 0.5}
+  abilitySlots:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!223 &2264165929436880149
 Canvas:
   m_ObjectHideFlags: 0
@@ -13665,6 +13631,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc43ab2f5837cdb428b7bfd1f50442f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _defaultState: 0
+  _currentState: 0
   tooltipPanel: {fileID: 5375879886561416045}
   seedNameText: {fileID: 7470322304295132581}
   seedDescriptionText: {fileID: 2547454318941179399}
@@ -13680,7 +13648,7 @@ SortingGroup:
   m_GameObject: {fileID: 5375879886561416045}
   m_Enabled: 1
   m_SortingLayerID: -1297908157
-  m_SortingLayer: 5
+  m_SortingLayer: 6
   m_SortingOrder: 10
   m_SortAtRoot: 0
 --- !u!1 &5381164219706515732
@@ -14320,6 +14288,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slotIndex: 3
+  equipmentMode: 0
 --- !u!1 &5719296367110710895
 GameObject:
   m_ObjectHideFlags: 0
@@ -18962,63 +18931,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c8fd0b6989339e4296c5c28ecf71587, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slotObjects:
-  - {fileID: 2895954750160873234}
-  - {fileID: 198911155036944373}
-  - {fileID: 5686365035099888991}
-  - {fileID: 3254555684593420579}
-  - {fileID: 1660859579074001786}
-  - {fileID: 2928244340024845772}
-  - {fileID: 8770939593430662879}
-  - {fileID: 7806004833036232300}
-  - {fileID: 4011857163140192054}
-  slotIcons:
-  - {fileID: 6966174395009925964}
-  - {fileID: 4732957558863146958}
-  - {fileID: 5170526324262862446}
-  - {fileID: 315077854473786440}
-  - {fileID: 6074482191603967055}
-  - {fileID: 5814493947527301771}
-  - {fileID: 3656482421562113399}
-  - {fileID: 3054610441874673848}
-  - {fileID: 6008613336069675048}
-  slotBackgrounds:
-  - {fileID: 423091173865988505}
-  - {fileID: 6260623867256952960}
-  - {fileID: 2115126257086909187}
-  - {fileID: 3193457084716578395}
-  - {fileID: 8306951010766462032}
-  - {fileID: 8450646975194756631}
-  - {fileID: 2519598913727669891}
-  - {fileID: 7849229809281150872}
-  - {fileID: 4552341041852029058}
-  slotNumbers:
-  - {fileID: 290783739848246487}
-  - {fileID: 7938909326012032355}
-  - {fileID: 7999052547812669300}
-  - {fileID: 1637474077727786216}
-  - {fileID: 3819936185827553450}
-  - {fileID: 2830132204788170377}
-  - {fileID: 1804436924335772602}
-  - {fileID: 3746432023162521782}
-  - {fileID: 425973684691262426}
-  seedCount:
-  - {fileID: 9150456905058910443}
-  - {fileID: 3518269789895600405}
-  - {fileID: 4550183759260389554}
-  - {fileID: 4101150218988630558}
-  - {fileID: 734035349482988143}
-  - {fileID: 2299057267429317267}
-  - {fileID: 236242713221061034}
-  - {fileID: 4984842915071796976}
-  - {fileID: 134948472510068597}
+  _defaultState: 0
+  _currentState: 0
+  seedSlots:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   seedSlotsCanvasGroup: {fileID: 692423713723625629}
-  normalColor: {r: 0.7, g: 0.7, b: 0.7, a: 0.7}
-  selectedColor: {r: 1, g: 1, b: 1, a: 1}
-  highlightColor: {r: 1, g: 1, b: 0.5, a: 1}
-  selectedScale: 1.2
-  normalScale: 1
-  doublePressThreshold: 0.3
 --- !u!1 &7580097171795840079
 GameObject:
   m_ObjectHideFlags: 0
@@ -19460,6 +19379,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slotIndex: 8
+  equipmentMode: 0
 --- !u!1 &7816481741631359706
 GameObject:
   m_ObjectHideFlags: 0
@@ -20148,8 +20068,7 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 4.5, y: 4.5, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 5724662214688349555}
+  m_Children: []
   m_Father: {fileID: 879749108072094280}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -20806,13 +20725,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f39d20afbd567664186121d3c6742759, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pauseMenu: {fileID: 6695511775711624593}
-  OptionsMenu: {fileID: 4950663633764015006}
-  instructionsPanel: {fileID: 8749344219030651501}
+  _defaultState: 0
+  _currentState: 0
+  pauseController: {fileID: 0}
   uiManager: {fileID: 3202730244242288312}
-  blurVolume: {fileID: 512035700202903210}
-  transitionDuration: 1.5
-  maxFocalLength: 200
+  _pauseMenuPanel: {fileID: 0}
+  _optionsMenuPanel: {fileID: 0}
 --- !u!1 &8245589943192762857
 GameObject:
   m_ObjectHideFlags: 0
@@ -21316,16 +21234,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bookButtons:
   - button: {fileID: 8318713915833362872}
-    animationState: Inventory
+    page: 0
+    buttonName: 
   - button: {fileID: 2287378677134331198}
-    animationState: Calendar
+    page: 0
+    buttonName: 
   - button: {fileID: 5637599064062412998}
-    animationState: Glosary
+    page: 0
+    buttonName: 
   - button: {fileID: 5083455601723474211}
-    animationState: Placeholder
+    page: 0
+    buttonName: 
   - button: {fileID: 8715950980150918235}
-    animationState: Options
-  animator: {fileID: 6716161358663261187}
+    page: 0
+    buttonName: 
+  animationController: {fileID: 0}
+  playClickSound: 1
+  buttonClickSound: 15
 --- !u!1 &8574503677256485428
 GameObject:
   m_ObjectHideFlags: 0
@@ -21935,6 +21860,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slotIndex: 7
+  equipmentMode: 0
 --- !u!1 &8799775159798414968
 GameObject:
   m_ObjectHideFlags: 0
@@ -22144,6 +22070,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e5ad3f0c8cf12c479ea6ddebf052723, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _defaultState: 0
+  _currentState: 0
   healthBar: {fileID: 4341786289584848491}
   fillImage: {fileID: 3089106166387008382}
   healthGradient:
@@ -22362,6 +22290,109 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &8868991584953758227
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6940258271611090906}
+  - component: {fileID: 6698736379145246937}
+  - component: {fileID: 3803240853831550082}
+  - component: {fileID: 2194418506459677062}
+  - component: {fileID: 4955155618842670534}
+  m_Layer: 5
+  m_Name: Backdrop
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &6940258271611090906
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8868991584953758227}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4856950301543575892}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &6698736379145246937
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8868991584953758227}
+  m_CullTransparentMesh: 1
+--- !u!114 &3803240853831550082
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8868991584953758227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.6}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!225 &2194418506459677062
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8868991584953758227}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &4955155618842670534
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8868991584953758227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faa8f64dad577c54c894baa2fd78afa5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  showDuration: 0.08
+  hideDuration: 0.3
 --- !u!1 &8927355735630080291
 GameObject:
   m_ObjectHideFlags: 0
@@ -22619,13 +22650,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ed3cb69610994c46b63929d0a5e0967, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _defaultState: 0
+  _currentState: 0
   floatingDamagePrefab: {fileID: 8011744024934345175, guid: b18d5e020de9918429f62b516be2ef30, type: 3}
   damagedScreen: {fileID: 5797804616150960240}
   damageFadeSpeed: 2
   damageFadeOutDelay: 1
   bloomVolume: {fileID: 8264518825437891578, guid: 2fef4f59f6fb7bd4f85f575b12fe7e41, type: 3}
-  ritualOverlayImage: {fileID: 393752202769428440, guid: 5931669de0f88e64abb0be999dcec7cf, type: 3}
-  overlayFadeDuration: 1.2
+  enableRitualDebug: 1
 --- !u!1 &9072639211107793731
 GameObject:
   m_ObjectHideFlags: 0

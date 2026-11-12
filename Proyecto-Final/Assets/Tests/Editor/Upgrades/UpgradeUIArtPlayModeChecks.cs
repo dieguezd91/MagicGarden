@@ -268,6 +268,15 @@ public class UpgradeUIArtPlayModeChecks
         yield return null;
         foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720), new Vector2Int(1280, 1024) }) yield return Capture(canvas, level.gameObject, "runtime-levelup", size.x, size.y);
         var cards = (Array)Field(level, "cards"); int pending = (int)Property(experience, "PendingChoices");
+        // A level that unlocked content shows the reward card first; choices stay blocked until Continue.
+        var reward = (Component)Field(presenter, "rewardView");
+        if (reward != null && (bool)Property(reward, "IsVisible"))
+        {
+            Click((Component)Field(cards.GetValue(0), "selectButton")); yield return null;
+            Assert.That(Property(experience, "PendingChoices"), Is.EqualTo(pending), "cards are blocked behind the reward card");
+            Click((Component)Field(reward, "continueButton")); yield return null;
+            Assert.That(Property(reward, "IsVisible"), Is.False);
+        }
         Click((Component)Field(cards.GetValue(0), "selectButton")); yield return null;
         Assert.That(Property(experience, "PendingChoices"), Is.EqualTo(pending - 1));
         Assert.That(Property(flow, "IsChoosingUpgrade"), Is.False); Assert.That(Time.timeScale, Is.EqualTo(1));

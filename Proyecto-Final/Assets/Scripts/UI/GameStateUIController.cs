@@ -1,5 +1,4 @@
 using UnityEngine;
-using DG.Tweening;
 
 public class GameStateUIController : UIControllerBase
 {
@@ -12,15 +11,10 @@ public class GameStateUIController : UIControllerBase
     [SerializeField] private GameObject dayControlPanel;
     [SerializeField] private GameObject abilityPanel;
 
-    [Header("Blur Settings")]
-    [SerializeField] private UnityEngine.Rendering.Volume blurVolume;
-    [SerializeField] private float showTransitionDuration = 0.08f;
-    [SerializeField] private float hideTransitionDuration = 0.8f;
-    [SerializeField] private float maxFocalLength = 200f;
+    [Header("Backdrop")]
+    [Tooltip("Shared dimmed backdrop shown behind the inventory (same UIBackdrop as the level-up reward).")]
+    [SerializeField] private UIBackdrop inventoryBackdrop;
 
-    private UnityEngine.Rendering.Universal.DepthOfField dof;
-    private Tween blurTween;
-    private bool isHiding = false;
     private bool wasInventoryOpen = false;
 
     private WorldTransitionAnimator worldTransition;
@@ -72,11 +66,7 @@ public class GameStateUIController : UIControllerBase
         if (gameOverPanel != null) gameOverPanel.SetActive(false);
         if (pausePanel != null) pausePanel.SetActive(true);
 
-        if (blurVolume != null && blurVolume.profile.TryGet(out dof))
-        {
-            dof.focalLength.overrideState = true;
-            dof.focalLength.value = 0f;
-        }
+        if (inventoryBackdrop != null) inventoryBackdrop.Hide();
 
         if (GameFlowController.Instance != null)
         {
@@ -103,21 +93,11 @@ public class GameStateUIController : UIControllerBase
 
         if (isOpen && !wasInventoryOpen)
         {
-            if (blurTween != null) { blurTween.Kill(); blurTween = null; }
-            if (dof != null)
-            {
-                isHiding = false;
-                blurTween = CreateFocalLengthTween(maxFocalLength, showTransitionDuration, false);
-            }
+            if (inventoryBackdrop != null) inventoryBackdrop.Show();
         }
         else if (!isOpen && wasInventoryOpen)
         {
-            if (dof != null && dof.focalLength.value > 0)
-            {
-                if (blurTween != null) { blurTween.Kill(); blurTween = null; }
-                isHiding = true;
-                blurTween = CreateFocalLengthTween(0f, hideTransitionDuration, true);
-            }
+            if (inventoryBackdrop != null) inventoryBackdrop.Hide();
         }
 
         wasInventoryOpen = isOpen;
@@ -194,35 +174,9 @@ public class GameStateUIController : UIControllerBase
 
 
 
-    // Creates and returns a DOTween Tween that animates the DOF focal length using unscaled time.
-    // If setIsHidingFalseOnComplete is true, isHiding will be set to false when the tween completes.
-    private Tween CreateFocalLengthTween(float target, float duration, bool setIsHidingFalseOnComplete)
-    {
-        if (dof == null) return null;
-
-        // Animate the focalLength.value property directly using DOTween and unscaled time.
-        Tween t = DOTween.To(() => dof.focalLength.value, x => dof.focalLength.value = x, target, duration)
-            .SetUpdate(true)
-            // use an ease that makes the blur ramp up quickly for a snappy response
-            .SetEase(Ease.OutCubic)
-             .OnComplete(() =>
-             {
-                 // Ensure final value is set and update hiding phase if requested.
-                 if (dof != null) dof.focalLength.value = target;
-                 if (setIsHidingFalseOnComplete) isHiding = false;
-             });
-
-        return t;
-    }
-
     private void HandleInventoryClosedEvent()
     {
-        if (dof != null && dof.focalLength.value > 0)
-        {
-            if (blurTween != null) { blurTween.Kill(); blurTween = null; }
-            isHiding = true;
-            blurTween = CreateFocalLengthTween(0f, hideTransitionDuration, true);
-        }
+        if (inventoryBackdrop != null) inventoryBackdrop.Hide();
 
         // When inventory closes, resume tutorial if it was paused by the menu
         if (TutorialManager.Instance != null)
@@ -233,13 +187,8 @@ public class GameStateUIController : UIControllerBase
 
     private void HandleInventoryOpenedEvent()
     {
-        // Called when inventory opens (including alternate keys like Tab). Start the blur open tween.
-        if (blurTween != null) { blurTween.Kill(); blurTween = null; }
-        if (dof != null)
-        {
-            isHiding = false;
-            blurTween = CreateFocalLengthTween(maxFocalLength, showTransitionDuration, false);
-        }
+        // Called when inventory opens (including alternate keys like Tab).
+        if (inventoryBackdrop != null) inventoryBackdrop.Show();
 
         // Pause the tutorial when the inventory opens so it hides and can be resumed on close
         if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive())
