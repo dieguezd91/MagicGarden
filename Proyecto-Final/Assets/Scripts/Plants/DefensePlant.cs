@@ -126,14 +126,17 @@ public class DefensePlant : Plant
     {
         Collider2D[] enemiesInRange = Physics2D.OverlapCircleAll(transform.position, Upgraded(MagicGarden.Stat.Area, reflectRadius), enemyLayer);
 
+        bool hitAny = false;
         foreach (Collider2D enemyCollider in enemiesInRange)
         {
             LifeController enemyHealth = enemyCollider.GetComponent<LifeController>();
             if (enemyHealth != null)
             {
                 enemyHealth.TakeDamage(Upgraded(MagicGarden.Stat.Damage, reflectDamage));
+                hitAny = true;
             }
         }
+        if (hitAny) PlaySound(PlantSoundType.Hit); // thorns lashing back
     }
 
     protected override void OnMature()

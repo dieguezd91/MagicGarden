@@ -210,6 +210,9 @@ public class PlayerAbilitySystem : MonoBehaviour
 
     private void HandleCycleInput(int direction)
     {
+        if (!IsAbilityGameState()) return;
+        if ((pauseController != null && pauseController.IsPaused)) return;
+
         CycleAbility(direction);
     }
 
@@ -246,8 +249,18 @@ public class PlayerAbilitySystem : MonoBehaviour
         return selected;
     }
 
+    // "Mouse ScrollWheel" is reported over several consecutive frames per notch/swipe; without this one
+    // scroll cycled through ~8 abilities (and played the change sound each time).
+    private const float ScrollCycleInterval = 0.15f;
+    private float nextScrollCycleTime;
+
     private void HandleScrollInput(float scrollDelta)
     {
+        if (isDigging || isHarvesting) return;
+        if (!IsAbilityGameState()) return;
+        if (Time.unscaledTime < nextScrollCycleTime) return;
+        nextScrollCycleTime = Time.unscaledTime + ScrollCycleInterval;
+
         int direction = scrollDelta > 0 ? -1 : 1;
         CycleAbility(direction);
     }
@@ -828,28 +841,8 @@ public class PlayerAbilitySystem : MonoBehaviour
 
     private bool IsAbilityGameState()
     {
-        if (UpgradeRuntime.GameplayBlocked)
-            return false;
-
-        if (GameFlowController.Instance == null)
-            return false;
-
-        if (GameFlowController.Instance.CurrentPhase != GamePhase.Day)
-            return false;
-
-        if (pauseController != null && pauseController.IsPaused)
-            return false;
-
-        if (UIManager.Instance != null)
-        {
-            if (UIManager.Instance.IsInventoryOpen())
-                return false;
-
-            if (UIManager.Instance.IsInsideHouse)
-                return false;
-        }
-
-        return true;
+        var phase = GameFlowController.Instance.CurrentPhase;
+        return !UpgradeRuntime.GameplayBlocked && phase == GamePhase.Day;
     }
 
     public bool IsBusy()

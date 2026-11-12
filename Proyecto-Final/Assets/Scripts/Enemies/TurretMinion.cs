@@ -174,12 +174,6 @@ public class TurretMinion : EnemyBase
 
         StopMovement();
 
-        PlayEnemySound(
-            EnemySoundType.Attack,
-            SoundSourceType.Localized,
-            transform
-        );
-
         int shots = Mathf.Max(1, turretData.ShotsPerBurst);
 
         for (int i = 0; i < shots; i++)
@@ -195,6 +189,7 @@ public class TurretMinion : EnemyBase
             if (target == null || !IsPlayerInAttackRange(target))
                 break;
 
+            PlayEnemySound(EnemySoundType.Attack, SoundSourceType.Localized, transform); // one per bullet
             FireAtTarget(target.position);
 
             if (i < shots - 1)

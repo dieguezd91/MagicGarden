@@ -59,6 +59,32 @@ public class BossNightManager : MonoBehaviour
     }
 
     // Cheat entry point: turns the current day into a boss night (once per day).
+    private int cheatBossCursor;
+
+    /// <summary>
+    /// Cheat: spawn a boss right now, whatever the day. Cycles through bossPrefabs on each call.
+    /// Defeating it still runs the normal boss-defeat flow (horde advance + week reset).
+    /// </summary>
+    public string CheatSpawnBossNow()
+    {
+        if (bossPrefabs.Count == 0) return null;
+        Transform point = bossSpawnPoint;
+        if (point == null && enemiesSpawner != null && enemiesSpawner.spawnPoints.Count > 0)
+            point = enemiesSpawner.spawnPoints[0];
+        if (point == null) return null;
+
+        GameObject prefab = bossPrefabs[cheatBossCursor++ % bossPrefabs.Count];
+        isBossNight = true;
+        bossDefeated = false;
+        bossNightCompleted = false;
+        currentBoss = Instantiate(prefab, point.position, point.rotation);
+        currentBoss.transform.SetParent(transform);
+        SetupBoss(currentBoss);
+        bossHasSpawnedThisNight = true;
+        onBossSpawned?.Invoke();
+        return prefab.name;
+    }
+
     public void ForceBossNight()
     {
         int currentDay = DayCycleController.Instance.CurrentDay;

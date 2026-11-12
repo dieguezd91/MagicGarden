@@ -13,7 +13,7 @@ namespace MagicGarden.LoadoutUI
         {
             dropOwner = presenter; plants = plantCategory; position = index;
         }
-        public void OnDrop(PointerEventData data) { if (dropOwner != null) { SoundManager.Instance?.Play("UI_Slot_Drop"); dropOwner.DropOption(this, plants, position, data); } }
+        public void OnDrop(PointerEventData data) { if (dropOwner != null) dropOwner.DropOption(this, plants, position, data); }
         void IPointerEnterHandler.OnPointerEnter(PointerEventData data)
         {
             base.OnPointerEnter(data);

@@ -22,7 +22,7 @@ PrefabInstance:
       objectReference: {fileID: 359447677, guid: 6b876b38e4597704b84b5e76e54d27a1, type: 3}
     - target: {fileID: 4696120000059815133, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
       propertyPath: _volume
-      value: 0.5
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 4696120000059815133, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
       propertyPath: _onClickSound

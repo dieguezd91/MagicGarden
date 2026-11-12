@@ -56,7 +56,7 @@ MonoBehaviour:
   castSound:
     clips:
     - {fileID: 8300000, guid: 0dc0b2a6feba47e3940b3dd8cd975ba0, type: 3}
-    volume: 0.7
+    volume: 0.5
     pitch: 1
     pitchVariation: 0.05
     loop: 0
@@ -66,7 +66,7 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 5ed914cc8b584a39b98c03e02ad26570, type: 3}
     - {fileID: 8300000, guid: d714e9371ea44000ade6e747d965c87f, type: 3}
-    volume: 0.6
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.12
     loop: 0
@@ -75,7 +75,7 @@ MonoBehaviour:
   flameLoopSound:
     clips:
     - {fileID: 8300000, guid: 0203bc85dc44408e91ce4ea6c6dc3c68, type: 3}
-    volume: 0.6
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.03
     loop: 1
@@ -84,7 +84,7 @@ MonoBehaviour:
   flameEndSound:
     clips:
     - {fileID: 8300000, guid: 218fc2c89f2b472fb942ac1417cd14d6, type: 3}
-    volume: 0.6
+    volume: 0.5
     pitch: 1
     pitchVariation: 0.05
     loop: 0

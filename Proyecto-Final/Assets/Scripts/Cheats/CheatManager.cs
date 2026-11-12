@@ -48,8 +48,10 @@ public class CheatManager : MonoBehaviour
         // Enemies / nights
         Add("Kill alive enemies", KeyCode.K, KillAliveEnemies);
         Add("Spawn & kill whole horde (loot)", KeyCode.N, SpawnAndKillAll);
+        Add("Start night now", KeyCode.V, StartNightNow);
         Add("End night (no loot)", KeyCode.None, () => LevelManager.Instance?.ForceEndNight());
         Add("Start boss night", KeyCode.B, () => FindObjectOfType<BossNightManager>()?.ForceBossNight());
+        Add("Spawn boss now (cycles bosses)", KeyCode.Z, SpawnBossNow);
         Add("End boss night", KeyCode.J, () => FindObjectOfType<BossNightManager>()?.ForceEndBossNight());
         Add("Next moon phase", KeyCode.M, () => FindObjectOfType<LunarCycleManager>()?.ForceNextPhase());
 
@@ -63,6 +65,7 @@ public class CheatManager : MonoBehaviour
         Add("Level up", KeyCode.U, LevelUp);
         Add("Unlock all spells & plants", KeyCode.O, UnlockAll);
         Add("+100 gold", KeyCode.L, () => InventoryManager.Instance?.AddGold(100));
+        Add("Grab all loot", KeyCode.R, GrabAllLoot);
 
         // Garden / tutorial
         Add("Grow all plants", KeyCode.G, GrowAllPlants);
@@ -163,6 +166,40 @@ public class CheatManager : MonoBehaviour
     #endregion
 
     #region CHEATS
+    private static void SpawnBossNow()
+    {
+        var bosses = FindObjectOfType<BossNightManager>();
+        if (bosses == null) return;
+        StartNightNow(); // no-op if it's already night
+        string spawned = bosses.CheatSpawnBossNow();
+        Debug.Log(spawned != null ? $"[Cheats] Spawned boss: {spawned}" : "[Cheats] Could not spawn a boss (no prefabs or spawn point).");
+    }
+
+    private static void StartNightNow()
+    {
+        if (GameFlowController.Instance != null && GameFlowController.Instance.CurrentPhase == GamePhase.Night) return;
+        var timer = FindObjectOfType<DayTimerController>();
+        if (timer != null) timer.EndDayAndStartNight();
+        else DayCycleController.Instance?.StartNight();
+    }
+
+    /// <summary>
+    /// Teleports every pickup onto the player so each one's own trigger collection runs
+    /// (inventory, XP, sounds, fly-to-player), instead of duplicating that logic here.
+    /// </summary>
+    private static void GrabAllLoot()
+    {
+        var player = FindObjectOfType<PlayerController>();
+        if (player == null) return;
+        Vector3 at = player.transform.position;
+        int moved = 0;
+        foreach (var p in FindObjectsOfType<DropEnemyMaterial>()) { p.transform.position = at; moved++; }
+        foreach (var p in FindObjectsOfType<ExperiencePickup>()) { p.transform.position = at; moved++; }
+        foreach (var p in FindObjectsOfType<ManaPickup>()) { p.transform.position = at; moved++; }
+        foreach (var p in FindObjectsOfType<HouseHealingPotionPickup>()) { p.transform.position = at; moved++; }
+        Debug.Log($"[Cheats] Pulled {moved} pickups to the player.");
+    }
+
     private static void KillAliveEnemies()
     {
         FindObjectOfType<EnemiesSpawner>()?.KillAllAlive();

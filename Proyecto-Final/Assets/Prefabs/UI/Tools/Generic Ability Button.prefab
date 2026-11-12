@@ -136,7 +136,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87745a00c47540898143ab2bad63076c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _volume: 0.5
+  _volume: 0.4
   _enableHoverSound: 1
   _onHoverSound: {fileID: 8300000, guid: 5b375280484403b4d953df3a8aed2a6e, type: 3}
   _enableClickSound: 1

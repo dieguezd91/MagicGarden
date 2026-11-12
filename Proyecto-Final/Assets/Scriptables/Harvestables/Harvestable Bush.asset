@@ -31,7 +31,7 @@ MonoBehaviour:
   harvestingSound:
     clips:
     - {fileID: 8300000, guid: 4f4ef55d513bb15479c9281d654d3c02, type: 3}
-    volume: 1
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -40,7 +40,7 @@ MonoBehaviour:
   harvestedSound:
     clips:
     - {fileID: 8300000, guid: 4f4ef55d513bb15479c9281d654d3c02, type: 3}
-    volume: 1
+    volume: 0.45
     pitch: 1.25
     pitchVariation: 0.1
     loop: 0
@@ -49,7 +49,7 @@ MonoBehaviour:
   depletedSound:
     clips:
     - {fileID: 8300000, guid: 4f4ef55d513bb15479c9281d654d3c02, type: 3}
-    volume: 1
+    volume: 0.45
     pitch: 0.7
     pitchVariation: 0.1
     loop: 0
@@ -58,7 +58,7 @@ MonoBehaviour:
   regrowSound:
     clips:
     - {fileID: 8300000, guid: 03b91fa3ae1b42c45b2331cbfc7771b2, type: 3}
-    volume: 1
+    volume: 0.35
     pitch: 0.8
     pitchVariation: 0.1
     loop: 0

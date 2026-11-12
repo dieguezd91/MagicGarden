@@ -107,9 +107,9 @@ MonoBehaviour:
   impactSound:
     clips:
     - {fileID: 8300000, guid: 6d17418e94214c87bb4c5c8d3e9d729b, type: 3}
-    volume: 0.7
+    volume: 0.55
     pitch: 1
-    pitchVariation: 0.08
+    pitchVariation: 0.05
     loop: 0
     randomizeClip: 1
     cooldownTime: 0.3
@@ -122,6 +122,15 @@ MonoBehaviour:
   explosionEffectPrefab: {fileID: 410531898165536235, guid: f978f6cbd9ae54147a800bc801c0370c, type: 3}
   explosionEffectDuration: 0.6
   armingTime: 0.1
+  castSound:
+    clips:
+    - {fileID: 8300000, guid: 8e50f6220fb662f4f95d3fe65edd4994, type: 3}
+    volume: 0.5
+    pitch: 1
+    pitchVariation: 0.05
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.0
 --- !u!61 &5014852601970736367
 BoxCollider2D:
   m_ObjectHideFlags: 0
