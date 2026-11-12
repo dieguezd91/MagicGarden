@@ -5,11 +5,11 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-// Shows the seeds and spells unlocked by one level, alone over a dimmed backdrop, until the player presses Continue.
+// Shows the seeds and spells unlocked by one level, alone, until the player presses Continue.
+// The blur behind it belongs to the level-up session (UpgradePanel.sessionBackdrop), which also stays behind the upgrade choices.
 public sealed class LevelUpRewardView : MonoBehaviour
 {
     [SerializeField] private GameObject root;
-    [SerializeField] private UIBackdrop backdrop;
     [SerializeField] private TMP_Text headingLabel;
     [SerializeField] private GameObject seedSlot, spellSlot;
     [SerializeField] private Image seedIcon, spellIcon;
@@ -22,7 +22,7 @@ public sealed class LevelUpRewardView : MonoBehaviour
     private Action afterClose;
     public event Action Continued;
 
-    public bool IsConfigured => root == gameObject && backdrop != null && headingLabel != null && seedSlot != null && spellSlot != null &&
+    public bool IsConfigured => root == gameObject && headingLabel != null && seedSlot != null && spellSlot != null &&
         seedIcon != null && spellIcon != null && seedLabel != null && spellLabel != null && continueButton != null;
     // Stays true while the open/close tween runs, so card selection stays blocked until the reward is fully gone.
     public bool IsVisible => root != null && root.activeSelf;
@@ -50,7 +50,6 @@ public sealed class LevelUpRewardView : MonoBehaviour
         bool fresh = !root.activeSelf || tween.IsClosing;
         afterClose = null;
         root.SetActive(true);
-        backdrop.Show();
         if (fresh) tween.Open(Content, Group);
         EventSystem.current?.SetSelectedGameObject(continueButton.gameObject);
         return true;
@@ -67,14 +66,12 @@ public sealed class LevelUpRewardView : MonoBehaviour
     {
         afterClose = null;
         tween.Kill();
-        if (backdrop != null) backdrop.HideImmediate();
         if (root != null) root.SetActive(false);
     }
 
     private void Close()
     {
         if (root == null || tween.IsClosing) return;
-        if (backdrop != null) backdrop.Hide();
         if (!Application.isPlaying || !root.activeInHierarchy) { Finish(); return; }
         tween.Close(Content, Group, Finish);
     }

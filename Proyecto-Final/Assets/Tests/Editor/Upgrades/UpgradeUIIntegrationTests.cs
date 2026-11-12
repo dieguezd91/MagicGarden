@@ -226,7 +226,7 @@ public class UpgradeUIIntegrationTests
         }
         return reward;
     }
-    [Test] public void RewardCardShowsLevelSeedAndSpellOverBackdropAndContinueHidesItOnce()
+    [Test] public void RewardCardShowsLevelSeedAndSpellAndContinueHidesItOnce()
     {
         var view = Clone("LevelUpReward", "LevelUpRewardView");
         Assert.That(Property(view, "IsConfigured"), Is.True);
@@ -235,8 +235,6 @@ public class UpgradeUIIntegrationTests
         Assert.That(Call(view, "Show", new object[] { null }), Is.False);
         Assert.That(Call(view, "Show", Reward(3, "Sunflower", "Fireball")), Is.True);
         Assert.That(Property(view, "IsVisible"), Is.True);
-        var backdrop = (Component)Field(view, "backdrop");
-        Assert.That(backdrop.gameObject.activeInHierarchy, Is.True);
         Assert.That((string)Property(Field(view, "headingLabel"), "text"), Does.Contain("3"));
         Assert.That((string)Property(Field(view, "seedLabel"), "text"), Does.Contain("Sunflower"));
         Assert.That((string)Property(Field(view, "spellLabel"), "text"), Does.Contain("Fireball"));
@@ -250,18 +248,15 @@ public class UpgradeUIIntegrationTests
     [Test] public void RewardHideWhileInactiveIsImmediateAndSafeAndHideAfterShowIsImmediateOutsidePlayMode()
     {
         var view = Clone("LevelUpReward", "LevelUpRewardView");
-        var backdrop = (Component)Field(view, "backdrop");
         view.gameObject.SetActive(false);
         Assert.DoesNotThrow(() => Call(view, "Hide"));
         Assert.That(Property(view, "IsVisible"), Is.False); Assert.That(Property(view, "IsAnimating"), Is.False);
-        Assert.That(backdrop.gameObject.activeSelf, Is.False);
-        Assert.That(((CanvasGroup)backdrop.GetComponent(typeof(CanvasGroup))).alpha, Is.Zero);
         Assert.That(Call(view, "Show", Reward(3, "Sunflower", null)), Is.True);
         Assert.That(Property(view, "IsAnimating"), Is.False, "EditMode snaps instead of tweening");
         Assert.That(((CanvasGroup)Field(view, "group")).alpha, Is.EqualTo(1f));
         Assert.That(((RectTransform)Field(view, "content")).localScale, Is.EqualTo(Vector3.one));
         Call(view, "Hide");
-        Assert.That(Property(view, "IsVisible"), Is.False); Assert.That(backdrop.gameObject.activeSelf, Is.False);
+        Assert.That(Property(view, "IsVisible"), Is.False);
     }
     [Test] public void LevelUpPanelHideWhileInactiveIsImmediateAndNeverRaisesHidden()
     {

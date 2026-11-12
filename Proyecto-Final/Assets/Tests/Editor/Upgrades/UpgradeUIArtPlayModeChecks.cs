@@ -204,14 +204,32 @@ public class UpgradeUIArtPlayModeChecks
             camera.targetTexture = null; rt.Release(); UnityEngine.Object.DestroyImmediate(rt); UnityEngine.Object.DestroyImmediate(go);
         }
     }
-    // The reward is shown alone: drawn after the level-up panel, with its backdrop up and the panel hidden.
-    private static void AssertRewardHierarchy(Component reward, Component level)
+    // The reward is shown alone: drawn after the level-up panel, over the level-up session's single backdrop, with the panel hidden.
+    private static void AssertRewardHierarchy(Component presenter, Component reward, Component level)
     {
         Assert.That(reward.transform.GetSiblingIndex(), Is.GreaterThan(level.transform.GetSiblingIndex()));
-        var backdrop = (Component)Field(reward, "backdrop");
+        var backdrop = SessionBackdrop(presenter);
+        Assert.That(backdrop.transform.GetSiblingIndex(), Is.LessThan(level.transform.GetSiblingIndex()), "the blur is behind both modals");
         Assert.That(backdrop.gameObject.activeInHierarchy, Is.True);
-        Assert.That(((CanvasGroup)backdrop.GetComponent(typeof(CanvasGroup))).blocksRaycasts, Is.True);
+        Assert.That(backdrop.GetComponent<CanvasGroup>().blocksRaycasts, Is.True);
         Assert.That(level.gameObject.activeSelf, Is.False, "LevelUpPanel stays hidden while the reward is visible");
+    }
+    private static Component SessionBackdrop(Component presenter) => (Component)Field(presenter, "sessionBackdrop");
+    private static float BackdropAlpha(Component backdrop) => backdrop.GetComponent<CanvasGroup>().alpha;
+    // The same backdrop instance (same blur snapshot, not re-captured) is shown, active and fully opaque: no hide/show blink in between.
+    private static void AssertBackdropSteady(Component backdrop, object snapshot, string when)
+    {
+        Assert.That((bool)Property(backdrop, "IsShown"), Is.True, when + ": still shown");
+        Assert.That(backdrop.gameObject.activeSelf, Is.True, when + ": still active");
+        Assert.That(Property(backdrop, "HasBlur"), Is.True, when + ": blur kept");
+        Assert.That(Field(backdrop, "blurTexture"), Is.SameAs(snapshot), when + ": no new snapshot");
+        Assert.That(BackdropAlpha(backdrop), Is.GreaterThanOrEqualTo(.99f), when + ": no fade dip");
+    }
+    private static IEnumerator WaitBackdropOpaque(Component backdrop, float seconds = 2f)
+    {
+        float end = Time.realtimeSinceStartup + seconds;
+        while (Time.realtimeSinceStartup < end && BackdropAlpha(backdrop) < .999f) yield return null;
+        Assert.That(BackdropAlpha(backdrop), Is.EqualTo(1f).Within(.001f));
     }
     private sealed class Game
     {
@@ -350,11 +368,16 @@ public class UpgradeUIArtPlayModeChecks
         int pending = (int)Property(g.experience, "PendingChoices");
         Assert.That(Property(g.reward, "IsVisible"), Is.True);
         Assert.That(g.level.gameObject.activeSelf, Is.False, "level-up panel hidden while the reward is visible");
-        AssertRewardHierarchy(g.reward, g.level);
+        AssertRewardHierarchy(g.presenter, g.reward, g.level);
+        var backdrop = SessionBackdrop(g.presenter);
         Assert.That(Property(g.reward, "IsAnimating"), Is.True, "the reward card pops in");
         yield return new WaitForSecondsRealtime(.04f);
+        Assert.That(BackdropAlpha(backdrop), Is.InRange(.01f, .9f), "the blur fades in instead of appearing at once");
         yield return Capture(g.canvas, g.reward.gameObject, "runtime-reward-mid-open", 1920, 1080, false, true);
         yield return WaitIdle(g);
+        yield return WaitBackdropOpaque(backdrop);
+        var snapshot = Field(backdrop, "blurTexture"); Assert.That(snapshot, Is.Not.Null);
+        AssertBlurred(backdrop, "reward alone");
         yield return Capture(g.canvas, g.reward.gameObject, "runtime-reward-open", 1920, 1080, false, true);
         foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720) }) yield return Capture(g.canvas, g.reward.gameObject, "runtime-reward-alone", size.x, size.y, false);
         // Selection is impossible while the reward is visible, both through the presenter and the runtime.
@@ -363,19 +386,41 @@ public class UpgradeUIArtPlayModeChecks
         Assert.That(Property(g.experience, "PendingChoices"), Is.EqualTo(pending));
         Assert.That(Property(g.reward, "IsVisible"), Is.True);
         Click((Component)Field(g.reward, "continueButton")); yield return null;
+        float clicked = Time.realtimeSinceStartup;
         Assert.That(Property(g.reward, "IsVisible"), Is.True, "still fading out");
         Assert.That(g.level.gameObject.activeSelf, Is.False, "the upgrade cards wait for the reward to be gone");
         Call(g.runtime, "Choose", 0); Assert.That(Property(g.experience, "PendingChoices"), Is.EqualTo(pending), "blocked while the reward tween runs");
+        // Reward -> upgrades: the single backdrop never hides, blinks or re-snapshots; captures mid-transition.
+        bool closingShot = false, openingShot = false; float limit = clicked + 3f;
+        while (Time.realtimeSinceStartup < limit && !(g.level.gameObject.activeSelf && !(bool)Property(g.level, "IsAnimating") && !(bool)Property(g.reward, "IsVisible")))
+        {
+            AssertBackdropSteady(backdrop, snapshot, "across Continue");
+            if (!closingShot && Time.realtimeSinceStartup - clicked > .1f && (bool)Property(g.reward, "IsVisible"))
+            { closingShot = true; yield return Capture(g.canvas, g.reward.gameObject, "runtime-reward-to-upgrades-reward-closing", 1920, 1080, false, true); }
+            else if (!openingShot && g.level.gameObject.activeSelf && (bool)Property(g.level, "IsAnimating"))
+            { openingShot = true; yield return Capture(g.canvas, g.level.gameObject, "runtime-reward-to-upgrades-panel-opening", 1920, 1080, false, true); }
+            yield return null;
+        }
         yield return WaitIdle(g);
         Assert.That(Property(g.reward, "IsVisible"), Is.False);
         Assert.That(g.level.gameObject.activeSelf, Is.True, "upgrade panel appears after Continue");
         Assert.That(Choosing(g), Is.True);
+        AssertBackdropSteady(backdrop, snapshot, "upgrades after Continue");
+        AssertBlurred(backdrop, "upgrades after Continue");
+        Assert.That(backdrop.transform.GetSiblingIndex(), Is.LessThan(g.level.transform.GetSiblingIndex()), "the blur is behind the upgrade modal");
         yield return Capture(g.canvas, g.level.gameObject, "runtime-upgrades-after-continue-world", 1920, 1080, false, true);
         foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720) }) yield return Capture(g.canvas, g.level.gameObject, "runtime-upgrades-after-reward", size.x, size.y);
         var cards = (Array)Field(g.level, "cards");
         Click((Component)Field(cards.GetValue(0), "selectButton")); yield return null;
         Assert.That(Property(g.experience, "PendingChoices"), Is.EqualTo(pending - 1));
         Assert.That(Choosing(g), Is.False); Assert.That(Time.timeScale, Is.EqualTo(1f));
+        // The session ends with the choice: only now does the backdrop fade out (softly, then it is released).
+        Assert.That((bool)Property(backdrop, "IsShown"), Is.False);
+        yield return new WaitForSecondsRealtime(.1f);
+        Assert.That(backdrop.gameObject.activeSelf, Is.True, "still fading out");
+        Assert.That(BackdropAlpha(backdrop), Is.InRange(.01f, .99f), "the blur fades out instead of vanishing");
+        yield return WaitBackdrop(backdrop, false);
+        Assert.That(Property(backdrop, "HasBlur"), Is.False);
         yield return new ExitPlayMode();
     }
     [UnityTest] public IEnumerator EachLevelRewardShowsOnceAndLevelsWithoutRewardGoStraightToUpgrades()
@@ -389,9 +434,12 @@ public class UpgradeUIArtPlayModeChecks
         Assert.That(Property(g.experience, "PendingChoices"), Is.EqualTo(current - 1));
         var rewardLevels = new List<int>(); var plainLevels = new List<int>();
         yield return WaitForChoosing(g.flow, 5f, "upgrade flow starts");
+        var sessionBackdrop = SessionBackdrop(g.presenter); var snapshot = Field(sessionBackdrop, "blurTexture"); Assert.That(snapshot, Is.Not.Null);
         for (int step = 0; step < current - 1; step++)
         {
             yield return WaitIdle(g);
+            yield return WaitBackdropOpaque(sessionBackdrop);
+            AssertBackdropSteady(sessionBackdrop, snapshot, "pending level " + step);
             int pending = (int)Property(g.experience, "PendingChoices");
             int level = current - pending + 1;
             if (RewardHasContent(g, level))
@@ -402,6 +450,7 @@ public class UpgradeUIArtPlayModeChecks
                 Assert.That((string)Property(Field(g.reward, "headingLabel"), "text"), Does.Contain(level.ToString()));
                 Click((Component)Field(g.reward, "continueButton"));
                 yield return WaitIdle(g);
+                AssertBackdropSteady(sessionBackdrop, snapshot, "after the reward of level " + level);
                 Assert.That(Property(g.reward, "IsVisible"), Is.False);
                 yield return null; Assert.That(Property(g.reward, "IsVisible"), Is.False, "a level's reward is shown once");
             }
@@ -418,6 +467,7 @@ public class UpgradeUIArtPlayModeChecks
         Assert.That(rewardLevels, Is.Not.Empty); Assert.That(plainLevels, Is.Not.Empty);
         Assert.That(rewardLevels.Distinct().Count(), Is.EqualTo(rewardLevels.Count));
         Assert.That(Choosing(g), Is.False);
+        yield return WaitBackdrop(sessionBackdrop, false);
         yield return new ExitPlayMode();
     }
     [UnityTest] public IEnumerator InterruptedChoiceShowsItsRewardAgainAfterProgressionReset()
@@ -520,18 +570,18 @@ public class UpgradeUIArtPlayModeChecks
             var reward = Panel("LevelUpReward", root.transform); Call(reward, "HideImmediate");
             int continued = 0; Listen(reward, "Continued", (Action)(() => continued++));
             var card = (RectTransform)Field(reward, "content"); var group = (CanvasGroup)Field(reward, "group");
-            var backdropGroup = ((Component)Field(reward, "backdrop")).GetComponent<CanvasGroup>();
             Assert.That(card, Is.Not.Null); Assert.That(group, Is.Not.Null);
             Assert.That(Call(reward, "Show", RewardData(3, "Sunflower")), Is.True);
             Assert.That(Property(reward, "IsAnimating"), Is.True);
             yield return new WaitForSecondsRealtime(.08f);
             Assert.That(group.alpha, Is.InRange(.05f, .95f), "fading in on unscaled time");
-            Assert.That(card.localScale.x, Is.InRange(.8f, .999f), "scaling up from the smaller size");
+            // OutBack overshoots 1 by at most ~1.6% of the 0.85 -> 1 span, and an editor frame hitch can land the sample there.
+            Assert.That(card.localScale.x, Is.InRange(.8f, 1.02f), "scaling up from the smaller size");
             Assert.That(group.interactable, Is.False);
             Click((Component)Field(reward, "continueButton")); Assert.That(continued, Is.Zero, "Continue is blocked while the card pops in");
             yield return WaitOpen(reward);
             Assert.That(group.alpha, Is.EqualTo(1f)); Assert.That(card.localScale, Is.EqualTo(Vector3.one));
-            Assert.That(group.interactable, Is.True); Assert.That(backdropGroup.alpha, Is.EqualTo(1f).Within(.001f));
+            Assert.That(group.interactable, Is.True);
             Assert.That(Property(reward, "IsVisible"), Is.True);
             Click((Component)Field(reward, "continueButton")); Click((Component)Field(reward, "continueButton"));
             Assert.That(Property(reward, "IsAnimating"), Is.True); Assert.That(Property(reward, "IsVisible"), Is.True, "still visible (and blocking selection) while it closes");
@@ -541,8 +591,6 @@ public class UpgradeUIArtPlayModeChecks
             yield return WaitOpen(reward);
             Assert.That(Property(reward, "IsVisible"), Is.False); Assert.That(reward.gameObject.activeSelf, Is.False);
             Assert.That(continued, Is.EqualTo(1));
-            yield return new WaitForSecondsRealtime(.4f);
-            Assert.That(((Component)Field(reward, "backdrop")).gameObject.activeSelf, Is.False, "backdrop faded out and deactivated");
             Call(reward, "Hide"); // inactive: immediate, safe
             Assert.That(Property(reward, "IsAnimating"), Is.False); Assert.That(Property(reward, "IsVisible"), Is.False);
 
@@ -555,7 +603,7 @@ public class UpgradeUIArtPlayModeChecks
             var cards = (Array)Field(level, "cards");
             Assert.That(Call(level, "Show", Data("LevelUpCardData", 3), 3), Is.True);
             yield return new WaitForSecondsRealtime(.08f);
-            Assert.That(levelGroup.alpha, Is.InRange(.05f, .95f)); Assert.That(window.localScale.x, Is.InRange(.8f, .999f));
+            Assert.That(levelGroup.alpha, Is.InRange(.05f, .95f)); Assert.That(window.localScale.x, Is.InRange(.8f, 1.02f));
             Click((Component)Field(cards.GetValue(0), "selectButton")); Assert.That(selections, Is.Zero, "cards cannot be picked while the panel opens");
             yield return WaitOpen(level);
             Assert.That(levelGroup.alpha, Is.EqualTo(1f)); Assert.That(window.localScale, Is.EqualTo(Vector3.one));
@@ -689,14 +737,20 @@ public class UpgradeUIArtPlayModeChecks
         Assert.That(((Behaviour)Field(inventoryBackdrop, "blurImage")).enabled, Is.False);
         Call(g.experience, "AddExperience", 100);
         yield return WaitForChoosing(g.flow, 5f, "upgrade flow starts");
-        var rewardBackdrop = Backdrop(g.reward, "backdrop");
+        var sessionBackdrop = SessionBackdrop(g.presenter);
         Assert.That(Property(g.reward, "IsVisible"), Is.True);
         yield return WaitIdle(g);
-        AssertBlurred(rewardBackdrop, "reward");
+        yield return WaitBackdropOpaque(sessionBackdrop);
+        AssertBlurred(sessionBackdrop, "reward");
+        var snapshot = Field(sessionBackdrop, "blurTexture");
         Click((Component)Field(g.reward, "continueButton"));
         yield return WaitIdle(g);
-        yield return WaitBackdrop(rewardBackdrop, false);
-        Assert.That(Property(rewardBackdrop, "HasBlur"), Is.False);
+        AssertBlurred(sessionBackdrop, "upgrades");
+        AssertBackdropSteady(sessionBackdrop, snapshot, "upgrades share the reward's blur");
+        yield return Capture(g.canvas, g.level.gameObject, "runtime-upgrades-over-blur", 1920, 1080, false, true);
+        Click((Component)Field(((Array)Field(g.level, "cards")).GetValue(0), "selectButton"));
+        yield return WaitBackdrop(sessionBackdrop, false);
+        Assert.That(Property(sessionBackdrop, "HasBlur"), Is.False);
         yield return new ExitPlayMode();
     }
     [UnityTest] public IEnumerator MissingIndicatorNeverBlocksTheUpgradeFlow()
@@ -739,7 +793,7 @@ public class UpgradeUIArtPlayModeChecks
         // Level 2 unlocked content: the reward modal is shown alone first; the upgrade panel only after Continue.
         var reward = (Component)Field(presenter, "rewardView");
         Assert.That(Property(reward, "IsVisible"), Is.True);
-        AssertRewardHierarchy(reward, level);
+        AssertRewardHierarchy(presenter, reward, level);
         yield return WaitIdle(reward, level);
         foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720) }) yield return Capture(canvas, reward.gameObject, "runtime-reward-alone", size.x, size.y, false);
         Call(runtime, "Choose", 0); yield return null;

@@ -22484,7 +22484,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8868991584953758227}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -22500,8 +22500,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: faa8f64dad577c54c894baa2fd78afa5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showDuration: 0.08
-  hideDuration: 0.3
+  showDuration: 0.35
+  hideDuration: 0.35
+  showEase: 6
+  hideEase: 5
   blurImage: {fileID: 1176942480117613752}
   downsample: 4
   iterations: 3

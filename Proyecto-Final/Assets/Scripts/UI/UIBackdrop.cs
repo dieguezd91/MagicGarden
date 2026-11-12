@@ -2,7 +2,9 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Shared backdrop placed behind modal UI (inventory, level-up reward): a real blur of the world plus a dark tint, fading with unscaled time.
+// Shared backdrop placed behind modal UI (inventory, the level-up session): a real blur of the world plus a dark tint, fading softly with unscaled time.
+// The blur layer and the tint sit under this object's CanvasGroup, so they fade together. Show is idempotent: showing an already shown backdrop
+// changes nothing (same snapshot, no restarted fade), so several modals in a row can share one continuous backdrop.
 // Layout (all authored in the prefab): this object carries the CanvasGroup; the blur RawImage sits under the tint Image that blocks clicks.
 // On Show the world camera is rendered once (the Screen Space Overlay UI is not part of it), downsampled and blurred on the GPU
 // (separable gaussian, see MagicGarden/UI/BackdropBlur), and shown in the RawImage until the backdrop is hidden.
@@ -13,14 +15,21 @@ public sealed class UIBackdrop : MonoBehaviour
     public const float DimAlpha = 0.45f;
     public const string BlurShaderName = "MagicGarden/UI/BackdropBlur";
     private static readonly int DirectionId = Shader.PropertyToID("_Direction");
-    [SerializeField] private float showDuration = 0.08f;
-    [SerializeField] private float hideDuration = 0.3f;
+    [Header("Fade (unscaled time)")]
+    [SerializeField, Min(0f)] private float showDuration = 0.35f;
+    [SerializeField, Min(0f)] private float hideDuration = 0.35f;
+    [SerializeField] private Ease showEase = Ease.OutQuad;
+    [SerializeField] private Ease hideEase = Ease.InQuad;
     [Header("Blur")]
     [SerializeField] private RawImage blurImage;
     [SerializeField, Range(1, 8)] private int downsample = 4;
     [SerializeField, Range(1, 6)] private int iterations = 3;
+    // A hitch (the blur capture, a shader compile) must not eat the fade, so one frame advances it by at most this much.
+    private const float MaxFadeStep = 1f / 30f;
     private CanvasGroup group;
-    private Tween tween;
+    private bool fading;
+    private float fadeFrom, fadeTo, fadeDuration, fadeElapsed;
+    private Ease fadeEase;
     private RenderTexture blurTexture;
     private Material blurPass;
 
@@ -32,13 +41,16 @@ public sealed class UIBackdrop : MonoBehaviour
     public void Show()
     {
         bool wasShown = IsShown;
+        bool wasActive = gameObject.activeSelf;
         IsShown = true;
+        if (wasShown && wasActive && (!Application.isPlaying || Group.alpha >= 1f || fading)) { Group.blocksRaycasts = true; return; } // already shown or fading in
         Kill();
+        if (!wasActive) Group.alpha = 0f; // a fresh show always fades in from nothing, whatever alpha the prefab was saved with
         gameObject.SetActive(true);
         Group.blocksRaycasts = true;
-        if (!wasShown || blurTexture == null) CaptureBlur();
+        if (blurTexture == null) CaptureBlur(); // still alive while a hide is in progress: re-showing then keeps the same snapshot
         if (!Application.isPlaying) { Group.alpha = 1f; return; }
-        tween = Group.DOFade(1f, showDuration).SetUpdate(true).SetEase(Ease.OutCubic);
+        StartFade(1f, showDuration, showEase);
     }
 
     public void Hide()
@@ -47,8 +59,7 @@ public sealed class UIBackdrop : MonoBehaviour
         IsShown = false;
         Kill();
         Group.blocksRaycasts = false;
-        tween = Group.DOFade(0f, hideDuration).SetUpdate(true).SetEase(Ease.OutCubic)
-            .OnComplete(() => { if (!IsShown) { gameObject.SetActive(false); ReleaseBlur(); } });
+        StartFade(0f, hideDuration, hideEase);
     }
 
     // No fade and no tween: for teardown and for replacing one modal by another.
@@ -103,7 +114,33 @@ public sealed class UIBackdrop : MonoBehaviour
         if (blurPass != null) { Destroy(blurPass); blurPass = null; }
     }
 
-    private void Kill() { if (tween != null) { tween.Kill(); tween = null; } }
+    // Unscaled-time fade of the whole group (blur layer and tint together), eased, resuming from the current alpha.
+    private void StartFade(float target, float duration, Ease ease)
+    {
+        fadeFrom = Group.alpha; fadeTo = target; fadeEase = ease;
+        fadeDuration = duration * Mathf.Abs(target - fadeFrom); // a partial fade (interrupted show/hide) takes proportionally less
+        fadeElapsed = 0f;
+        fading = fadeDuration > 0f;
+        if (!fading) FinishFade();
+    }
+
+    private void Update()
+    {
+        if (!fading) return;
+        fadeElapsed += Mathf.Min(Time.unscaledDeltaTime, MaxFadeStep);
+        float t = Mathf.Clamp01(fadeElapsed / fadeDuration);
+        Group.alpha = Mathf.Lerp(fadeFrom, fadeTo, DOVirtual.EasedValue(0f, 1f, t, fadeEase));
+        if (t >= 1f) FinishFade();
+    }
+
+    private void FinishFade()
+    {
+        fading = false;
+        Group.alpha = fadeTo;
+        if (fadeTo <= 0f && !IsShown) { gameObject.SetActive(false); ReleaseBlur(); }
+    }
+
+    private void Kill() => fading = false;
     private void OnDisable() { if (!IsShown) ReleaseBlur(); }
     private void OnDestroy() { Kill(); ReleaseBlur(); }
 }
