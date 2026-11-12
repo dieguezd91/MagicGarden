@@ -152,6 +152,8 @@ public sealed class UpgradeRuntime : MonoBehaviour
     {
         if (!choosing) return;
         choosing = false;
+        lastRewardLevel = 0; // An interrupted choice shows its reward again when it reopens.
+
         if (GameFlowController.Instance != null) GameFlowController.Instance.IsChoosingUpgrade = false;
         UIManager.Instance?.Flow?.Close(UIModal.LevelUp);
         foreach (var interaction in suspendedInteractions) if (interaction != null) interaction.enabled = true;
