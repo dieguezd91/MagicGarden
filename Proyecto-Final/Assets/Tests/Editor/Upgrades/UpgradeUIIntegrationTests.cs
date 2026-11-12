@@ -247,6 +247,12 @@ public class UpgradeUIIntegrationTests
         Assert.That(((GameObject)Field(view, "seedSlot")).activeSelf, Is.False);
         Assert.That(((GameObject)Field(view, "spellSlot")).activeSelf, Is.True);
     }
+    [Test] public void RewardHasContentOnlyWhenItUnlocksASeedOrASpell()
+    {
+        Assert.That(Property(Reward(3, null, null), "HasContent"), Is.False);
+        Assert.That(Property(Reward(3, "Sunflower", null), "HasContent"), Is.True);
+        Assert.That(Property(Reward(4, null, "Ice"), "HasContent"), Is.True);
+    }
     [Test] public void RewardPrefabIsNestedAboveLevelUpPanelInCanvas()
     {
         var canvas = AssetDatabase.LoadAssetAtPath<GameObject>(CanvasPath);

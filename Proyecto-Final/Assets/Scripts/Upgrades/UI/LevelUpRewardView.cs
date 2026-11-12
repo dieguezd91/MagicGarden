@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-// Shows the seeds and spells unlocked by one level, over a backdrop that dims the upgrade cards until Continue.
+// Shows the seeds and spells unlocked by one level, alone over a dimmed backdrop, until the player presses Continue.
 public sealed class LevelUpRewardView : MonoBehaviour
 {
     [SerializeField] private GameObject root;

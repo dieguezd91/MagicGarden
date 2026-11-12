@@ -11,6 +11,7 @@ public sealed class LevelUnlockReward
     public int Level { get; }
     public IReadOnlyList<PlantDataSO> Plants => plants;
     public IReadOnlyList<SpellDataSO> Spells => spells;
+    public bool HasContent => plants.Count > 0 || spells.Count > 0;
 
     internal void AddPlant(PlantDataSO plant) => plants.Add(plant);
     internal void AddSpell(SpellDataSO spell) => spells.Add(spell);

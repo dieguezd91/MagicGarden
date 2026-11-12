@@ -2662,7 +2662,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: UISprites_33
+      name: LevelUpIcon
       rect:
         serializedVersion: 2
         x: 880
@@ -2817,6 +2817,7 @@ TextureImporter:
       IngredientRequirement: -1902967201
       InventoryDeco: -1338539560
       InventoryPlaceholder: 450073570
+      LevelUpIcon: 1786493580
       LifeTrim: -498583606
       ListUI: 336679578
       LowHealth: -2097532737
@@ -2896,7 +2897,6 @@ TextureImporter:
       UISprites_30: -287981358
       UISprites_31: 1601849896
       UISprites_32: 138817232
-      UISprites_33: 1786493580
       UISprites_34: -1645696394
       UISprites_35: 408355289
       UISprites_36: 824615246

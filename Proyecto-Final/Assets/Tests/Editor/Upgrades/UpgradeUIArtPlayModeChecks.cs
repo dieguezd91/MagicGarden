@@ -197,13 +197,218 @@ public class UpgradeUIArtPlayModeChecks
             camera.targetTexture = null; rt.Release(); UnityEngine.Object.DestroyImmediate(rt); UnityEngine.Object.DestroyImmediate(go);
         }
     }
-    // Hierarchy contract on the live Canvas: reward renders after the level-up panel, its backdrop is visibly opaque enough.
+    // The reward is shown alone: drawn after the level-up panel, with its backdrop up and the panel hidden.
     private static void AssertRewardHierarchy(Component reward, Component level)
     {
         Assert.That(reward.transform.GetSiblingIndex(), Is.GreaterThan(level.transform.GetSiblingIndex()));
         var backdrop = (Component)Field(reward, "backdrop");
         Assert.That(backdrop.gameObject.activeInHierarchy, Is.True);
         Assert.That(((CanvasGroup)backdrop.GetComponent(typeof(CanvasGroup))).blocksRaycasts, Is.True);
+        Assert.That(level.gameObject.activeSelf, Is.False, "LevelUpPanel stays hidden while the reward is visible");
+    }
+    private sealed class Game
+    {
+        public Component flow, runtime, presenter, experience, unlocks, indicator, reward, level;
+        public object modal;
+        public Canvas canvas;
+    }
+    // The scene load itself must be yielded by the test method (nested enumerators can only yield null in Edit Mode tests).
+    private static Game SetupGame()
+    {
+        var g = new Game();
+        var tutorial = Find("TutorialManager"); if (tutorial != null) Call(tutorial, "SkipTutorial"); // Test fixture bypass only.
+        g.flow = Find("GameFlowController"); Call(g.flow, "SetPhase", Enum.Parse(TypeOf("GamePhase"), "Day"));
+        g.modal = Property(Find("UIManager"), "Flow");
+        var currentModal = Property(g.modal, "CurrentModal"); if (currentModal.ToString() != "None") Call(g.modal, "Close", currentModal);
+        g.runtime = Find("UpgradeRuntime"); g.presenter = Find("UpgradePanel"); g.experience = Find("PlayerExperienceSystem");
+        g.unlocks = Find("PlayerContentUnlockSystem"); g.indicator = Find("LevelUpIndicator");
+        Assert.That(g.runtime, Is.Not.Null); Assert.That(((Behaviour)g.runtime).enabled, Is.True); Assert.That(Property(g.presenter, "IsReady"), Is.True);
+        Assert.That(g.indicator, Is.Not.Null, "Player prefab carries the LevelUpIndicator");
+        g.level = (Component)Field(g.presenter, "levelUpView"); g.reward = (Component)Field(g.presenter, "rewardView");
+        g.canvas = g.presenter.GetComponent<Canvas>();
+        Call(g.experience, "ResetProgression"); Time.timeScale = 1;
+        return g;
+    }
+    // No lambdas: a closure over test locals is created before EnterPlayMode and is gone after the domain reload.
+    private static IEnumerator WaitForChoosing(Component flow, float seconds, string what)
+    {
+        float end = Time.realtimeSinceStartup + seconds;
+        while (!(bool)Property(flow, "IsChoosingUpgrade") && Time.realtimeSinceStartup < end) { SkipTutorialIfActive(); yield return null; }
+        Assert.That(Property(flow, "IsChoosingUpgrade"), Is.True, what + " | " + FlowState(flow));
+    }
+    // Test fixture bypass only: the tutorial can (re)start after the scene fade and would gate the upgrade flow.
+    private static void SkipTutorialIfActive()
+    {
+        var tutorial = Find("TutorialManager");
+        if (tutorial != null && (bool)Call(tutorial, "IsTutorialActive")) Call(tutorial, "SkipTutorial");
+    }
+    private static string FlowState(Component flow)
+    {
+        var experience = Find("PlayerExperienceSystem"); var ui = Find("UIManager"); var modal = Property(ui, "Flow");
+        var tutorial = Find("TutorialManager"); var life = experience.GetComponent(TypeOf("LifeController"));
+        return "timeScale=" + Time.timeScale + " worldPhase=" + Property(flow, "WorldPhase") + " modal=" + Property(modal, "CurrentModal") +
+            " hasOpenModal=" + Property(modal, "HasOpenModal") + " pending=" + Property(experience, "PendingChoices") +
+            " alive=" + Call(life, "IsAlive") + " tutorialActive=" + (tutorial != null ? Call(tutorial, "IsTutorialActive") : "n/a") +
+            " paused=" + Property(Find("PauseController"), "IsPaused");
+    }
+    private static bool Choosing(Game g) => (bool)Property(g.flow, "IsChoosingUpgrade");
+    private static bool RewardHasContent(Game g, int level)
+    {
+        var reward = Call(g.unlocks, "GetLevelReward", level);
+        return reward != null && (bool)Property(reward, "HasContent");
+    }
+    private static void CaptureWorld(Camera camera, string name, int width, int height)
+    {
+        Directory.CreateDirectory(Output);
+        var rt = new RenderTexture(width, height, 24); var previous = RenderTexture.active; var oldTarget = camera.targetTexture;
+        var texture = new Texture2D(width, height, TextureFormat.RGB24, false);
+        try
+        {
+            camera.targetTexture = rt; camera.Render(); RenderTexture.active = rt;
+            texture.ReadPixels(new Rect(0, 0, width, height), 0, 0); texture.Apply();
+            File.WriteAllBytes(Output + name + "-" + width + "x" + height + ".png", texture.EncodeToPNG());
+            Debug.Log("UI_ART_CAPTURE " + name + "-" + width + "x" + height + " world");
+        }
+        finally
+        {
+            camera.targetTexture = oldTarget; RenderTexture.active = previous; rt.Release();
+            UnityEngine.Object.DestroyImmediate(rt); UnityEngine.Object.DestroyImmediate(texture);
+        }
+    }
+    private static void CaptureCloseUp(Camera main, Transform player, Transform icon, string name, int width, int height)
+    {
+        var go = new GameObject("Indicator close-up camera"); var close = go.AddComponent<Camera>();
+        try
+        {
+            close.CopyFrom(main); close.orthographicSize = 3.4f;
+            close.transform.position = new Vector3(player.position.x, (player.position.y + icon.position.y) / 2f, main.transform.position.z); // frames player and icon
+            CaptureWorld(close, name, width, height);
+        }
+        finally { UnityEngine.Object.DestroyImmediate(go); }
+    }
+    [UnityTest] public IEnumerator LevelUpIndicatorShowsAbovePlayerAndHoldsTheModalUntilItFinishes()
+    {
+        yield return new EnterPlayMode();
+        yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/Game.unity", new LoadSceneParameters(LoadSceneMode.Single));
+        for (int i = 0; i < 15; i++) yield return null;
+        var g = SetupGame();
+        Call(g.experience, "AddExperience", 100);
+        Assert.That(Property(g.indicator, "IsPlaying"), Is.True, "plays the same frame the level is gained");
+        float start = Time.realtimeSinceStartup;
+        yield return new WaitForSecondsRealtime(.75f);
+        Assert.That(Property(g.indicator, "IsPlaying"), Is.True);
+        Assert.That(Choosing(g), Is.False); Assert.That(Property(g.modal, "CurrentModal").ToString(), Is.EqualTo("None"));
+        var icon = (SpriteRenderer)Field(g.indicator, "icon"); var body = ((Component)g.experience).GetComponent<SpriteRenderer>();
+        Assert.That(icon.enabled, Is.True); Assert.That(icon.sprite.name, Is.EqualTo("LevelUpIcon"));
+        Assert.That(icon.bounds.center.y, Is.GreaterThan(body.bounds.max.y), "icon is above the player");
+        Assert.That(icon.sortingOrder, Is.GreaterThan(body.sortingOrder));
+        Assert.That(Time.timeScale, Is.EqualTo(1f), "gameplay is not frozen during the feedback");
+        var main = Camera.main; Assert.That(main, Is.Not.Null);
+        CaptureWorld(main, "runtime-levelup-indicator-scene", 1920, 1080);
+        CaptureCloseUp(main, body.transform, icon.transform, "runtime-levelup-indicator-closeup", 1280, 720);
+        float end = Time.realtimeSinceStartup + 4f;
+        while ((bool)Property(g.indicator, "IsPlaying") && Time.realtimeSinceStartup < end)
+        {
+            Assert.That(Choosing(g), Is.False, "modal must not open while the indicator plays");
+            Assert.That(Property(g.modal, "CurrentModal").ToString(), Is.Not.EqualTo("LevelUp"));
+            SkipTutorialIfActive();
+            yield return null;
+        }
+        Assert.That(Property(g.indicator, "IsPlaying"), Is.False);
+        float played = Time.realtimeSinceStartup - start;
+        Assert.That(played, Is.InRange(1.0f, 2.5f));
+        yield return WaitForChoosing(g.flow, 3f, "modal opens once the indicator finished");
+        Assert.That(Property(g.modal, "CurrentModal").ToString(), Is.EqualTo("LevelUp"));
+        yield return new ExitPlayMode();
+    }
+    [UnityTest] public IEnumerator RewardModalShowsAloneThenUpgradeCardsAfterContinue()
+    {
+        yield return new EnterPlayMode();
+        yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/Game.unity", new LoadSceneParameters(LoadSceneMode.Single));
+        for (int i = 0; i < 15; i++) yield return null;
+        var g = SetupGame();
+        Assert.That(RewardHasContent(g, 2), Is.False, "not recorded before the level is gained");
+        Call(g.experience, "AddExperience", 100);
+        Assert.That(RewardHasContent(g, 2), Is.True);
+        yield return WaitForChoosing(g.flow, 5f, "upgrade flow starts");
+        int pending = (int)Property(g.experience, "PendingChoices");
+        Assert.That(Property(g.reward, "IsVisible"), Is.True);
+        Assert.That(g.level.gameObject.activeSelf, Is.False, "level-up panel hidden while the reward is visible");
+        AssertRewardHierarchy(g.reward, g.level);
+        yield return null;
+        foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720) }) yield return Capture(g.canvas, g.reward.gameObject, "runtime-reward-alone", size.x, size.y, false);
+        // Selection is impossible while the reward is visible, both through the presenter and the runtime.
+        g.presenter.GetType().GetMethod("Select", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(g.presenter, new object[] { 0 });
+        Call(g.runtime, "Choose", 0); yield return null;
+        Assert.That(Property(g.experience, "PendingChoices"), Is.EqualTo(pending));
+        Assert.That(Property(g.reward, "IsVisible"), Is.True);
+        Click((Component)Field(g.reward, "continueButton")); yield return null;
+        Assert.That(Property(g.reward, "IsVisible"), Is.False);
+        Assert.That(g.level.gameObject.activeSelf, Is.True, "upgrade panel appears after Continue");
+        Assert.That(Choosing(g), Is.True);
+        foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720) }) yield return Capture(g.canvas, g.level.gameObject, "runtime-upgrades-after-reward", size.x, size.y);
+        var cards = (Array)Field(g.level, "cards");
+        Click((Component)Field(cards.GetValue(0), "selectButton")); yield return null;
+        Assert.That(Property(g.experience, "PendingChoices"), Is.EqualTo(pending - 1));
+        Assert.That(Choosing(g), Is.False); Assert.That(Time.timeScale, Is.EqualTo(1f));
+        yield return new ExitPlayMode();
+    }
+    [UnityTest] public IEnumerator EachLevelRewardShowsOnceAndLevelsWithoutRewardGoStraightToUpgrades()
+    {
+        yield return new EnterPlayMode();
+        yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/Game.unity", new LoadSceneParameters(LoadSceneMode.Single));
+        for (int i = 0; i < 15; i++) yield return null;
+        var g = SetupGame();
+        Call(g.experience, "AddExperience", 750);
+        int current = (int)Property(g.experience, "CurrentLevel");
+        Assert.That(Property(g.experience, "PendingChoices"), Is.EqualTo(current - 1));
+        var rewardLevels = new List<int>(); var plainLevels = new List<int>();
+        yield return WaitForChoosing(g.flow, 5f, "upgrade flow starts");
+        for (int step = 0; step < current - 1; step++)
+        {
+            int pending = (int)Property(g.experience, "PendingChoices");
+            int level = current - pending + 1;
+            if (RewardHasContent(g, level))
+            {
+                rewardLevels.Add(level);
+                Assert.That(Property(g.reward, "IsVisible"), Is.True, "reward for level " + level);
+                Assert.That(g.level.gameObject.activeSelf, Is.False);
+                Assert.That((string)Property(Field(g.reward, "headingLabel"), "text"), Does.Contain(level.ToString()));
+                Click((Component)Field(g.reward, "continueButton")); yield return null;
+                Assert.That(Property(g.reward, "IsVisible"), Is.False);
+                yield return null; Assert.That(Property(g.reward, "IsVisible"), Is.False, "a level's reward is shown once");
+            }
+            else
+            {
+                plainLevels.Add(level);
+                Assert.That(Property(g.reward, "IsVisible"), Is.False, "no reward for level " + level);
+            }
+            Assert.That(g.level.gameObject.activeSelf, Is.True, "upgrade choices for level " + level);
+            var cards = (Array)Field(g.level, "cards");
+            Click((Component)Field(cards.GetValue(0), "selectButton")); yield return null;
+            Assert.That(Property(g.experience, "PendingChoices"), Is.EqualTo(pending - 1));
+        }
+        Assert.That(rewardLevels, Is.Not.Empty); Assert.That(plainLevels, Is.Not.Empty);
+        Assert.That(rewardLevels.Distinct().Count(), Is.EqualTo(rewardLevels.Count));
+        Assert.That(Choosing(g), Is.False);
+        yield return new ExitPlayMode();
+    }
+    [UnityTest] public IEnumerator InterruptedChoiceShowsItsRewardAgainAfterProgressionReset()
+    {
+        yield return new EnterPlayMode();
+        yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/Game.unity", new LoadSceneParameters(LoadSceneMode.Single));
+        for (int i = 0; i < 15; i++) yield return null;
+        var g = SetupGame();
+        Call(g.experience, "AddExperience", 100);
+        yield return WaitForChoosing(g.flow, 5f, "upgrade flow starts");
+        Assert.That(Property(g.reward, "IsVisible"), Is.True);
+        Call(g.experience, "ResetProgression"); yield return null;
+        Assert.That(Choosing(g), Is.False); Assert.That(Property(g.reward, "IsVisible"), Is.False);
+        Assert.That(g.level.gameObject.activeSelf, Is.False);
+        Time.timeScale = 1; Call(g.experience, "AddExperience", 100);
+        yield return WaitForChoosing(g.flow, 5f, "upgrade flow restarts");
+        Assert.That(Property(g.reward, "IsVisible"), Is.True, "level 2 reward shows again after the reset");
+        yield return new ExitPlayMode();
     }
     [UnityTest] public IEnumerator IsolatedPrefabPointerSmokeAndRenderedLayouts()
     {
@@ -252,6 +457,21 @@ public class UpgradeUIArtPlayModeChecks
         Click((Component)Field(shop, "closeButton")); Assert.That(closed, Is.EqualTo(1));
         Call(shop, "Hide"); UnityEngine.Object.Destroy(root); UnityEngine.Object.Destroy(events); yield return null;
     }
+    [UnityTest] public IEnumerator MissingIndicatorNeverBlocksTheUpgradeFlow()
+    {
+        yield return new EnterPlayMode();
+        yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/Game.unity", new LoadSceneParameters(LoadSceneMode.Single));
+        for (int i = 0; i < 15; i++) yield return null;
+        var g = SetupGame();
+        SetField(g.runtime, "indicator", null);
+        float start = Time.realtimeSinceStartup;
+        Call(g.experience, "AddExperience", 100);
+        yield return WaitForChoosing(g.flow, .9f, "flow opens without waiting for an indicator");
+        Assert.That(Property(g.indicator, "IsPlaying"), Is.True, "the (ignored) indicator is still animating");
+        Assert.That(Time.realtimeSinceStartup - start, Is.LessThan(.9f));
+        Assert.That(Property(g.reward, "IsVisible"), Is.True);
+        yield return new ExitPlayMode();
+    }
     [UnityTest] public IEnumerator GameSceneRuntimeChoiceShopPurchaseAndModalRelease()
     {
         yield return new EnterPlayMode();
@@ -264,7 +484,7 @@ public class UpgradeUIArtPlayModeChecks
         var runtime = Find("UpgradeRuntime"); var presenter = Find("UpgradePanel"); var experience = Find("PlayerExperienceSystem");
         Assert.That(runtime, Is.Not.Null); Assert.That(((Behaviour)runtime).enabled, Is.True); Assert.That(Property(presenter, "IsReady"), Is.True);
         Call(experience, "ResetProgression"); Time.timeScale = 1; Call(experience, "AddExperience", 150);
-        for (int i = 0; i < 10 && !(bool)Property(flow, "IsChoosingUpgrade"); i++) yield return null;
+        yield return WaitForChoosing(flow, 5f, "level-up indicator finishes, then the flow opens");
         Assert.That(Property(flow, "IsChoosingUpgrade"), Is.True); Assert.That(Time.timeScale, Is.Zero);
         Assert.That(Property(modal, "CurrentModal").ToString(), Is.EqualTo("LevelUp"));
         var suspended = ((IEnumerable)Field(runtime, "suspendedInteractions")).Cast<Behaviour>().ToArray();
@@ -273,21 +493,19 @@ public class UpgradeUIArtPlayModeChecks
         var input = Find("InputReader"); Assert.That(Property(input, "MoveInput"), Is.EqualTo(Vector2.zero));
         Assert.That(Call(modal, "Open", Enum.Parse(TypeOf("UIModal"), "Inventory")), Is.False);
         var level = (Component)Field(presenter, "levelUpView"); var canvas = presenter.GetComponent<Canvas>();
-        yield return null;
-        foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720), new Vector2Int(1280, 1024) }) yield return Capture(canvas, level.gameObject, "runtime-levelup", size.x, size.y);
         var cards = (Array)Field(level, "cards"); int pending = (int)Property(experience, "PendingChoices");
-        // A level that unlocked content shows the reward card first; choices stay blocked until Continue.
+        // Level 2 unlocked content: the reward modal is shown alone first; the upgrade panel only after Continue.
         var reward = (Component)Field(presenter, "rewardView");
-        if (reward != null && (bool)Property(reward, "IsVisible"))
-        {
-            // Whole-canvas capture: the reward modal must read as the top layer over the dimmed level-up panel.
-            foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720) }) yield return Capture(canvas, reward.gameObject, "runtime-reward-over-levelup", size.x, size.y, false);
-            AssertRewardHierarchy(reward, level);
-            Click((Component)Field(cards.GetValue(0), "selectButton")); yield return null;
-            Assert.That(Property(experience, "PendingChoices"), Is.EqualTo(pending), "cards are blocked behind the reward card");
-            Click((Component)Field(reward, "continueButton")); yield return null;
-            Assert.That(Property(reward, "IsVisible"), Is.False);
-        }
+        Assert.That(Property(reward, "IsVisible"), Is.True);
+        AssertRewardHierarchy(reward, level);
+        yield return null;
+        foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720) }) yield return Capture(canvas, reward.gameObject, "runtime-reward-alone", size.x, size.y, false);
+        Call(runtime, "Choose", 0); yield return null;
+        Assert.That(Property(experience, "PendingChoices"), Is.EqualTo(pending), "choices are blocked while the reward is visible");
+        Click((Component)Field(reward, "continueButton")); yield return null;
+        Assert.That(Property(reward, "IsVisible"), Is.False);
+        Assert.That(level.gameObject.activeSelf, Is.True);
+        foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720), new Vector2Int(1280, 1024) }) yield return Capture(canvas, level.gameObject, "runtime-levelup", size.x, size.y);
         Click((Component)Field(cards.GetValue(0), "selectButton")); yield return null;
         Assert.That(Property(experience, "PendingChoices"), Is.EqualTo(pending - 1));
         Assert.That(Property(flow, "IsChoosingUpgrade"), Is.False); Assert.That(Time.timeScale, Is.EqualTo(1));
