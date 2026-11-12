@@ -196,6 +196,7 @@ public class EnemiesSpawner : MonoBehaviour
         ConfigureEnemyRoulette();
 
         onHordeStart?.Invoke();
+        SoundManager.Instance?.Play(UnityEngine.Random.value < 0.5f ? "Horde_Start_1" : "Horde_Start_2");
 
         if (continuousSpawnCoroutine != null)
             StopCoroutine(continuousSpawnCoroutine);

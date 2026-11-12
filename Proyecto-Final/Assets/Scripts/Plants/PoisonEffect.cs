@@ -9,6 +9,7 @@ public class PoisonEffect : MonoBehaviour
     private float totalDuration;
     private float tickInterval;
     private float damagePerTick;
+    private SoundClipData tickSound;
 
     private bool isPoisoned = false;
 
@@ -17,8 +18,9 @@ public class PoisonEffect : MonoBehaviour
         lifeController = GetComponent<LifeController>();
     }
 
-    public void ApplyPoison(float duration, float tickTime, float damage)
+    public void ApplyPoison(float duration, float tickTime, float damage, SoundClipData tickSound = null)
     {
+        this.tickSound = tickSound;
         totalDuration = duration;
         tickInterval = tickTime;
         damagePerTick = damage;
@@ -41,6 +43,12 @@ public class PoisonEffect : MonoBehaviour
             if (lifeController != null)
             {
                 lifeController.TakeDamage(damagePerTick);
+                // Cooldown is per SoundClipData, which every poisoned enemy shares, so a crowd doesn't stack ticks.
+                if (tickSound != null && tickSound.CanPlay() && SoundManager.Instance != null)
+                {
+                    SoundManager.Instance.PlayClip(tickSound, SoundSourceType.Localized, transform);
+                    tickSound.SetLastPlayTime();
+                }
             }
 
             yield return new WaitForSeconds(tickInterval);

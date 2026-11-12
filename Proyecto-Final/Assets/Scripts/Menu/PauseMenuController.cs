@@ -269,7 +269,7 @@ public class PauseMenuController : UIControllerBase
             _pauseMenuPanel.Hide();
 
         SoundManager.Instance.PlayOneShot("ButtonClick");
-        SceneLoaderManager.Instance.LoadSceneByName("Menu");
+        SceneLoaderManager.Instance.LoadSceneByNameWithTransition("Menu");
     }
 
     private void HandleSkipTutorialClicked()

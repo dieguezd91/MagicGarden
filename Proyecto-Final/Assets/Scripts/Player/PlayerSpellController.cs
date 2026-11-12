@@ -109,6 +109,19 @@ public class PlayerSpellController : MonoBehaviour
         {
             handAnimator.SetBool("IsAttacking", true);
         }
+        else if (IsOutOfMana() && Time.time >= nextNoManaSoundTime)
+        {
+            nextNoManaSoundTime = Time.time + 0.4f; // attack may be held/repeated
+            SoundManager.Instance?.Play("Player_Spell_No_Mana");
+        }
+    }
+
+    private float nextNoManaSoundTime;
+
+    private bool IsOutOfMana()
+    {
+        SpellSlot slot = SpellInventory.Instance != null ? SpellInventory.Instance.GetSelectedSpellSlot() : null;
+        return slot != null && slot.isUnlocked && manaSystem != null && manaSystem.GetCurrentMana() < slot.manaCost;
     }
 
     public void OnAttackAnimationEnd()
@@ -143,7 +156,8 @@ public class PlayerSpellController : MonoBehaviour
         Spell spellComponent = UpgradeCasting.Cast(selectedSpell.spellPrefab, firePoint.position, direction,
             descriptor.Id, descriptor.Capability, descriptor.Bases.ContainsKey(MagicGarden.Stat.Quantity));
 
-        SoundManager.Instance.Play("ShootSpell", SoundSourceType.Localized, transform);
+        if (prefabSpell.HasCastSound) prefabSpell.PlayCastSound(transform);
+        else SoundManager.Instance.Play("ShootSpell", SoundSourceType.Localized, transform);
         if (playerMovementController != null) playerMovementController.ApplyAttackMovementPenalty();
 
         FireSpell fireSpell = spellComponent as FireSpell;

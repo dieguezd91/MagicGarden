@@ -109,6 +109,9 @@ public class GameOverController : MonoBehaviour
     {
         yield return new WaitForSeconds(gameOverDelay);
 
+        SoundManager.Instance?.Stop("Player_Low_Health_Heartbeat_Loop");
+        SoundManager.Instance?.Play("Game_Over");
+
         if (GameFlowController.Instance != null)
             GameFlowController.Instance.SetPhase(GamePhase.GameOver);
 

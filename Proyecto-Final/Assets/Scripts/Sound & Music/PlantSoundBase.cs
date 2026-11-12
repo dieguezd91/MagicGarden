@@ -10,6 +10,13 @@ public class PlantSoundBase : MonoBehaviour
     public SoundClipData attack;
     public SoundClipData hurt;
     public SoundClipData die;
+    public SoundClipData grown;
+    [Tooltip("Plant-specific hit (e.g. saw bite, electric hit). Projectile hits use the projectile's impactSound.")]
+    public SoundClipData hit;
+    [Tooltip("Must have Loop on. Played while the plant is active (e.g. electric hum).")]
+    public SoundClipData loop;
+
+    private AudioSource loopSource;
 
     // Dictionary for runtime access
     private Dictionary<PlantSoundType, SoundClipData> soundDictionary;
@@ -23,7 +30,9 @@ public class PlantSoundBase : MonoBehaviour
             { PlantSoundType.Harvested, harvested },
             { PlantSoundType.Attack, attack },
             { PlantSoundType.Hurt, hurt },
-            { PlantSoundType.Die, die }
+            { PlantSoundType.Die, die },
+            { PlantSoundType.Grown, grown },
+            { PlantSoundType.Hit, hit }
         };
     }
 
@@ -45,4 +54,24 @@ public class PlantSoundBase : MonoBehaviour
         SoundManager.Instance.PlayClip(soundData, sourceType, parent == null ? this.transform : parent);
         soundData.SetLastPlayTime();
     }
+
+    public void PlayLoop()
+    {
+        // Safe to call every frame: only (re)starts when our source stopped or was taken by another clip.
+        if (IsOwnLoop(loopSource) && loopSource.isPlaying) return;
+        if (SoundManager.Instance == null || loop == null) return;
+        loopSource = SoundManager.Instance.PlayClip(loop, SoundSourceType.Localized, transform);
+    }
+
+    public void StopLoop()
+    {
+        // The pooled source may already have been reused for another clip.
+        if (IsOwnLoop(loopSource)) loopSource.Stop();
+        loopSource = null;
+    }
+
+    private bool IsOwnLoop(AudioSource source) =>
+        source != null && source.loop && loop?.clips != null && System.Array.IndexOf(loop.clips, source.clip) >= 0;
+
+    private void OnDisable() => StopLoop();
 }

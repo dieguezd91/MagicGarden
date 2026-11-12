@@ -115,6 +115,7 @@ public class BossNightManager : MonoBehaviour
         bossDefeated = false;
         bossNightCompleted = false;
         onBossNightStart?.Invoke();
+        SoundManager.Instance?.Play("Boss_Night_Start");
 
         StartCoroutine(BossNightSequence());
     }
@@ -260,6 +261,7 @@ public class BossNightManager : MonoBehaviour
             return;
 
         bossNightCompleted = true;
+        SoundManager.Instance?.Play("Boss_Night_Complete");
 
 
         ResetBossNightState();

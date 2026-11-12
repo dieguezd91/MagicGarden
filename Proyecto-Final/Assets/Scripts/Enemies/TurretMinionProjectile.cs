@@ -5,6 +5,14 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class TurretMinionProjectile : MonoBehaviour
 {
+    [Header("Sound")]
+    [SerializeField] private SoundClipData impactSound;
+
+    private void PlayImpactSound()
+    {
+        // Positioned where it lands; the projectile is destroyed right after.
+        SoundManager.Instance?.PlayClip(impactSound, SoundSourceType.Localized, transform);
+    }
     private Rigidbody2D rb;
 
     private Transform owner;
@@ -84,6 +92,7 @@ public class TurretMinionProjectile : MonoBehaviour
         LifeController life = player.GetComponent<LifeController>();
 
         hasHit = true;
+        PlayImpactSound();
 
         if (life != null && life.IsAlive())
         {

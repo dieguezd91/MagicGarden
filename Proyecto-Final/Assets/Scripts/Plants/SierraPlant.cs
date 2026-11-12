@@ -137,6 +137,7 @@ public class SierraPlant : Plant
         );
 
         activeProjectile = projectile;
+        PlaySound(PlantSoundType.Attack);
 
         float effectiveDamage = Upgraded(
             MagicGarden.Stat.Damage,
