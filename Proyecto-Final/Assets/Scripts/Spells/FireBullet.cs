@@ -24,6 +24,15 @@ public class FireBullet : MonoBehaviour
 
     [Header("Impact Effects")]
     [SerializeField] private GameObject impactParticlesPrefab;
+
+    [Header("Sound")]
+    [SerializeField] private SoundClipData impactSound;
+
+    private void PlayImpactSound()
+    {
+        // Positioned where it lands; the projectile is destroyed right after.
+        SoundManager.Instance?.PlayClip(impactSound, SoundSourceType.Localized, transform);
+    }
     [SerializeField] private float cameraShakeIntensity = 0.3f;
     [SerializeField] private float cameraShakeDuration = 0.3f;
 
@@ -83,6 +92,7 @@ public class FireBullet : MonoBehaviour
                 }
             }
 
+            PlayImpactSound();
             SpawnImpactEffects(collision.transform.position, hitPlayer);
 
             DeactivateBullet();

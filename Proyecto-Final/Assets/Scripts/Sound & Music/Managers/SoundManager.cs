@@ -256,11 +256,11 @@ public class SoundManager : MonoBehaviour
     /// <summary>
     /// Plays a SoundClipData using the pooling and limiting system.
     /// </summary>
-    public void PlayClip(SoundClipData data, SoundSourceType sourceType = SoundSourceType.Global, Transform parent = null)
+    public AudioSource PlayClip(SoundClipData data, SoundSourceType sourceType = SoundSourceType.Global, Transform parent = null)
     {
-        if (data == null) return;
+        if (data == null) return null;
         var clip = data.GetClip();
-        if (clip == null) return;
+        if (clip == null) return null;
         var playingSources = audioSourcePool.Where(s => s.isPlaying && s.clip == clip).ToList();
         float spatialBlend = (sourceType == SoundSourceType.Global) ? 0f : 0.75f;
         if (playingSources.Count >= MaxSimultaneousSameSound)
@@ -285,7 +285,7 @@ public class SoundManager : MonoBehaviour
                 sourceToRestart.Play();
             else
                 sourceToRestart.PlayOneShot(clip, data.volume);
-            return;
+            return sourceToRestart;
         }
         var audioSource = GetAvailableAudioSource();
         audioSource.clip = clip;
@@ -306,6 +306,7 @@ public class SoundManager : MonoBehaviour
             audioSource.Play();
         else
             audioSource.PlayOneShot(clip, data.volume);
+        return audioSource;
     }
     
     /// <summary>

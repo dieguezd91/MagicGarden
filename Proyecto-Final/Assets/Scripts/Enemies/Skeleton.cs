@@ -82,11 +82,14 @@ public class Skeleton : EnemyBase
         animator?.SetBool("isAttacking", true);
     }
 
+    // Animation event a couple of frames before PerformSwordHit, so the whoosh leads the blade.
+    public void PlaySwingSound()
+    {
+        PlayEnemySound(EnemySoundType.Attack, SoundSourceType.Localized, transform);
+    }
+
     public void PerformSwordHit()
     {
-        // Play attack sound at the start of the swing, even if no target is hit
-        PlayEnemySound(EnemySoundType.Attack, SoundSourceType.Localized, transform);
-        Debug.Log($"[{gameObject.name}] Skeleton: Playing swing attack sound at {Time.time:F2}s.");
 
         Collider2D[] hitTargets = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, attackableLayers);
         HashSet<GameObject> damagedTargets = new HashSet<GameObject>();
@@ -104,6 +107,8 @@ public class Skeleton : EnemyBase
     private void DealDamageTo(GameObject target)
     {
         float damage = Random.Range(minDamage, maxDamage);
+
+        PlayEnemySound(EnemySoundType.Impact, SoundSourceType.Localized, target.transform);
 
         if (target.TryGetComponent(out LifeController life))
         {

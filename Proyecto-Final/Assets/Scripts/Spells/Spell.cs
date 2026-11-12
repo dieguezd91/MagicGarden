@@ -12,6 +12,24 @@ public abstract class Spell : MonoBehaviour
     [SerializeField] protected GameObject floatingDamagePrefab;
     [SerializeField] protected GameObject impactParticlesPrefab;
 
+    [Header("SOUND")]
+    [Tooltip("Played when cast. Empty = the shared \"ShootSpell\" sound.")]
+    [SerializeField] protected SoundClipData castSound;
+    [Tooltip("Played on hit. Use cooldownTime to play it once per cast when many enemies are hit together.")]
+    [SerializeField] protected SoundClipData impactSound;
+
+    public bool HasCastSound => castSound != null && castSound.clips != null && castSound.clips.Length > 0;
+
+    // No cooldown check: this is called on the prefab asset, whose cooldown timer would survive editor play sessions.
+    public void PlayCastSound(Transform at) => SoundManager.Instance?.PlayClip(castSound, SoundSourceType.Localized, at);
+
+    protected void PlayImpactSound()
+    {
+        if (SoundManager.Instance == null || impactSound == null || !impactSound.CanPlay()) return;
+        SoundManager.Instance.PlayClip(impactSound, SoundSourceType.Localized, transform);
+        impactSound.SetLastPlayTime();
+    }
+
     public string UpgradeTargetId { get; private set; }
     public string UpgradeCapability { get; private set; }
     public void SetUpgradeTarget(string id, string capability)
@@ -86,6 +104,7 @@ public abstract class Spell : MonoBehaviour
 
     protected virtual void PlayImpactEffects(Vector3 position)
     {
+        PlayImpactSound();
         if (impactParticlesPrefab == null) return;
 
         var particles = Instantiate(impactParticlesPrefab, position, Quaternion.identity);

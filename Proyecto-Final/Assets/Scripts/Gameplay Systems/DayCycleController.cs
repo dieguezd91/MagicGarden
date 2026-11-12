@@ -71,6 +71,7 @@ public class DayCycleController : MonoBehaviour
         totalNights++;
 
         GameFlowController.Instance.SetPhase(GamePhase.Night);
+        SoundManager.Instance?.Play("Night_Start");
 
         Debug.Log(
             $"[DayCycleController] Night {totalNights} started. " +

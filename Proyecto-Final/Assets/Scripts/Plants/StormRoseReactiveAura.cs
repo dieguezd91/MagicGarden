@@ -16,6 +16,10 @@ public class StormRoseReactiveAura : MonoBehaviour
     [SerializeField] private float poisonDuration = 3f;
     [SerializeField] private float poisonTickRate = 1f;
 
+    [Header("Sound")]
+    [SerializeField] private SoundClipData pulseSound;
+    [SerializeField] private SoundClipData poisonTickSound;
+
     [SerializeField] private LayerMask enemyLayer;
 
     [Header("VFX & Feedback")]
@@ -73,6 +77,7 @@ public class StormRoseReactiveAura : MonoBehaviour
             return;
 
         StartCoroutine(AreaRoutine());
+        SoundManager.Instance?.PlayClip(pulseSound, SoundSourceType.Localized, transform);
         cooldownTimer = plant != null ? plant.UpgradedCooldown(cooldown) : cooldown;
         previousEffectiveCooldown = cooldownTimer;
     }
@@ -127,7 +132,7 @@ public class StormRoseReactiveAura : MonoBehaviour
             }
 
             poison.ApplyPoison(poisonDuration, poisonTickRate,
-                plant != null ? plant.Upgraded(MagicGarden.Stat.Damage, poisonDamagePerTick) : poisonDamagePerTick);
+                plant != null ? plant.Upgraded(MagicGarden.Stat.Damage, poisonDamagePerTick) : poisonDamagePerTick, poisonTickSound);
         }
     }
 

@@ -90,6 +90,18 @@ public class LifeController : MonoBehaviour
         onHealthChanged?.Invoke(currentHealth, maxHealth);
 
         isPlayer = GetComponent<PlayerController>() != null;
+        if (isPlayer) onHealthChanged.AddListener(UpdateLowHealthHeartbeat);
+    }
+
+    private const float LowHealthFraction = 0.25f;
+    private const string HeartbeatSound = "Player_Low_Health_Heartbeat_Loop";
+
+    private void UpdateLowHealthHeartbeat(float current, float max)
+    {
+        if (SoundManager.Instance == null) return;
+        bool low = current > 0f && max > 0f && current / max <= LowHealthFraction;
+        if (low) SoundManager.Instance.PlayLoop(HeartbeatSound); // no-op if already looping
+        else SoundManager.Instance.Stop(HeartbeatSound);
     }
 
     public void TakeDamage(float damage, DamageType damageType = DamageType.SingleTick, DamageElement damageElement = DamageElement.Normal)
@@ -106,6 +118,10 @@ public class LifeController : MonoBehaviour
 
             if (isPlayer)
             {
+                // Not on the killing blow: the death voice plays instead.
+                if (damageType == DamageType.SingleTick && currentHealth > 0f && TryGetComponent(out PlayerRespawnController voice))
+                    voice.PlayHurtVoice();
+
                 if (damageType == DamageType.SingleTick)
                 {
                     switch (damageElement)
@@ -163,6 +179,7 @@ public class LifeController : MonoBehaviour
 
         if (isPlayer)
         {
+            if (TryGetComponent(out PlayerRespawnController respawn)) respawn.PlayDeathSound();
             var playerMovementController = GetComponent<PlayerMovementController>();
             if (playerMovementController != null)
             {

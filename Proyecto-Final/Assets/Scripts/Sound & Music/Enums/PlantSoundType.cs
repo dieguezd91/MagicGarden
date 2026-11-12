@@ -5,6 +5,8 @@ public enum PlantSoundType
     Harvested,
     Attack,
     Hurt,
-    Die
+    Die,
+    Grown,
+    Hit
 }
 

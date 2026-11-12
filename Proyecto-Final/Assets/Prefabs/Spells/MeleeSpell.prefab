@@ -50,6 +50,16 @@ MonoBehaviour:
   lifeTime: 0.5
   floatingDamagePrefab: {fileID: 8011744024934345175, guid: b18d5e020de9918429f62b516be2ef30, type: 3}
   impactParticlesPrefab: {fileID: 491567316690014037, guid: b4718f9f977adb740a54a6ea904ae4f7, type: 3}
+  impactSound:
+    clips:
+    - {fileID: 8300000, guid: ef10fc0d0805445cab9ccd3a11df1664, type: 3}
+    - {fileID: 8300000, guid: 370b860a524640d7ac7d78d7432cb8f9, type: 3}
+    volume: 0.7
+    pitch: 1
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.15
   attackRadius: 1.8
   enemyLayer:
     serializedVersion: 2

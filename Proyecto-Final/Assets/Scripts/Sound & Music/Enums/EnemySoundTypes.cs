@@ -4,6 +4,7 @@ public enum EnemySoundType
     Spawning,
     Die,
     Hurt,
+    Impact,
     Idle,
     Attack,
     Special,

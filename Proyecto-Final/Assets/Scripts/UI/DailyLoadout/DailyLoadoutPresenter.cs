@@ -397,6 +397,7 @@ namespace MagicGarden.LoadoutUI
             CancelDrag();
             // Do not clear/rebuild the draft before attempting the authoritative transaction.
             bool confirmed = activeSession.TryConfirm();
+            if (confirmed) SoundManager.Instance?.Play("UI_Loadout_Confirm");
             feedback = confirmed ? "Loadout confirmed."
                 : activeSession.CanConfigure && activeSession.IsTutorialLoadoutRequired && !activeSession.HasUsableDraft
                     ? DailyLoadoutSession.TutorialLoadoutRequiredMessage

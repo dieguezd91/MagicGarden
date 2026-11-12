@@ -233,6 +233,7 @@ public class Boss : EnemyBase
 
     private void DealDamageTo(GameObject target, int damage, bool isSpecialAttack = false) 
     { 
+        PlayEnemySound(EnemySoundType.Impact, SoundSourceType.Localized, target.transform);
         if (target.CompareTag("Player") || target.CompareTag("Plant")) 
         { 
             LifeController life = target.GetComponent<LifeController>(); 

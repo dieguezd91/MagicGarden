@@ -11,6 +11,8 @@ public class EnemySoundBase : MonoBehaviour
     public SoundClipData hurt;
     public SoundClipData idle;
     public SoundClipData attack;
+    [Tooltip("Played where this enemy's hit lands (sword cut, bite, explosion, slam).")]
+    public SoundClipData impact;
     
     [Header("Additional Sounds")]
     public SoundClipData special;
@@ -30,6 +32,7 @@ public class EnemySoundBase : MonoBehaviour
             { EnemySoundType.Hurt, hurt },
             { EnemySoundType.Idle, idle },
             { EnemySoundType.Attack, attack },
+            { EnemySoundType.Impact, impact },
             { EnemySoundType.Special, special },
             { EnemySoundType.Cast, cast }
         };

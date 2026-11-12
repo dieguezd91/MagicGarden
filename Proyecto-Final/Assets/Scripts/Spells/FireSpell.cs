@@ -12,6 +12,16 @@ public class FireSpell : Spell
     [Header("DAMAGE SETTINGS")]
     [SerializeField] private float damagePerHit = 5f;
 
+    [Header("FLAMETHROWER SOUND")]
+    [Tooltip("Must have Loop on. Plays while the stream is active (castSound is the ignition).")]
+    [SerializeField] private SoundClipData flameLoopSound;
+    [SerializeField] private SoundClipData flameEndSound;
+    [SerializeField] private float hitSoundInterval = 0.12f;
+
+    private AudioSource flameLoopSource;
+    // Shared by every flame projectile: ~20 flames/s would otherwise stack sizzles.
+    private static float lastHitSoundTime = float.MinValue;
+
     public override MagicGarden.Target DescribeUpgradeTarget(string id, string displayName)
     {
         var target = new MagicGarden.Target { Id = id, Name = displayName, Capability = GetType().Name };
@@ -102,6 +112,7 @@ public class FireSpell : Spell
     {
         float timer = 0f;
         Camera mainCam = Camera.main;
+        flameLoopSource = SoundManager.Instance?.PlayClip(flameLoopSound);
 
         while (timer < duration)
         {
@@ -126,8 +137,18 @@ public class FireSpell : Spell
         if (playerSpellController != null)
             playerSpellController.SetFireSpellActive(false);
 
+        StopFlameLoop();
+        SoundManager.Instance?.PlayClip(flameEndSound, SoundSourceType.Localized, transform);
         StartCooldown();
         Destroy(gameObject);
+    }
+
+    private void StopFlameLoop()
+    {
+        // The pooled source may already have been stopped and reused for another clip (e.g. StopAll on scene change).
+        if (flameLoopSource != null && flameLoopSource.loop && flameLoopSource.clip == flameLoopSound?.GetClip())
+            flameLoopSource.Stop();
+        flameLoopSource = null;
     }
 
     private void StartCooldown()
@@ -142,6 +163,8 @@ public class FireSpell : Spell
     {
         if (!isProjectile && playerSpellController != null)
             playerSpellController.SetFireSpellActive(false);
+        if (!isProjectile)
+            StopFlameLoop();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -163,6 +186,13 @@ public class FireSpell : Spell
                 }
 
                 life.TakeDamage(damage);
+
+                // Time.time < last covers a stale static after an editor play session without domain reload.
+                if (Time.time - lastHitSoundTime >= hitSoundInterval || Time.time < lastHitSoundTime)
+                {
+                    lastHitSoundTime = Time.time;
+                    PlayImpactSound();
+                }
             }
         }
     }

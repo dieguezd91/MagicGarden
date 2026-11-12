@@ -281,3 +281,22 @@ MonoBehaviour:
   impactParticlesPrefab: {fileID: 491567316690014037, guid: b4718f9f977adb740a54a6ea904ae4f7, type: 3}
   speed: 7
   iceSlowArea: {fileID: 1519926163708243417}
+  impactSound:
+    clips:
+    - {fileID: 8300000, guid: d76de409033c49a458da9b76dde9f84c, type: 3}
+    - {fileID: 8300000, guid: 97b7fd8f74cfb354890d24d8ddba4f0d, type: 3}
+    volume: 0.5
+    pitch: 1
+    pitchVariation: 0.08
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.08
+  freezeAreaSound:
+    clips:
+    - {fileID: 8300000, guid: 41827bdef03288641b10dc5bdb6e7540, type: 3}
+    volume: 0.6
+    pitch: 1
+    pitchVariation: 0.05
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.0

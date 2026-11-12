@@ -28,6 +28,14 @@ public class GameManager : MonoBehaviour
 
     public void QuitGame()
     {
+        if (SceneTransitionController.Instance != null)
+            SceneTransitionController.Instance.QuitWithTransition(QuitNow);
+        else
+            QuitNow();
+    }
+
+    private void QuitNow()
+    {
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else

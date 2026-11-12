@@ -25,7 +25,10 @@ public class InteractionPrompt : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Player"))
+        {
+            if (!promptCanvas.activeSelf) SoundManager.Instance?.Play("UI_Prompt_Show");
             promptCanvas.SetActive(true);
+        }
 
     }
 

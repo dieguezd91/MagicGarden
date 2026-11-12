@@ -18,6 +18,7 @@ public class RitualBuffManager : MonoBehaviour
 
     public void ActivateRitualBuff()
     {
+        if (!ritualBuffActive) SoundManager.Instance?.Play("Ritual_Buff_Activate");
         ritualBuffActive = true;
     }
 
