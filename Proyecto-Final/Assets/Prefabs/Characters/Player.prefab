@@ -11345,7 +11345,7 @@ MonoBehaviour:
   deathSound:
     clips:
     - {fileID: 8300000, guid: 373439f2a5c51964584c87004d60df8f, type: 3}
-    volume: 0.7
+    volume: 0.6
     pitch: 1
     pitchVariation: 0.03
     loop: 0
@@ -11354,7 +11354,7 @@ MonoBehaviour:
   ghostSound:
     clips:
     - {fileID: 8300000, guid: 059834dbb2fce9045860e7fd755c6b39, type: 3}
-    volume: 0.6
+    volume: 0.55
     pitch: 1
     pitchVariation: 0.0
     loop: 0
@@ -11366,7 +11366,7 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 667e453ade1046f78d0c28e2334da933, type: 3}
     - {fileID: 8300000, guid: 93a523e9b6484f7e9a6ab9d1c2c1dc9a, type: 3}
     - {fileID: 8300000, guid: bb89ec6f98bf471fa03622e56e4b4305, type: 3}
-    volume: 0.45
+    volume: 0.35
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -11375,7 +11375,7 @@ MonoBehaviour:
   reviveSound:
     clips:
     - {fileID: 8300000, guid: 53c6b61f3c924a7f97de61213a169c32, type: 3}
-    volume: 0.65
+    volume: 0.6
     pitch: 1
     pitchVariation: 0.0
     loop: 0
@@ -11384,7 +11384,7 @@ MonoBehaviour:
   deathVoiceSound:
     clips:
     - {fileID: 8300000, guid: 618ee9e6c3ed47629a6e73e051b280cd, type: 3}
-    volume: 0.7
+    volume: 0.6
     pitch: 1
     pitchVariation: 0.02
     loop: 0
@@ -11395,7 +11395,7 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 671fb4a8f7484a9c9b6146341ef7bfcc, type: 3}
     - {fileID: 8300000, guid: 371e4c39efb548b9a1d25083c3649de1, type: 3}
     - {fileID: 8300000, guid: 91b3f07aaa8f4ed38805d305624c7b26, type: 3}
-    volume: 0.6
+    volume: 0.5
     pitch: 1
     pitchVariation: 0.06
     loop: 0

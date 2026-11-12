@@ -310,12 +310,22 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 896700b1a2f94d7468d0c163c0063d50, type: 3}
     - {fileID: 8300000, guid: 338d547ff7d49e141abc3de468052a7d, type: 3}
-    volume: 0.6
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.05
     loop: 0
     randomizeClip: 1
     cooldownTime: 0.0
+  hit:
+    clips:
+    - {fileID: 8300000, guid: 9e7c37f9d47bb044d87f2ae2daa24500, type: 3}
+    - {fileID: 8300000, guid: 5a05f5dcffa175147994a3b8357cfe14, type: 3}
+    volume: 0.35
+    pitch: 1.2
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.25
 --- !u!1 &8384164617446740516
 GameObject:
   m_ObjectHideFlags: 0

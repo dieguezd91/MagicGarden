@@ -161452,7 +161452,7 @@ MonoBehaviour:
     - {fileID: 8300000, guid: cd47b3840f1aac94aa040423640be064, type: 3}
     - {fileID: 8300000, guid: 84f136eeaa587d44598c3d5734652309, type: 3}
     - {fileID: 8300000, guid: 8709f98114a64bb43bd1c9ef291e7a61, type: 3}
-    volume: 0.7
+    volume: 0.55
     pitch: 1
     pitchVariation: 0.06
     loop: 0

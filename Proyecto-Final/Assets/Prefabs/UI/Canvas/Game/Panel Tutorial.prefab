@@ -148,7 +148,7 @@ MonoBehaviour:
   showPanel:
     clips:
     - {fileID: 8300000, guid: 3eaba89ded11ceb4e8b47fa6eb747da4, type: 3}
-    volume: 0.7
+    volume: 0.45
     pitch: 1.06
     pitchVariation: 0.1
     loop: 0
@@ -157,7 +157,7 @@ MonoBehaviour:
   hidePanel:
     clips:
     - {fileID: 8300000, guid: 1b9f0c481cd939245a6b83d2d58ac587, type: 3}
-    volume: 0.7
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -166,7 +166,7 @@ MonoBehaviour:
   stepComplete:
     clips:
     - {fileID: 8300000, guid: 511b60c0d8040bb40b9cd63697da6fde, type: 3}
-    volume: 0.7
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -190,7 +190,7 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 7d321b0ac8851064aa9d696a6ce714d2, type: 3}
     - {fileID: 8300000, guid: db22810224abe694db245dd9458eb344, type: 3}
     - {fileID: 8300000, guid: 7f0ae76b049a947409c09f5acc06274b, type: 3}
-    volume: 1
+    volume: 0.2
     pitch: 1
     pitchVariation: 0.1
     loop: 0

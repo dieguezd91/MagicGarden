@@ -278,7 +278,7 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 1e57c2d413761484cac77d58f55dc53d, type: 3}
     - {fileID: 8300000, guid: 17229c26819573a4391046bc203cad5b, type: 3}
     - {fileID: 8300000, guid: fbf5e3c8acdc605499a0175430a57662, type: 3}
-    volume: 0.5
+    volume: 0.18
     pitch: 1
     pitchVariation: 0.05
     loop: 0
@@ -287,7 +287,7 @@ MonoBehaviour:
   spawning:
     clips:
     - {fileID: 8300000, guid: e02f3ce353369654bb66939e39960b2a, type: 3}
-    volume: 0.25
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -296,7 +296,7 @@ MonoBehaviour:
   die:
     clips:
     - {fileID: 8300000, guid: 06b1748811dfc564ea66655ccfaf13ab, type: 3}
-    volume: 0.8
+    volume: 0.5
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -305,7 +305,7 @@ MonoBehaviour:
   hurt:
     clips:
     - {fileID: 8300000, guid: c998b6c8980017d409ac810d3d6ab910, type: 3}
-    volume: 0.8
+    volume: 0.4
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -320,7 +320,7 @@ MonoBehaviour:
     - {fileID: 8300000, guid: d400ab15388f52645a7901405cff9c5f, type: 3}
     - {fileID: 8300000, guid: 7c4bd3bacfbf4444f86afd855b451c0b, type: 3}
     - {fileID: 8300000, guid: 8e6e786e61627aa4a85158bc55655580, type: 3}
-    volume: 1
+    volume: 0.35
     pitch: 1
     pitchVariation: 0.05
     loop: 0
@@ -330,7 +330,7 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 59650c1c69a58aa4c85727ab82357635, type: 3}
     - {fileID: 8300000, guid: 347b0656243ed834fb48f5a46133f80b, type: 3}
-    volume: 0.7
+    volume: 0.55
     pitch: 1
     pitchVariation: 0.05
     loop: 0
@@ -363,7 +363,7 @@ MonoBehaviour:
   impact:
     clips:
     - {fileID: 8300000, guid: 7d0ddbfc50bd4bfb9037fb48404ebd26, type: 3}
-    volume: 0.6
+    volume: 0.8
     pitch: 1
     pitchVariation: 0.08
     loop: 0

@@ -66,6 +66,7 @@ public class BasicAreaSpell : Spell
     {
         if (hasExploded) return;
         hasExploded = true;
+        PlayImpactSound(); // the explosion itself; impactSound's cooldown stops per-enemy repeats below
 
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(transform.position, EffectiveRadius, enemyLayer);
 
@@ -78,11 +79,6 @@ public class BasicAreaSpell : Spell
         }
 
         ShowExplosionEffect();
-
-        if (SoundManager.Instance != null)
-        {
-            SoundManager.Instance.Play("PlayerShootArea", SoundSourceType.Localized, transform);
-        }
 
         if (Time.timeScale > 0f && CameraShaker.Instance != null)
         {

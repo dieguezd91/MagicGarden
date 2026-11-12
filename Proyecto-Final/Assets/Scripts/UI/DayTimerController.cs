@@ -79,17 +79,22 @@ public class DayTimerController : MonoBehaviour
 
         if (remainingActions <= 0)
         {
-            remainingActions = 0;
-            actionsActive = false;
-            resetWhenDayStarts = true;
-            NightStartedByTimer = true;
-
             Debug.Log("[DayTimerController] No quedan acciones. Comienza la noche.");
-
-            DayCycleController.Instance?.StartNight();
+            EndDayAndStartNight();
         }
 
         return true;
+    }
+
+    /// <summary>Same path as running out of actions: the horde starts even if the player is inside the house.</summary>
+    public void EndDayAndStartNight()
+    {
+        remainingActions = 0;
+        UpdateActionsText();
+        actionsActive = false;
+        resetWhenDayStarts = true;
+        NightStartedByTimer = true;
+        DayCycleController.Instance?.StartNight();
     }
 
     private void HandleGameStateChanged(GamePhase newPhase)

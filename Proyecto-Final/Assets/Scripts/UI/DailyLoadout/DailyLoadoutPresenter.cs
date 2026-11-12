@@ -84,6 +84,7 @@ namespace MagicGarden.LoadoutUI
             modals.ModalChanged += HandleModalChanged;
             gameObject.SetActive(true);
             Refresh();
+            PlaySfx("UI_Loadout_Open");
             return true;
         }
 
@@ -103,8 +104,13 @@ namespace MagicGarden.LoadoutUI
             return true;
         }
 
+        private static void PlayUi(InterfaceSoundType type) => UIManager.Instance?.InterfaceSounds?.PlaySound(type);
+        private static void PlaySfx(string name) => SoundManager.Instance?.Play(name);
+
         private void Listen(Button button, UnityAction callback)
         {
+            if (button.GetComponent<ImprovedUIButton>() == null && button.GetComponent<LoadoutButtonHoverSound>() == null)
+                button.gameObject.AddComponent<LoadoutButtonHoverSound>();
             button.onClick.AddListener(callback);
             bindings.Add(new KeyValuePair<Button, UnityAction>(button, callback));
         }
@@ -114,14 +120,14 @@ namespace MagicGarden.LoadoutUI
             for (int i = 0; i < 3; i++)
             {
                 int position = i;
-                Listen(view.PlantSlots[i].SelectButton, () => SelectPosition(true, position));
-                Listen(view.SpellSlots[i].SelectButton, () => SelectPosition(false, position));
+                Listen(view.PlantSlots[i].SelectButton, () => { PlaySfx("UI_Loadout_Slot_Select"); SelectPosition(true, position); });
+                Listen(view.SpellSlots[i].SelectButton, () => { PlaySfx("UI_Loadout_Slot_Select"); SelectPosition(false, position); });
                 view.PlantSlots[i].BindDrop(this, true, i); view.SpellSlots[i].BindDrop(this, false, i);
             }
             BindOptions(view.PlantOptionViews, true);
             BindOptions(view.SpellOptionViews, false);
-            Listen(view.PlantTabButton, () => SelectPosition(true, Mathf.Max(0, selectedPosition)));
-            Listen(view.SpellTabButton, () => SelectPosition(false, Mathf.Max(0, selectedPosition)));
+            Listen(view.PlantTabButton, () => { PlayUi(InterfaceSoundType.MenuButtonClick); SelectPosition(true, Mathf.Max(0, selectedPosition)); });
+            Listen(view.SpellTabButton, () => { PlayUi(InterfaceSoundType.MenuButtonClick); SelectPosition(false, Mathf.Max(0, selectedPosition)); });
             Listen(view.ConfirmButton, Confirm);
             Listen(view.ClearButton, Clear);
             Listen(view.CancelButton, Close);
@@ -278,6 +284,7 @@ namespace MagicGarden.LoadoutUI
                 (sourcePlants ? seed != SeedsEnum.None && activeSession.TrySetDraftPlant(position, seed)
                     : spell != null && activeSession.TrySetDraftSpell(position, spell));
             if (accepted) { plantCategory = targetPlants; selectedPosition = position; }
+            PlaySfx(accepted ? "UI_Loadout_Assign" : "UI_Loadout_Reject");
             feedback = accepted ? "Draft updated. Confirm to commit."
                 : "Assignment rejected: duplicate or unavailable equipment. Draft unchanged.";
             Refresh();
@@ -387,6 +394,7 @@ namespace MagicGarden.LoadoutUI
             if (!CanEdit() || selectedPosition < 0) return;
             bool accepted = plantCategory ? activeSession.TrySetDraftPlant(selectedPosition, SeedsEnum.None)
                 : activeSession.TrySetDraftSpell(selectedPosition, null);
+            PlaySfx(accepted ? "UI_Loadout_Clear" : "UI_Loadout_Reject");
             feedback = accepted ? "Position cleared in draft." : "Clear rejected. Draft unchanged.";
             Refresh();
         }
@@ -397,7 +405,7 @@ namespace MagicGarden.LoadoutUI
             CancelDrag();
             // Do not clear/rebuild the draft before attempting the authoritative transaction.
             bool confirmed = activeSession.TryConfirm();
-            if (confirmed) SoundManager.Instance?.Play("UI_Loadout_Confirm");
+            PlaySfx(confirmed ? "UI_Loadout_Confirm" : "UI_Loadout_Reject");
             feedback = confirmed ? "Loadout confirmed."
                 : activeSession.CanConfigure && activeSession.IsTutorialLoadoutRequired && !activeSession.HasUsableDraft
                     ? DailyLoadoutSession.TutorialLoadoutRequiredMessage
@@ -422,6 +430,7 @@ namespace MagicGarden.LoadoutUI
             bool wasOpen = IsOpen;
             if (IsOpen)
             {
+                PlaySfx("UI_Loadout_Close");
                 IsOpen = false;
                 activeSession?.DiscardDraft();
                 if (flow != null) flow.OnPhaseChanged -= HandlePhaseChanged;

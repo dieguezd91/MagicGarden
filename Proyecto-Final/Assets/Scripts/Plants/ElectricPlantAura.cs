@@ -71,7 +71,7 @@ public class ElectricPlantAura : Plant
             if (enemyLife == null || !enemyLife.IsAlive())
                 continue;
 
-            enemyLife.TakeDamage(damage);
+            enemyLife.TakeDamage(damage, LifeController.DamageType.DamageOverTime); // ticks every 0.1 s
             hitAny = true;
 
             ShowDamageText(enemyLife.transform, damage);

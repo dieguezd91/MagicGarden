@@ -372,7 +372,7 @@ MonoBehaviour:
   attack:
     clips:
     - {fileID: 8300000, guid: 8c89d4394a3b5dd4a9a06ecd1b5ccb88, type: 3}
-    volume: 0.6
+    volume: 0.4
     pitch: 1
     pitchVariation: 0.08
     loop: 0
@@ -400,7 +400,7 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 896700b1a2f94d7468d0c163c0063d50, type: 3}
     - {fileID: 8300000, guid: 338d547ff7d49e141abc3de468052a7d, type: 3}
-    volume: 0.6
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.05
     loop: 0

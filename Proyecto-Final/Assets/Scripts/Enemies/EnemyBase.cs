@@ -316,8 +316,19 @@ public abstract class EnemyBase : MonoBehaviour, IEnemy
         PlayEnemySound(EnemySoundType.Spawning, SoundSourceType.Localized);
     }
 
+    /// <summary>True when the walk animation has footstep events, so the movement timer must stay silent.</summary>
+    protected virtual bool UsesAnimationFootsteps => false;
+
+    // Animation event on walk clips that have their feet marked (e.g. "Golem Walk").
+    public void PlayAnimationFootstep()
+    {
+        if (soundBase == null) soundBase = GetComponent<EnemySoundBase>();
+        if (soundBase != null) soundBase.PlaySound(EnemySoundType.Steps, SoundSourceType.Localized, transform, skipStepBudget: true);
+    }
+
     protected void PlayFootstepSound()
     {
+        if (UsesAnimationFootsteps) return;
         if (Time.time - lastFootstepTime < footstepCooldown) return;
 
         PlayEnemySound(EnemySoundType.Steps, SoundSourceType.Localized);
@@ -346,14 +357,21 @@ public abstract class EnemyBase : MonoBehaviour, IEnemy
     {
         //Debug.Log($"[EnemyBase] {gameObject.name} OnDamaged invoked. Damage={damage} Type={damageType}");
 
+        // Killing blow: the death sound plays this same frame. Adding the hurt sound too buried the attacker's
+        // impact sound under two louder voice sounds, so on the kill only impact + death play.
+        if (lifeController != null && lifeController.currentHealth <= 0f) return;
+
         // Saw/trails damage every frame and auras every 0.1s; without this the hurt sound restarts constantly.
         if (Time.time < nextHurtSoundTime) return;
-        nextHurtSoundTime = Time.time + (damageType == LifeController.DamageType.DamageOverTime ? 0.5f : 0.2f);
+        nextHurtSoundTime = Time.time + Mathf.Max(HurtSoundInterval, damageType == LifeController.DamageType.DamageOverTime ? 0.5f : 0.2f);
 
         PlayEnemySound(EnemySoundType.Hurt, SoundSourceType.Localized, transform);
     }
 
     private float nextHurtSoundTime;
+
+    /// <summary>Minimum seconds between hurt sounds. Long hurt clips (e.g. the boss's 2 s clip) need more.</summary>
+    protected virtual float HurtSoundInterval => 0.2f;
 
     // Called when LifeController invokes onDeath
     private void OnLifeDeath()

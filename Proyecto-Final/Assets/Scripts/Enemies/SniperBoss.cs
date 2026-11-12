@@ -78,6 +78,10 @@ public class SniperBoss : Boss
         isCurrentlyAttacking = true;
         StopMovement();
 
+        // The Attack clip (Boss_Attack_Invoke) swells to its peak ~0.6 s in; start it so the peak lands on the shot.
+        const float AttackClipPeak = 0.6f;
+        bool attackSoundPlayed = false;
+
         float elapsed = 0f;
 
         while (elapsed < sniperData.AimDuration)
@@ -86,6 +90,12 @@ public class SniperBoss : Boss
                 break;
 
             UpdateAim(target.position);
+
+            if (!attackSoundPlayed && elapsed >= sniperData.AimDuration - AttackClipPeak)
+            {
+                attackSoundPlayed = true;
+                PlayEnemySound(EnemySoundType.Attack, SoundSourceType.Localized, transform);
+            }
 
             elapsed += Time.deltaTime;
             yield return null;
@@ -156,8 +166,6 @@ public class SniperBoss : Boss
 
         Vector2 direction =
             (targetPosition - origin.position).normalized;
-
-        PlayEnemySound(EnemySoundType.Attack, SoundSourceType.Localized, origin);
 
         GameObject projectileObject = Instantiate(
             sniperData.ProjectilePrefab,

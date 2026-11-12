@@ -309,6 +309,15 @@ MonoBehaviour:
   - {fileID: 8601602631486866943}
   - {fileID: 8477042811649829947}
   minionCleanupDelay: 0.25
+  groundSlamSound:
+    clips:
+    - {fileID: 8300000, guid: 3f7f5ffb3f354419ba478d9fa1d5a49f, type: 3}
+    volume: 0.5
+    pitch: 1
+    pitchVariation: 0.04
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.0
 --- !u!95 &8102336949729422656
 Animator:
   serializedVersion: 5
@@ -347,7 +356,7 @@ MonoBehaviour:
     - {fileID: 8300000, guid: f822e50e9d1b9e945875c9a94eac7876, type: 3}
     - {fileID: 8300000, guid: 823d9bf6673b1de49a49383e575ffa4e, type: 3}
     - {fileID: 8300000, guid: 39dd00b031b978a42a126512242e7e67, type: 3}
-    volume: 0.5
+    volume: 0.35
     pitch: 0.8
     pitchVariation: 0.05
     loop: 0
@@ -356,7 +365,7 @@ MonoBehaviour:
   spawning:
     clips:
     - {fileID: 8300000, guid: 1122d5de4a766e945b40a895050f9fae, type: 3}
-    volume: 1
+    volume: 0.7
     pitch: 1
     pitchVariation: 0
     loop: 0
@@ -365,7 +374,7 @@ MonoBehaviour:
   die:
     clips:
     - {fileID: 8300000, guid: ce021b29e26b68a47bd521ddd964a98b, type: 3}
-    volume: 0.5
+    volume: 0.7
     pitch: 1
     pitchVariation: 0
     loop: 0
@@ -374,7 +383,7 @@ MonoBehaviour:
   hurt:
     clips:
     - {fileID: 8300000, guid: 0f9157d11f0fc8d408c32bb56591106c, type: 3}
-    volume: 0.75
+    volume: 0.45
     pitch: 0.9
     pitchVariation: 0.1
     loop: 0
@@ -384,7 +393,7 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: f364ab70b07910c4fb34bfd03d8327e6, type: 3}
     - {fileID: 8300000, guid: aaa090133b3f3404da028e621924dd8a, type: 3}
-    volume: 0.5
+    volume: 0.4
     pitch: 1
     pitchVariation: 0.05
     loop: 0
@@ -393,7 +402,7 @@ MonoBehaviour:
   attack:
     clips:
     - {fileID: 8300000, guid: 2565379ba051a1c4b8c2c60a9bc500d8, type: 3}
-    volume: 0.8
+    volume: 0.55
     pitch: 1
     pitchVariation: 0.05
     loop: 0
@@ -402,7 +411,7 @@ MonoBehaviour:
   special:
     clips:
     - {fileID: 8300000, guid: e9758970408b29241ad79e9c76f521aa, type: 3}
-    volume: 1
+    volume: 0.55
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -426,10 +435,10 @@ MonoBehaviour:
     cooldownTime: 0
   impact:
     clips:
-    - {fileID: 8300000, guid: 3f7f5ffb3f354419ba478d9fa1d5a49f, type: 3}
-    volume: 0.85
+    - {fileID: 8300000, guid: 922e6e4240b54c3bbbe12817f1bbf6b5, type: 3}
+    volume: 0.65
     pitch: 1
-    pitchVariation: 0.04
+    pitchVariation: 0.05
     loop: 0
     randomizeClip: 1
     cooldownTime: 0.0

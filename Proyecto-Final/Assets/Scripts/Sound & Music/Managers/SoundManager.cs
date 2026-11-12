@@ -14,6 +14,16 @@ public class SoundManager : MonoBehaviour
 
     private const int MaxSimultaneousSameSound = 3;
 
+    [Header("Localized (positioned) sounds")]
+    [Tooltip("3D share of positioned sounds. The rest (1 - blend) is heard at any distance.")]
+    [SerializeField, Range(0f, 1f)] private float localizedSpatialBlend = 0.85f;
+    [Tooltip("Full volume within this many units of the camera centre.")]
+    [SerializeField] private float fullVolumeDistance = 4f;
+    [Tooltip("The 3D part is silent beyond this (~ just past the screen edge).")]
+    [SerializeField] private float silentDistance = 18f;
+
+    private AudioListener listener;
+
     // Dictionary to track sounds by name for quick lookup
     private Dictionary<string, Sound> soundLookup = new();
 
@@ -96,6 +106,26 @@ public class SoundManager : MonoBehaviour
         return availableSource;
     }
 
+    private void ApplyFalloff(AudioSource source)
+    {
+        source.rolloffMode = AudioRolloffMode.Linear;
+        source.minDistance = fullVolumeDistance;
+        source.maxDistance = silentDistance;
+        source.dopplerLevel = 0f;
+    }
+
+    /// <summary>
+    /// The camera/listener sits in front of the 2D play plane (z -10). Put sources at the listener's depth
+    /// so distance is the on-screen distance; otherwise every sound starts 10 units away.
+    /// </summary>
+    private Vector3 OnListenerPlane(Vector3 position)
+    {
+        if (listener == null || !listener.isActiveAndEnabled)
+            listener = FindFirstObjectByType<AudioListener>();
+        if (listener != null) position.z = listener.transform.position.z;
+        return position;
+    }
+
     private void ConfigureAudioSource(AudioSource source, Sound sound, float spatialBlend = 0f)
     {
         source.clip = sound.clip;
@@ -104,6 +134,7 @@ public class SoundManager : MonoBehaviour
         source.mute = sound.mute;
         source.loop = sound.loop;
         source.spatialBlend = spatialBlend;
+        ApplyFalloff(source);
     }
 
     public void PlayOneShot(string name)
@@ -118,12 +149,14 @@ public class SoundManager : MonoBehaviour
             var sourceToRestart = playingSources[0];
             ConfigureAudioSource(sourceToRestart, sound, 0f);
             sourceToRestart.Stop();
-            sourceToRestart.PlayOneShot(sound.clip, sound.volume);
+            sourceToRestart.PlayOneShot(sound.clip);
+            LogPlay(name, sourceToRestart, sound.volume);
             return;
         }
         var audioSource = GetAvailableAudioSource();
         ConfigureAudioSource(audioSource, sound, 0f);
-        audioSource.PlayOneShot(sound.clip, sound.volume);
+        audioSource.PlayOneShot(sound.clip);
+        LogPlay(name, audioSource, sound.volume);
     }
 
     public void Play(string name, SoundSourceType sourceType = SoundSourceType.Global, Transform parent = null)
@@ -133,7 +166,7 @@ public class SoundManager : MonoBehaviour
             return;
         }
         var playingSources = audioSourcePool.Where(s => s.isPlaying && s.clip == sound.clip).ToList();
-        float spatialBlend = (sourceType == SoundSourceType.Global) ? 0f : 0.75f;
+        float spatialBlend = (sourceType == SoundSourceType.Global) ? 0f : localizedSpatialBlend;
         if (playingSources.Count >= MaxSimultaneousSameSound)
         {
             var sourceToRestart = playingSources[0];
@@ -145,9 +178,10 @@ public class SoundManager : MonoBehaviour
             }
             else if (parent != null)
             {
-                sourceToRestart.transform.position = parent.position;
+                sourceToRestart.transform.position = OnListenerPlane(parent.position);
             }
             sourceToRestart.Play();
+            LogPlay(name, sourceToRestart, sound.volume);
             return;
         }
         var audioSource = GetAvailableAudioSource();
@@ -158,9 +192,10 @@ public class SoundManager : MonoBehaviour
         }
         else if (parent != null)
         {
-            audioSource.transform.position = parent.position;
+            audioSource.transform.position = OnListenerPlane(parent.position);
         }
         audioSource.Play();
+        LogPlay(name, audioSource, sound.volume);
     }
 
     public void PlayLoop(string name)
@@ -177,6 +212,7 @@ public class SoundManager : MonoBehaviour
             sourceToRestart.Stop();
             sourceToRestart.loop = true;
             sourceToRestart.Play();
+            LogPlay(name, sourceToRestart, sound.volume);
             return;
         }
         var existingSource = audioSourcePool.FirstOrDefault(source =>
@@ -189,6 +225,7 @@ public class SoundManager : MonoBehaviour
         ConfigureAudioSource(audioSource, sound, 0f);
         audioSource.loop = true;
         audioSource.Play();
+        LogPlay(name, audioSource, sound.volume);
     }
 
     public void Stop(string name)
@@ -262,7 +299,7 @@ public class SoundManager : MonoBehaviour
         var clip = data.GetClip();
         if (clip == null) return null;
         var playingSources = audioSourcePool.Where(s => s.isPlaying && s.clip == clip).ToList();
-        float spatialBlend = (sourceType == SoundSourceType.Global) ? 0f : 0.75f;
+        float spatialBlend = (sourceType == SoundSourceType.Global) ? 0f : localizedSpatialBlend;
         if (playingSources.Count >= MaxSimultaneousSameSound)
         {
             var sourceToRestart = playingSources[0];
@@ -273,18 +310,20 @@ public class SoundManager : MonoBehaviour
             sourceToRestart.loop = data.loop;
             sourceToRestart.mute = false;
             sourceToRestart.spatialBlend = spatialBlend;
+            ApplyFalloff(sourceToRestart);
             if (sourceType == SoundSourceType.Global)
             {
                 sourceToRestart.transform.position = Vector3.zero;
             }
             else if (parent != null)
             {
-                sourceToRestart.transform.position = parent.position;
+                sourceToRestart.transform.position = OnListenerPlane(parent.position);
             }
             if (data.loop)
                 sourceToRestart.Play();
             else
-                sourceToRestart.PlayOneShot(clip, data.volume);
+                sourceToRestart.PlayOneShot(clip);
+            LogPlay(clip.name, sourceToRestart, data.volume);
             return sourceToRestart;
         }
         var audioSource = GetAvailableAudioSource();
@@ -294,18 +333,20 @@ public class SoundManager : MonoBehaviour
         audioSource.loop = data.loop;
         audioSource.mute = false;
         audioSource.spatialBlend = spatialBlend;
+        ApplyFalloff(audioSource);
         if (sourceType == SoundSourceType.Global)
         {
             audioSource.transform.position = Vector3.zero;
         }
         else if (parent != null)
         {
-            audioSource.transform.position = parent.position;
+            audioSource.transform.position = OnListenerPlane(parent.position);
         }
         if (data.loop)
             audioSource.Play();
         else
-            audioSource.PlayOneShot(clip, data.volume);
+            audioSource.PlayOneShot(clip);
+        LogPlay(clip.name, audioSource, data.volume);
         return audioSource;
     }
     
@@ -329,7 +370,8 @@ public class SoundManager : MonoBehaviour
             if (loop)
                 sourceToRestart.Play();
             else
-                sourceToRestart.PlayOneShot(clip, volume);
+                sourceToRestart.PlayOneShot(clip);
+            LogPlay(clip.name, sourceToRestart, volume);
             return;
         }
         var audioSource = GetAvailableAudioSource();
@@ -342,7 +384,16 @@ public class SoundManager : MonoBehaviour
         if (loop)
             audioSource.Play();
         else
-            audioSource.PlayOneShot(clip, volume);
+            audioSource.PlayOneShot(clip);
+        LogPlay(clip.name, audioSource, volume);
+    }
+
+    [System.Diagnostics.Conditional("UNITY_EDITOR"), System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+    private static void LogPlay(string sound, AudioSource source, float effectiveVolume)
+    {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        AudioSessionLogger.LogPlay(sound, source, effectiveVolume);
+#endif
     }
 
     #if UNITY_EDITOR

@@ -274,61 +274,54 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   steps:
     clips:
-    - {fileID: 8300000, guid: 1e57c2d413761484cac77d58f55dc53d, type: 3}
-    - {fileID: 8300000, guid: 17229c26819573a4391046bc203cad5b, type: 3}
-    - {fileID: 8300000, guid: fbf5e3c8acdc605499a0175430a57662, type: 3}
-    volume: 0.5
+    - {fileID: 8300000, guid: a4b6e13013f449e4b9a4294fbee6d2fb, type: 3}
+    - {fileID: 8300000, guid: 2d9b9ebee543c174a982519b6caec902, type: 3}
+    volume: 0.22
     pitch: 1
-    pitchVariation: 0.05
+    pitchVariation: 0.08
     loop: 0
     randomizeClip: 1
-    cooldownTime: 0
+    cooldownTime: 0.0
   spawning:
     clips:
-    - {fileID: 8300000, guid: e02f3ce353369654bb66939e39960b2a, type: 3}
-    volume: 0.25
+    - {fileID: 8300000, guid: 64805ce3aa691454dbb5e413af9367b8, type: 3}
+    volume: 0.45
     pitch: 1
-    pitchVariation: 0.1
-    loop: 0
-    randomizeClip: 1
-    cooldownTime: 0
-  die:
-    clips:
-    - {fileID: 8300000, guid: 06b1748811dfc564ea66655ccfaf13ab, type: 3}
-    volume: 0.8
-    pitch: 1
-    pitchVariation: 0.1
-    loop: 0
-    randomizeClip: 1
-    cooldownTime: 0
-  hurt:
-    clips:
-    - {fileID: 8300000, guid: c998b6c8980017d409ac810d3d6ab910, type: 3}
-    volume: 0.8
-    pitch: 1
-    pitchVariation: 0.1
-    loop: 0
-    randomizeClip: 1
-    cooldownTime: 0
-  idle:
-    clips:
-    - {fileID: 8300000, guid: b02c0e67e3d611d49b61a567e3acb129, type: 3}
-    - {fileID: 8300000, guid: 981e0e9efab2a804abdd12eab5ac69eb, type: 3}
-    - {fileID: 8300000, guid: 4f42aa5205d703847840c786424afd6d, type: 3}
-    - {fileID: 8300000, guid: 163edece8ef40464a903a17073080218, type: 3}
-    - {fileID: 8300000, guid: d400ab15388f52645a7901405cff9c5f, type: 3}
-    - {fileID: 8300000, guid: 7c4bd3bacfbf4444f86afd855b451c0b, type: 3}
-    - {fileID: 8300000, guid: 8e6e786e61627aa4a85158bc55655580, type: 3}
-    volume: 0.5
-    pitch: 1.2
     pitchVariation: 0.05
     loop: 0
     randomizeClip: 1
-    cooldownTime: 5
+    cooldownTime: 0.0
+  die:
+    clips:
+    - {fileID: 8300000, guid: 443c8cec6bbf80c47a5ed89703825d90, type: 3}
+    volume: 0.5
+    pitch: 1
+    pitchVariation: 0.05
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.0
+  hurt:
+    clips:
+    - {fileID: 8300000, guid: 380d4c4af703cb14fbbe458233ddd0e1, type: 3}
+    volume: 0.4
+    pitch: 1
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.0
+  idle:
+    clips:
+    - {fileID: 8300000, guid: 0d7fd3e4df1c8b84ab4763df4e2a8302, type: 3}
+    volume: 0.3
+    pitch: 1
+    pitchVariation: 0.04
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.0
   attack:
     clips:
     - {fileID: 8300000, guid: 7cb9107ea4864112b4754ea9dd84efea, type: 3}
-    volume: 0.5
+    volume: 0.55
     pitch: 1
     pitchVariation: 0.08
     loop: 0

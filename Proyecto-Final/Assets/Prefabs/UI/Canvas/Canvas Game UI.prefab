@@ -524,7 +524,7 @@ MonoBehaviour:
   menuButtonClick:
     clips:
     - {fileID: 8300000, guid: d6a976ee327cf834d9e2edebcd950802, type: 3}
-    volume: 0.5
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -533,7 +533,7 @@ MonoBehaviour:
   menuButtonDisabledClick:
     clips:
     - {fileID: 8300000, guid: 75ac255b508adda48b7ea92c0ef8e7b7, type: 3}
-    volume: 0.5
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -574,7 +574,7 @@ MonoBehaviour:
   gameInventoryBookOpen:
     clips:
     - {fileID: 8300000, guid: ad5d42d1512d9a1459fee08fce01d238, type: 3}
-    volume: 0.5
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -583,7 +583,7 @@ MonoBehaviour:
   gameInventoryBookClose:
     clips:
     - {fileID: 8300000, guid: 02ba376e25976314e95dfd3ef2685f85, type: 3}
-    volume: 0.5
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -592,7 +592,7 @@ MonoBehaviour:
   pauseOpen:
     clips:
     - {fileID: 8300000, guid: ad5d42d1512d9a1459fee08fce01d238, type: 3}
-    volume: 0.3
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -601,7 +601,7 @@ MonoBehaviour:
   pauseClose:
     clips:
     - {fileID: 8300000, guid: 02ba376e25976314e95dfd3ef2685f85, type: 3}
-    volume: 0.3
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -610,7 +610,7 @@ MonoBehaviour:
   onAbilityChanged:
     clips:
     - {fileID: 8300000, guid: 5b375280484403b4d953df3a8aed2a6e, type: 3}
-    volume: 0.5
+    volume: 0.4
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -619,7 +619,7 @@ MonoBehaviour:
   onSeedSelect:
     clips:
     - {fileID: 8300000, guid: 5fcbdbbd4ec11334d883ab481c766eb8, type: 3}
-    volume: 0.5
+    volume: 0.4
     pitch: 1
     pitchVariation: 0.1
     loop: 0

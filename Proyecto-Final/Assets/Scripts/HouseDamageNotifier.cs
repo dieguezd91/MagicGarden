@@ -5,7 +5,8 @@ using UnityEngine;
 public class HouseDamageNotifier : MonoBehaviour
 {
     [Header("Referencias")]
-    public LifeController houseLife;
+    // The house uses HouseLifeController (not LifeController); the old field type meant it could never be assigned.
+    public HouseLifeController houseLife;
     public DangerIndicator dangerIndicator;
     public Transform player;
 
@@ -15,6 +16,8 @@ public class HouseDamageNotifier : MonoBehaviour
 
     void Start()
     {
+        if (houseLife == null)
+            houseLife = FindObjectOfType<HouseLifeController>();
         if (houseLife != null)
             houseLife.onDamaged.AddListener(OnHouseDamaged);
     }
@@ -25,7 +28,7 @@ public class HouseDamageNotifier : MonoBehaviour
             houseLife.onDamaged.RemoveListener(OnHouseDamaged);
     }
 
-    private void OnHouseDamaged(float damage, LifeController.DamageType damageType)
+    private void OnHouseDamaged(float damage)
     {
         if (player == null || dangerIndicator == null)
             return;

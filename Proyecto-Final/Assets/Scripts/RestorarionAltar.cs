@@ -21,11 +21,7 @@ public class RestorationAltar : MonoBehaviour, IInteractionLifecycle
         if (!presenter.Open()) return false;
         activePresenter = presenter;
         activePresenter.Closed += HandleClosed;
-        if (interactSound != null && interactSound.CanPlay())
-        {
-            SoundManager.Instance?.PlayClip(interactSound);
-            interactSound.SetLastPlayTime();
-        }
+        // The loadout panel plays its own open/close sounds; playing interactSound/completeSound too doubled them.
         TutorialEvents.InvokeDailyLoadoutOpened();
         return true;
     }
@@ -54,11 +50,6 @@ public class RestorationAltar : MonoBehaviour, IInteractionLifecycle
 
     public void OnInteractionComplete()
     {
-        if (completeSound != null && completeSound.CanPlay())
-        {
-            SoundManager.Instance?.PlayClip(completeSound);
-            completeSound.SetLastPlayTime();
-        }
     }
 
     private void OnDisable() => CancelInteraction();

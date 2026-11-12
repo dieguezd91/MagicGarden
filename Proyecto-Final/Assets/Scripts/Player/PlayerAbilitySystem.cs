@@ -249,10 +249,17 @@ public class PlayerAbilitySystem : MonoBehaviour
         return selected;
     }
 
+    // "Mouse ScrollWheel" is reported over several consecutive frames per notch/swipe; without this one
+    // scroll cycled through ~8 abilities (and played the change sound each time).
+    private const float ScrollCycleInterval = 0.15f;
+    private float nextScrollCycleTime;
+
     private void HandleScrollInput(float scrollDelta)
     {
         if (isDigging || isHarvesting) return;
         if (!IsAbilityGameState()) return;
+        if (Time.unscaledTime < nextScrollCycleTime) return;
+        nextScrollCycleTime = Time.unscaledTime + ScrollCycleInterval;
 
         int direction = scrollDelta > 0 ? -1 : 1;
         CycleAbility(direction);

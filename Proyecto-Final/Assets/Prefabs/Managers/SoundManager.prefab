@@ -323,7 +323,7 @@ MonoBehaviour:
   sounds:
   - name: Plant
     clip: {fileID: 8300000, guid: 46767a1d80f8ae741ad6525a855d0e72, type: 3}
-    volume: 1
+    volume: 0.45
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -331,7 +331,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Dig
     clip: {fileID: 8300000, guid: 98b513f8c51f18642935e52e649c2eaf, type: 3}
-    volume: 1
+    volume: 0.45
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -339,7 +339,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Harvest
     clip: {fileID: 8300000, guid: 4f4ef55d513bb15479c9281d654d3c02, type: 3}
-    volume: 1
+    volume: 0.45
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -347,7 +347,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Remove
     clip: {fileID: 8300000, guid: 5c52c1b0a445d2647aae374aa2ffe952, type: 3}
-    volume: 1
+    volume: 0.45
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -355,7 +355,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: PickUp
     clip: {fileID: 8300000, guid: 03b91fa3ae1b42c45b2331cbfc7771b2, type: 3}
-    volume: 0.8
+    volume: 0.35
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -363,7 +363,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: ShootSpell
     clip: {fileID: 8300000, guid: 35684a8a6f3a18146a1e9c4b964e0587, type: 3}
-    volume: 0.7
+    volume: 0.5
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -371,7 +371,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Step_Land
     clip: {fileID: 8300000, guid: 8bf91c27647502141bb5335b3069b330, type: 3}
-    volume: 1
+    volume: 0.25
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -379,7 +379,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Step_Grass
     clip: {fileID: 8300000, guid: ed15a29e723b7214ea43525973cdb6bb, type: 3}
-    volume: 1
+    volume: 0.25
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -387,7 +387,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: ButtonClick
     clip: {fileID: 8300000, guid: 4229f6c289f32f843ba8e9db98d72d32, type: 3}
-    volume: 0.7
+    volume: 0.45
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -395,7 +395,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Step_Wood
     clip: {fileID: 8300000, guid: eea9624d96ae191439615ca598fe01fa, type: 3}
-    volume: 1
+    volume: 0.25
     pitch: 1.25
     playOnAwake: 0
     loop: 0
@@ -403,7 +403,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: CandleOn
     clip: {fileID: 8300000, guid: 9ff87450aa8998d4dafeeda0dbaa87ad, type: 3}
-    volume: 1
+    volume: 0.45
     pitch: 2
     playOnAwake: 0
     loop: 0
@@ -411,7 +411,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: CandleOff
     clip: {fileID: 8300000, guid: 03d21ecc13dc0ef478976d5511fad57c, type: 3}
-    volume: 1
+    volume: 0.45
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -427,7 +427,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: EnemyHit
     clip: {fileID: 8300000, guid: b2d3fe090d4f9dd46ac24c275ddb8730, type: 3}
-    volume: 0.7
+    volume: 0.4
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -435,7 +435,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: PlayerHit
     clip: {fileID: 8300000, guid: cb67cfd8ae8f00e4cb9e7dd88e8494dc, type: 3}
-    volume: 0.7
+    volume: 0.55
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -443,7 +443,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: PlayerHitBurn
     clip: {fileID: 8300000, guid: 93d2af38cfa5cf14c8cc67cac495d05f, type: 3}
-    volume: 0.7
+    volume: 0.55
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -451,7 +451,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: PlayerBurn
     clip: {fileID: 8300000, guid: 5457f92d674877e44bcdb3c5dfc15456, type: 3}
-    volume: 0.7
+    volume: 0.4
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -459,7 +459,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: PlayerShootArea
     clip: {fileID: 8300000, guid: 8e50f6220fb662f4f95d3fe65edd4994, type: 3}
-    volume: 0.7
+    volume: 0.5
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -467,7 +467,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: PlayerSwordSwing
     clip: {fileID: 8300000, guid: 4bb14c3aa47476143a69082dd41549e0, type: 3}
-    volume: 0.7
+    volume: 0.5
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -475,7 +475,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: PlayerTeleport
     clip: {fileID: 8300000, guid: 589a9d55f4926994c961ff78e880d1d9, type: 3}
-    volume: 0.7
+    volume: 0.5
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -483,7 +483,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Night_Start
     clip: {fileID: 8300000, guid: c601648fa8624344fb77dacba0faf1e9, type: 3}
-    volume: 0.7
+    volume: 0.65
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -491,7 +491,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Horde_Start_1
     clip: {fileID: 8300000, guid: 951f049c7ac7d904abd62fa6a679b18f, type: 3}
-    volume: 0.7
+    volume: 0.65
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -499,7 +499,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Horde_Start_2
     clip: {fileID: 8300000, guid: 63391a46b6e55c048b8ebc3c40c6af88, type: 3}
-    volume: 0.7
+    volume: 0.65
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -507,7 +507,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Boss_Night_Start
     clip: {fileID: 8300000, guid: c629d783500c74544b0deb1ce67273cd, type: 3}
-    volume: 0.8
+    volume: 0.65
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -515,7 +515,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Boss_Night_Complete
     clip: {fileID: 8300000, guid: 8d723b9fa4c91e24f9be1795632ad141, type: 3}
-    volume: 0.8
+    volume: 0.65
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -523,7 +523,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Game_Over
     clip: {fileID: 8300000, guid: c0a9abb3717017745ba113e3fd47c9ba, type: 3}
-    volume: 0.8
+    volume: 0.65
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -531,7 +531,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Level_Up
     clip: {fileID: 8300000, guid: 856cb36a9fb220443bb45e32c48e4227, type: 3}
-    volume: 0.7
+    volume: 0.65
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -539,7 +539,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Ritual_Buff_Activate
     clip: {fileID: 8300000, guid: c08f20931058db543bdeb27b3c12b36c, type: 3}
-    volume: 0.7
+    volume: 0.65
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -547,7 +547,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Player_Low_Health_Heartbeat_Loop
     clip: {fileID: 8300000, guid: a9ad50698cb1654499fc188bfb8845c5, type: 3}
-    volume: 0.6
+    volume: 0.5
     pitch: 1
     playOnAwake: 0
     loop: 1
@@ -555,7 +555,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Player_Spell_No_Mana
     clip: {fileID: 8300000, guid: c0bcc17cbf76ce34fbc24e16b49f18e4, type: 3}
-    volume: 0.6
+    volume: 0.5
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -571,7 +571,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: UI_Spell_Slot_Select
     clip: {fileID: 8300000, guid: 1c3adb46ea378e3408e83c29a83f2c8c, type: 3}
-    volume: 0.5
+    volume: 0.4
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -579,7 +579,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: UI_Warning
     clip: {fileID: 8300000, guid: 1e025df96cc97b344a806af263a560fc, type: 3}
-    volume: 0.6
+    volume: 0.55
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -587,7 +587,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: UI_Slot_Pickup
     clip: {fileID: 8300000, guid: 242ecb2a8e7d58e4d88db7ccb66c6c98, type: 3}
-    volume: 0.5
+    volume: 0.4
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -595,7 +595,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: UI_Slot_Drop
     clip: {fileID: 8300000, guid: f1fdc9d1c0a81ae41a25432508f7953f, type: 3}
-    volume: 0.5
+    volume: 0.4
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -603,7 +603,7 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: UI_Loadout_Confirm
     clip: {fileID: 8300000, guid: c7c1bb2bad659e94a8afc14e7b4e9864, type: 3}
-    volume: 0.6
+    volume: 0.5
     pitch: 1
     playOnAwake: 0
     loop: 0
@@ -611,7 +611,55 @@ MonoBehaviour:
     audioSource: {fileID: 0}
   - name: Upgrade_Select
     clip: {fileID: 8300000, guid: 8e5c89d02e2ac6f498aff9ce8467ae4d, type: 3}
-    volume: 0.6
+    volume: 0.5
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Loadout_Open
+    clip: {fileID: 8300000, guid: 7ae3ea95ee4444bcb3de24f5ed2a5157, type: 3}
+    volume: 0.45
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Loadout_Close
+    clip: {fileID: 8300000, guid: 754233e153bb46d4ada1fea209decff9, type: 3}
+    volume: 0.45
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Loadout_Slot_Select
+    clip: {fileID: 8300000, guid: 2613e38b3ba340e38e2595b18585aa9b, type: 3}
+    volume: 0.4
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Loadout_Assign
+    clip: {fileID: 8300000, guid: b735c5f2f07a45a1a76804f2135c58e9, type: 3}
+    volume: 0.45
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Loadout_Reject
+    clip: {fileID: 8300000, guid: d0d953b858a04b2f84afa1c568138363, type: 3}
+    volume: 0.45
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Loadout_Clear
+    clip: {fileID: 8300000, guid: f94d1ab44ac44610ac597ae1b04a65bd, type: 3}
+    volume: 0.45
     pitch: 1
     playOnAwake: 0
     loop: 0

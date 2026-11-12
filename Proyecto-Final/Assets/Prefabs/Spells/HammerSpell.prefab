@@ -54,7 +54,7 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 4de25b49c68f4c5bb9b97e253d39c52b, type: 3}
     - {fileID: 8300000, guid: d3cee23aa7624f64a6a4383648de042a, type: 3}
-    volume: 0.7
+    volume: 0.5
     pitch: 1
     pitchVariation: 0.05
     loop: 0
@@ -64,7 +64,7 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 16fbc1fdd6f94b0b897ca958356c84b5, type: 3}
     - {fileID: 8300000, guid: 8ebfb4797ce948a8bf0f31a3c648ac5f, type: 3}
-    volume: 0.7
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.08
     loop: 0

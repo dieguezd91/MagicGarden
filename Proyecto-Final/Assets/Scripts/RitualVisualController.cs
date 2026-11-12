@@ -216,7 +216,7 @@ public class RitualVisualController : MonoBehaviour
 
     public void StartEndRitualEffects()
     {
-        SoundManager.Instance?.Play("CandleOff");
+        SoundManager.Instance?.Play("CandleOff", SoundSourceType.Localized, transform); // heard near the altar only
 
         StartCoroutine(RestoreVignetteCoroutine());
 
@@ -302,7 +302,7 @@ public class RitualVisualController : MonoBehaviour
         candle.gameObject.SetActive(true);
         candle.color = candleColor;
 
-        SoundManager.Instance?.Play("CandleOn");
+        SoundManager.Instance?.Play("CandleOn", SoundSourceType.Localized, transform);
         StartCoroutine(FlickerCandle(candle, index, ritualDuration));
     }
 

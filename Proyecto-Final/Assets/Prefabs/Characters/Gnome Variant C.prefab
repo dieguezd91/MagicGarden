@@ -5229,7 +5229,7 @@ MonoBehaviour:
     - {fileID: 8300000, guid: c6eb9e53798819844a0f60d4fc5e0eed, type: 3}
     - {fileID: 8300000, guid: d1c1f32a66204f3478390b5e0efa2068, type: 3}
     - {fileID: 8300000, guid: 96f111d715a479d4b8b946324f4000c8, type: 3}
-    volume: 0.5
+    volume: 0.18
     pitch: 1
     pitchVariation: 0.05
     loop: 0
@@ -5238,7 +5238,7 @@ MonoBehaviour:
   spawning:
     clips:
     - {fileID: 8300000, guid: 0be2e133f4d7bc348af41940153cbb49, type: 3}
-    volume: 0.25
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -5247,7 +5247,7 @@ MonoBehaviour:
   die:
     clips:
     - {fileID: 8300000, guid: 46df699cec8795c48a74a2e6c26bea1d, type: 3}
-    volume: 0.75
+    volume: 0.5
     pitch: 1
     pitchVariation: 0.05
     loop: 0
@@ -5256,7 +5256,7 @@ MonoBehaviour:
   hurt:
     clips:
     - {fileID: 8300000, guid: dc12d8252d9d2d849a4734ee1c592ce5, type: 3}
-    volume: 0.8
+    volume: 0.4
     pitch: 1
     pitchVariation: 0.05
     loop: 0
@@ -5266,7 +5266,7 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 0dec4933c411b084abd6810f4cf04950, type: 3}
     - {fileID: 8300000, guid: a88f938c56e1b5f4280108cd32e63eda, type: 3}
-    volume: 0.5
+    volume: 0.35
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -5275,7 +5275,7 @@ MonoBehaviour:
   attack:
     clips:
     - {fileID: 8300000, guid: 34e648888bdb454ca94147a56c6f5fcd, type: 3}
-    volume: 0.5
+    volume: 0.55
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -5308,7 +5308,7 @@ MonoBehaviour:
   impact:
     clips:
     - {fileID: 8300000, guid: 234c3752abfc4cda82469a0a5cd3719e, type: 3}
-    volume: 0.75
+    volume: 0.65
     pitch: 1
     pitchVariation: 0.06
     loop: 0

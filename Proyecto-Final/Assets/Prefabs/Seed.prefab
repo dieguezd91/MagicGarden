@@ -184,7 +184,7 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 9e7c37f9d47bb044d87f2ae2daa24500, type: 3}
     - {fileID: 8300000, guid: 5a05f5dcffa175147994a3b8357cfe14, type: 3}
-    volume: 0.6
+    volume: 0.4
     pitch: 1
     pitchVariation: 0.08
     loop: 0
@@ -193,7 +193,7 @@ MonoBehaviour:
   grindLoopSound:
     clips:
     - {fileID: 8300000, guid: 42752e55a3ef0c947a56a1989fb4b16a, type: 3}
-    volume: 0.4
+    volume: 0.3
     pitch: 1
     pitchVariation: 0.05
     loop: 1

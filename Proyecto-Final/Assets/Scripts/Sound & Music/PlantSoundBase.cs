@@ -16,6 +16,11 @@ public class PlantSoundBase : MonoBehaviour
     [Tooltip("Must have Loop on. Played while the plant is active (e.g. electric hum).")]
     public SoundClipData loop;
 
+    [Tooltip("Loop is fully heard within this many units (a character is ~1.5 units wide).")]
+    public float loopFullVolumeDistance = 1.5f;
+    [Tooltip("Loop is silent beyond this many units (~2-3 characters away).")]
+    public float loopSilentDistance = 4f;
+
     private AudioSource loopSource;
 
     // Dictionary for runtime access
@@ -61,6 +66,14 @@ public class PlantSoundBase : MonoBehaviour
         if (IsOwnLoop(loopSource) && loopSource.isPlaying) return;
         if (SoundManager.Instance == null || loop == null) return;
         loopSource = SoundManager.Instance.PlayClip(loop, SoundSourceType.Localized, transform);
+        if (loopSource != null)
+        {
+            // Ambient plant loops (electric hum) are a close-up detail: fully positional, short range.
+            loopSource.spatialBlend = 1f;
+            loopSource.rolloffMode = AudioRolloffMode.Linear;
+            loopSource.minDistance = loopFullVolumeDistance;
+            loopSource.maxDistance = loopSilentDistance;
+        }
     }
 
     public void StopLoop()
