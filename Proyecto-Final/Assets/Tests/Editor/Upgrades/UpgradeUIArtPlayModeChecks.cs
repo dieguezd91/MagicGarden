@@ -148,7 +148,7 @@ public class UpgradeUIArtPlayModeChecks
                 Assert.That(Bounds((RectTransform)graphic.transform).Overlaps(Bounds((RectTransform)((Component)Field(row, field)).transform)), Is.False, field);
         }
     }
-    internal static IEnumerator Capture(Canvas canvas, GameObject panel, string name, int width, int height)
+    internal static IEnumerator Capture(Canvas canvas, GameObject panel, string name, int width, int height, bool measured = true)
     {
         Assert.That(SystemInfo.graphicsDeviceType.ToString(), Is.Not.EqualTo("Null"), "Native graphics device required");
         var go = new GameObject("UI capture camera"); var camera = go.AddComponent<Camera>();
@@ -176,8 +176,8 @@ public class UpgradeUIArtPlayModeChecks
             yield return null; // Let the graphics-enabled player loop build and render Canvas meshes into the camera target.
             yield return null;
             string evidence = name + "-" + width + "x" + height;
-            UpgradeUICompactLayoutTests.MeasuredCapture(canvas, panel, evidence, width, height);
-            TextFit(panel, evidence); RenderTexture.active = rt;
+            if (measured) { UpgradeUICompactLayoutTests.MeasuredCapture(canvas, panel, evidence, width, height); TextFit(panel, evidence); }
+            RenderTexture.active = rt;
             var texture = new Texture2D(width, height, TextureFormat.RGB24, false);
             try
             {
@@ -196,6 +196,14 @@ public class UpgradeUIArtPlayModeChecks
             canvas.scaleFactor = oldScale; canvas.planeDistance = oldDistance; RenderTexture.active = previous;
             camera.targetTexture = null; rt.Release(); UnityEngine.Object.DestroyImmediate(rt); UnityEngine.Object.DestroyImmediate(go);
         }
+    }
+    // Hierarchy contract on the live Canvas: reward renders after the level-up panel, its backdrop is visibly opaque enough.
+    private static void AssertRewardHierarchy(Component reward, Component level)
+    {
+        Assert.That(reward.transform.GetSiblingIndex(), Is.GreaterThan(level.transform.GetSiblingIndex()));
+        var backdrop = (Component)Field(reward, "backdrop");
+        Assert.That(backdrop.gameObject.activeInHierarchy, Is.True);
+        Assert.That(((CanvasGroup)backdrop.GetComponent(typeof(CanvasGroup))).blocksRaycasts, Is.True);
     }
     [UnityTest] public IEnumerator IsolatedPrefabPointerSmokeAndRenderedLayouts()
     {
@@ -272,6 +280,9 @@ public class UpgradeUIArtPlayModeChecks
         var reward = (Component)Field(presenter, "rewardView");
         if (reward != null && (bool)Property(reward, "IsVisible"))
         {
+            // Whole-canvas capture: the reward modal must read as the top layer over the dimmed level-up panel.
+            foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720) }) yield return Capture(canvas, reward.gameObject, "runtime-reward-over-levelup", size.x, size.y, false);
+            AssertRewardHierarchy(reward, level);
             Click((Component)Field(cards.GetValue(0), "selectButton")); yield return null;
             Assert.That(Property(experience, "PendingChoices"), Is.EqualTo(pending), "cards are blocked behind the reward card");
             Click((Component)Field(reward, "continueButton")); yield return null;

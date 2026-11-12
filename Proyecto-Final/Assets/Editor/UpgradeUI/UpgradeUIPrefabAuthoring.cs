@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -101,6 +102,76 @@ public static class UpgradeUIPrefabAuthoring
         AssetDatabase.SaveAssets();
         Debug.Log("Level-up reward prefab authored and nested above LevelUpPanel: " + path);
     }
+    // Idempotent. Applies the imported tutorial art (TutorialBox frames, CraftButton, m5x7) already used by LevelUpPanel/LevelUpCard to the
+    // reward card and raises every backdrop to UIBackdrop.DimAlpha. Edits existing prefabs in place; no new art or GUIDs.
+    [MenuItem("Tools/Magic Garden/Apply tutorial art to level-up reward")]
+    public static void ApplyRewardArt()
+    {
+        const string sheet = "Assets/Sprites/SpriteSheets/UISprites.png";
+        var sprites = AssetDatabase.LoadAllAssetsAtPath(sheet).OfType<Sprite>().ToArray();
+        var box = sprites.Single(s => s.name == "TutorialBox"); var craft = sprites.Single(s => s.name == "CraftButton");
+        font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Plugins/TextMesh Pro/Fonts/m5x7.asset");
+        if (box == null || craft == null || font == null) throw new InvalidOperationException("Imported tutorial art or m5x7 font is missing; nothing was generated.");
+        var contents = PrefabUtility.LoadPrefabContents(Folder + "/LevelUpReward.prefab");
+        try
+        {
+            var card = (RectTransform)contents.transform.Find("Reward card");
+            if (card == null) throw new InvalidOperationException("Reward card not found.");
+            // Elevated window: fixed size centered like LevelUpPanel/Window but smaller, framed like it, with a drop shadow.
+            card.anchorMin = card.anchorMax = new Vector2(.5f, .5f); card.pivot = new Vector2(.5f, .5f);
+            card.anchoredPosition = Vector2.zero; card.sizeDelta = new Vector2(720, 640); // covers the level-up window help text, still smaller than the 1100x680 window
+            Frame(card.GetComponent<Image>(), box, .78125f);
+            var shadow = card.GetComponent<Shadow>() ?? card.gameObject.AddComponent<Shadow>(); shadow.effectColor = new Color(0, 0, 0, .65f); shadow.effectDistance = new Vector2(0, -16);
+            var heading = card.Find("Heading"); Anchor(heading, .06f, .82f, .94f, .94f); StyleLabel(heading.GetComponent<TMP_Text>(), 56);
+            foreach (string kind in new[] { "seed", "spell" })
+            {
+                var slot = card.Find(kind + " slot"); bool seed = kind == "seed";
+                Anchor(slot, .06f, seed ? .52f : .26f, .94f, seed ? .78f : .52f);
+                var frame = slot.GetComponent<Image>() ?? slot.gameObject.AddComponent<Image>(); Frame(frame, box, 1.5625f); frame.raycastTarget = false;
+                Anchor(slot.Find("Target icon"), .03f, .10f, .22f, .90f);
+                Anchor(slot.Find(kind + " label"), .26f, .05f, .96f, .95f); StyleLabel(slot.Find(kind + " label").GetComponent<TMP_Text>(), 40);
+            }
+            var cont = (RectTransform)card.Find("Continue");
+            cont.anchorMin = cont.anchorMax = new Vector2(.5f, .13f); cont.pivot = new Vector2(.5f, .5f);
+            cont.anchoredPosition = Vector2.zero; cont.sizeDelta = new Vector2(282, 54);
+            var action = cont.GetComponent<Image>(); action.sprite = craft; action.type = Image.Type.Simple; action.preserveAspect = true;
+            action.color = new Color(0.4764151f, 1f, 0.7947525f, 1f);
+            var label = cont.Find("Continue label"); label.GetComponent<RectTransform>().sizeDelta = new Vector2(-8, -4); StyleLabel(label.GetComponent<TMP_Text>(), 32);
+            var backdrop = contents.GetComponentInChildren<UIBackdrop>(true); backdrop.GetComponent<Image>().color = new Color(0, 0, 0, UIBackdrop.DimAlpha);
+            PrefabUtility.SaveAsPrefabAsset(contents, Folder + "/LevelUpReward.prefab");
+        }
+        finally { PrefabUtility.UnloadPrefabContents(contents); }
+        foreach (string path in new[] { CanvasPath, "Assets/Prefabs/UI/Game UI.prefab" })
+        {
+            var root = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                var controller = root.GetComponentInChildren<GameStateUIController>(true);
+                var backdrop = (UIBackdrop)new SerializedObject(controller).FindProperty("inventoryBackdrop").objectReferenceValue;
+                if (backdrop == null) throw new InvalidOperationException("Inventory backdrop not wired in " + path);
+                backdrop.GetComponent<Image>().color = new Color(0, 0, 0, UIBackdrop.DimAlpha);
+                PrefabUtility.SaveAsPrefabAsset(root, path);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(root); }
+        }
+        AssetDatabase.SaveAssets();
+        Debug.Log("Level-up reward card art applied; backdrops set to alpha " + UIBackdrop.DimAlpha);
+    }
+    private static void Frame(Image image, Sprite sprite, float density)
+    {
+        image.sprite = sprite; image.type = Image.Type.Sliced; image.color = Color.white; image.pixelsPerUnitMultiplier = density;
+    }
+    private static void Anchor(Transform t, float x0, float y0, float x1, float y1)
+    {
+        var r = (RectTransform)t; r.anchorMin = new Vector2(x0, y0); r.anchorMax = new Vector2(x1, y1); r.offsetMin = Vector2.zero; r.offsetMax = Vector2.zero;
+    }
+    private static void StyleLabel(TMP_Text label, float max)
+    {
+        label.font = font; label.fontSharedMaterial = font.material; label.color = Color.white;
+        label.enableVertexGradient = true; label.colorGradient = new VertexGradient(new Color(.2f, .2f, .2f, 1f));
+        label.enableAutoSizing = true; label.fontSizeMin = 24; label.fontSizeMax = max; label.fontSize = max;
+        label.margin = new Vector4(4, 2, 4, 2); label.raycastTarget = false;
+    }
     [MenuItem("Tools/Magic Garden/Replace inventory blur with shared backdrop (once)")]
     public static void ReplaceInventoryBlur()
     {
@@ -135,7 +206,7 @@ public static class UpgradeUIPrefabAuthoring
     {
         var rect = Rect("Backdrop", parent, Vector2.zero, Vector2.one);
         var image = rect.gameObject.AddComponent<Image>();
-        image.color = new Color(0f, 0f, 0f, .6f); image.raycastTarget = true;
+        image.color = new Color(0f, 0f, 0f, UIBackdrop.DimAlpha); image.raycastTarget = true;
         rect.gameObject.AddComponent<CanvasGroup>();
         return rect.gameObject.AddComponent<UIBackdrop>();
     }

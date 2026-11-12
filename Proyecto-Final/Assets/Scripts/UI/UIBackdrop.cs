@@ -5,6 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(CanvasGroup))]
 public sealed class UIBackdrop : MonoBehaviour
 {
+    // Opacity of the black dim image in every backdrop prefab; high enough that a light modal window behind it reads as a lower layer.
+    public const float DimAlpha = 0.8f;
     [SerializeField] private float showDuration = 0.08f;
     [SerializeField] private float hideDuration = 0.3f;
     private CanvasGroup group;
