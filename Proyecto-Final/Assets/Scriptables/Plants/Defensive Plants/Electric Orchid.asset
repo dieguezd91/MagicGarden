@@ -20,7 +20,7 @@ MonoBehaviour:
   daysToGrow: 1
   description: '<u>Defensive plant</u>. Deals damage to enemies that attack it. <u>WARNING:
     Infermun is immune</u>.'
-  seedType: 7
+  seedType: 8
   slotIndex: 0
   hasDeathAnimation: 1
   spriteFacesLeft: 0

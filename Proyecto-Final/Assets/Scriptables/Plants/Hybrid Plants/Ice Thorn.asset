@@ -19,7 +19,7 @@ MonoBehaviour:
   fullyGrownSprite: {fileID: 430904352, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
   daysToGrow: 1
   description: <u>Defensive plant</u>. Shoots at enemies within range.
-  seedType: 14
+  seedType: 11
   slotIndex: 0
   hasDeathAnimation: 1
   spriteFacesLeft: 1

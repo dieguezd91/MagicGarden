@@ -30,22 +30,12 @@ MonoBehaviour:
     - {fileID: 11400000, guid: ac4055a8306342c5ba741947bfff0d00, type: 2}
   - experienceRequired: 360
     plantUnlocks:
-    - {fileID: 11400000, guid: 57190e9e1a6a8694ab2eb9ee977af22b, type: 2}
+    - {fileID: 11400000, guid: 20dce32adbdb5be4c9c66d28ffe0b695, type: 2}
     spellUnlocks:
     - {fileID: 11400000, guid: 2a565f690d1c4491aead3cdf403ef160, type: 2}
   - experienceRequired: 480
     plantUnlocks:
-    - {fileID: 11400000, guid: 23eb498058265294086e4364fb9f4c73, type: 2}
+    - {fileID: 11400000, guid: 4da0072fd11f4b241b6294dc07b14cab, type: 2}
     spellUnlocks:
     - {fileID: 11400000, guid: fc26c611669a45dfa1d596f871fc745a, type: 2}
-  cumulativeThresholds:
-  - 0
-  - 100
-  - 250
-  - 450
-  - 750
-  - 1200
-  - 1800
-  - 2600
-  - 3500
-  - 4500
+  cumulativeThresholds: 0000000064000000fa000000c2010000ee020000b004000008070000280a0000ac0d000094110000
