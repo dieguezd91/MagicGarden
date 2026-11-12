@@ -317,7 +317,7 @@ MonoBehaviour:
   attackCooldown: 2.5
   idleSoundMinTime: 3
   idleSoundMaxTime: 10
-  rangedData: {fileID: 11400000, guid: 0a0aec17e701e1c4e9f6d81771b6457c, type: 2}
+  rangedData: {fileID: 11400000, guid: 51f49a9a66b7a6841a9ec2cd206c66c0, type: 2}
   isIceEnemy: 1
   firingPoint: {fileID: 1303027347511237169}
 --- !u!114 &935879750160187858
