@@ -391,6 +391,43 @@ public sealed class InventoryBaselineTests
         finally { Lifecycle(unlocks, "OnDisable"); }
     }
 
+    [Test]
+    public void LevelUpRecordsOnlyNewlyUnlockedRewardsPerLevelAndResetClearsThem()
+    {
+        var spells = Component("SpellInventory");
+        var xp = Experience(out var progression);
+        var plant1 = Plant(1);
+        var plant2 = Plant(2);
+        var spell1 = Spell(0);
+        var spell2 = Spell(1);
+        var levels = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(Production("ExperienceLevelData")));
+        levels.Add(Activator.CreateInstance(Production("ExperienceLevelData"), 100, TypedList("PlantDataSO", new object[] { plant1 }), TypedList("SpellDataSO", new object[] { spell1 })));
+        levels.Add(Activator.CreateInstance(Production("ExperienceLevelData"), 250, TypedList("PlantDataSO", new object[] { plant1, plant2 }), TypedList("SpellDataSO", new object[] { spell1, spell2 })));
+        levels.Add(Activator.CreateInstance(Production("ExperienceLevelData"), 400, TypedList("PlantDataSO", new object[] { plant1 }), TypedList("SpellDataSO", new object[] { spell1 })));
+        Set(progression, "levelRequirements", levels);
+        var unlocks = xp.gameObject.AddComponent(Production("PlayerContentUnlockSystem"));
+        Set(unlocks, "playerExperienceSystem", xp);
+        Set(unlocks, "spellInventory", spells);
+        Lifecycle(unlocks, "OnEnable");
+        try
+        {
+            Call(unlocks, "RebuildUnlocksUpToLevel", 1);
+            Assert.That(Call(unlocks, "GetLevelReward", 1), Is.Null, "rebuild is not a level-up reward");
+            Call(xp, "AddExperience", 100);
+            var reward = Call(unlocks, "GetLevelReward", 2);
+            Assert.That(reward, Is.Not.Null);
+            Assert.That((IEnumerable)Property(reward, "Plants"), Is.EqualTo(new object[] { plant2 }));
+            Assert.That((IEnumerable)Property(reward, "Spells"), Is.EqualTo(new object[] { spell2 }));
+            Assert.That(Property(reward, "Level"), Is.EqualTo(2));
+            Call(xp, "AddExperience", 10000);
+            Assert.That((int)Property(xp, "CurrentLevel"), Is.GreaterThanOrEqualTo(3));
+            Assert.That(Call(unlocks, "GetLevelReward", 3), Is.Null, "level with only already-unlocked content has no reward");
+            Call(xp, "ResetProgression");
+            Assert.That(Call(unlocks, "GetLevelReward", 2), Is.Null);
+        }
+        finally { Lifecycle(unlocks, "OnDisable"); }
+    }
+
     private static IList TypedList(string type, object[] values)
     {
         var list = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(Production(type)));

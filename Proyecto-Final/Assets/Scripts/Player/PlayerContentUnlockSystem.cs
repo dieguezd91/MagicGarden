@@ -13,6 +13,7 @@ public class PlayerContentUnlockSystem : MonoBehaviour
     private readonly HashSet<SpellDataSO> unlockedSpells = new HashSet<SpellDataSO>();
     private readonly HashSet<SeedsEnum> deliveredSeeds = new HashSet<SeedsEnum>();
     private readonly List<PlantDataSO> pendingSeeds = new List<PlantDataSO>();
+    private readonly Dictionary<int, LevelUnlockReward> levelRewards = new Dictionary<int, LevelUnlockReward>();
     private SeedInventory seedInventory;
     private bool deliveringSeeds;
 
@@ -214,6 +215,7 @@ public class PlayerContentUnlockSystem : MonoBehaviour
                 {
                     if (unlockedPlants.Add(plant.seedType))
                     {
+                        RewardFor(level).AddPlant(plant);
                         QueueSeeds(plant);
                         DeliverPendingSeeds();
                         OnPlantUnlocked?.Invoke(plant);
@@ -232,6 +234,7 @@ public class PlayerContentUnlockSystem : MonoBehaviour
                 {
                     if (unlockedSpells.Add(spell))
                     {
+                        RewardFor(level).AddSpell(spell);
                         if (spellInventory != null)
                         {
                             spellInventory.UnlockSpell(spell);
@@ -243,8 +246,20 @@ public class PlayerContentUnlockSystem : MonoBehaviour
         }
     }
 
+    // Content newly unlocked by reaching this level; null when the level granted nothing new.
+    public LevelUnlockReward GetLevelReward(int level) =>
+        levelRewards.TryGetValue(level, out var reward) ? reward : null;
+
+    private LevelUnlockReward RewardFor(int level)
+    {
+        if (!levelRewards.TryGetValue(level, out var reward))
+            levelRewards[level] = reward = new LevelUnlockReward(level);
+        return reward;
+    }
+
     private void HandleProgressionReset()
     {
+        levelRewards.Clear();
         deliveredSeeds.Clear();
         pendingSeeds.Clear();
         int resetLevel = playerExperienceSystem != null ? playerExperienceSystem.CurrentLevel : 1;

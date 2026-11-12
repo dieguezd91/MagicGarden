@@ -17,6 +17,8 @@ public sealed class UpgradeRuntime : MonoBehaviour
     private readonly Dictionary<string, ScalingProfile> profiles = new Dictionary<string, ScalingProfile>();
     private readonly System.Random random = new System.Random();
     private PlayerExperienceSystem experience;
+    private int lastRewardLevel;
+    private LevelUpIndicator indicator;
     private LifeController playerLife;
     private PlayerMovementController movement;
     private PauseController pause;
@@ -26,7 +28,7 @@ public sealed class UpgradeRuntime : MonoBehaviour
     private float savedScale;
     public float OwnedTimeScale => savedScale;
     private float baseHealth;
-    private bool choosing, buying;
+    private bool choosing, buying, awaitingReward;
     private readonly List<Behaviour> suspendedInteractions = new List<Behaviour>();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -56,6 +58,7 @@ public sealed class UpgradeRuntime : MonoBehaviour
         experience = FindObjectOfType<PlayerExperienceSystem>();
         if (experience == null) { Debug.LogError("Magic Garden requires the scene's PlayerExperienceSystem."); enabled = false; return; }
         playerLife = experience.GetComponent<LifeController>();
+        indicator = experience.GetComponentInChildren<LevelUpIndicator>(true); // Optional feedback: a missing one never blocks the flow.
         movement = experience.GetComponent<PlayerMovementController>();
         pause = FindObjectOfType<PauseController>();
         baseHealth = playerLife != null ? playerLife.maxHealth : 0;
@@ -92,6 +95,8 @@ public sealed class UpgradeRuntime : MonoBehaviour
         if (tutorial != null && tutorial.IsTutorialActive() &&
             (tutorial.IsPlayerGated() || !tutorial.CanAcceptPlayerInput() ||
              tutorial.GetCurrentObjectiveType() == TutorialObjectiveType.Wait || (tutorialUI != null && tutorialUI.IsTyping))) return;
+        // The level-up icon above the player plays first; the unlock/upgrade modals open once it finished.
+        if (indicator != null && indicator.IsPlaying) return;
         if (!flow.Open(UIModal.LevelUp)) return;
         savedScale = Time.timeScale;
         choosing = true;
@@ -110,15 +115,39 @@ public sealed class UpgradeRuntime : MonoBehaviour
         foreach (var consumer in FindObjectsOfType<T>())
             if (consumer.enabled) { suspendedInteractions.Add(consumer); consumer.enabled = false; }
     }
+    // Pending choices are consumed oldest first, so the shown choice belongs to the earliest unconsumed level.
+    public static int LevelForPendingChoice(int currentLevel, int pendingChoices) => currentLevel - pendingChoices + 1;
+    // Per pending level: the reward modal alone (when the level unlocked content), then that level's upgrade choices.
     private void ShowNextChoice()
     {
+        awaitingReward = false;
         RefreshTargets();
         offers = OfferSelector.Select(State, targets, Balance, random);
+        int level = LevelForPendingChoice(experience.CurrentLevel, experience.PendingChoices);
+        LevelUnlockReward reward = null;
+        if (level != lastRewardLevel)
+        {
+            lastRewardLevel = level;
+            var unlocks = experience.GetComponent<PlayerContentUnlockSystem>();
+            reward = unlocks != null ? unlocks.GetLevelReward(level) : null;
+        }
+        if (reward != null && reward.HasContent && panel.ShowReward(reward))
+        {
+            awaitingReward = true;
+            return;
+        }
+        panel.ShowChoices(offers, experience.PendingChoices);
+    }
+    // The player closed the reward modal: only now do the upgrade choices for the same level appear.
+    public void RewardContinued()
+    {
+        if (!choosing || !awaitingReward) return;
+        awaitingReward = false;
         panel.ShowChoices(offers, experience.PendingChoices);
     }
     public void Choose(int index)
     {
-        if (!choosing || experience.PendingChoices <= 0) return;
+        if (!choosing || awaitingReward || experience.PendingChoices <= 0) return;
         if (offers.Count == 0)
         {
             experience.ConsumeChoice(); // Explicit Continue for exhausted pools, never silently soft-lock.
@@ -137,15 +166,19 @@ public sealed class UpgradeRuntime : MonoBehaviour
         if (experience.PendingChoices > 0) ShowNextChoice();
         else ReleaseChoice();
     }
-    private void ReleaseChoice()
+    // animate=false while the runtime itself is going away: nothing may start a tween then.
+    private void ReleaseChoice(bool animate = true)
     {
         if (!choosing) return;
         choosing = false;
+        awaitingReward = false;
+        lastRewardLevel = 0; // An interrupted choice shows its reward again when it reopens.
+
         if (GameFlowController.Instance != null) GameFlowController.Instance.IsChoosingUpgrade = false;
         UIManager.Instance?.Flow?.Close(UIModal.LevelUp);
         foreach (var interaction in suspendedInteractions) if (interaction != null) interaction.enabled = true;
         suspendedInteractions.Clear();
-        panel?.Hide();
+        if (animate) panel?.Hide(); else panel?.HideImmediate();
         if (pause == null || !pause.IsPaused) Time.timeScale = savedScale;
     }
     private void PhaseChanged(GamePhase phase)
@@ -154,7 +187,7 @@ public sealed class UpgradeRuntime : MonoBehaviour
         if (phase == GamePhase.GameOver || phase == GamePhase.MainMenu) ReleaseChoice();
         if (panel != null && panel.IsShopOpen && phase != GamePhase.Day) panel.CloseShop();
     }
-    private void OnDisable() { ReleaseChoice(); panel?.CloseShop(); }
+    private void OnDisable() { ReleaseChoice(false); panel?.CloseShop(); }
     private void OnDestroy()
     {
         UIEvents.OnCraftingUIToggleRequested -= ToggleShop;
@@ -165,6 +198,7 @@ public sealed class UpgradeRuntime : MonoBehaviour
     }
     private void ResetRun()
     {
+        lastRewardLevel = 0;
         ReleaseChoice();
         State.Clear();
         RefreshPlayerHealth();
@@ -271,7 +305,7 @@ public sealed class UpgradeRuntime : MonoBehaviour
         }
     }
     public void CloseShop() => panel?.CloseShop();
-    public void PanelDisabled() => ReleaseChoice();
+    public void PanelDisabled() => ReleaseChoice(false); // the panel is already going away: no close tween
     public bool CanPurchase(SpecialDefinition definition, Target target)
     {
         return !buying && !choosing && target != null && FindTarget(target.Id) != null &&

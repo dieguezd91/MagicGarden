@@ -7,6 +7,10 @@ public sealed class UpgradePanel : MonoBehaviour
 {
     [SerializeField] private LevelUpPanelView levelUpView;
     [SerializeField] private SpecialUpgradePanelView shopView;
+    [Tooltip("Optional: shows the seeds/spells unlocked by the level, alone, before its upgrade choice.")]
+    [SerializeField] private LevelUpRewardView rewardView;
+    [Tooltip("One blur backdrop for the whole level-up session: it fades in with the first modal (reward or upgrades), stays while they replace each other and fades out when the session ends. Drawn behind both modals.")]
+    [SerializeField] private UIBackdrop sessionBackdrop;
     private UpgradeRuntime runtime;
     private bool shopRefresh, hiding;
     private readonly List<SpecialDefinition> shopDefinitions = new List<SpecialDefinition>();
@@ -14,7 +18,7 @@ public sealed class UpgradePanel : MonoBehaviour
     public bool IsShopOpen { get; private set; }
     public bool IsReady => isActiveAndEnabled && levelUpView != null && levelUpView.IsConfigured && shopView != null && shopView.IsConfigured;
 
-    private void Awake() => Hide();
+    private void Awake() => HideImmediate();
     public bool Initialize(UpgradeRuntime owner)
     {
         if (owner == null || !IsReady || (runtime != null && runtime != owner))
@@ -23,24 +27,35 @@ public sealed class UpgradePanel : MonoBehaviour
             return false;
         }
         if (runtime == owner) return true;
+        if (sessionBackdrop == null) Debug.LogWarning("Level-up session backdrop is not wired on Canvas Game UI; the level-up modals show without blur.", this);
         runtime = owner;
         levelUpView.Selected += Select;
         levelUpView.Hidden += ViewHidden;
         shopView.Purchased += Purchase;
         shopView.Closed += CloseShop;
         shopView.Hidden += ViewHidden;
-        Hide();
+        if (rewardView != null) rewardView.Continued += RewardContinued;
+        HideImmediate();
         return true;
     }
     public void Unbind(UpgradeRuntime owner)
     {
         if (runtime != owner) return;
-        Hide();
+        HideImmediate();
         if (levelUpView != null) { levelUpView.Selected -= Select; levelUpView.Hidden -= ViewHidden; }
         if (shopView != null) { shopView.Purchased -= Purchase; shopView.Closed -= CloseShop; shopView.Hidden -= ViewHidden; }
+        if (rewardView != null) rewardView.Continued -= RewardContinued;
         runtime = null;
     }
-    private void Select(int index) => runtime?.Choose(index);
+    // The reward is shown alone; selection is only possible once Continue brought the choices up.
+    // Also blocked while the choices are still popping in or closing.
+    private void Select(int index)
+    {
+        if (rewardView != null && (rewardView.IsVisible || rewardView.IsAnimating)) return;
+        if (levelUpView != null && levelUpView.IsAnimating) return;
+        runtime?.Choose(index);
+    }
+    private void RewardContinued() => runtime?.RewardContinued();
     public void RequestShopRefresh() { if (IsShopOpen) shopRefresh = true; }
     private static Color ColorFor(Rarity rarity)
     {
@@ -52,11 +67,26 @@ public sealed class UpgradePanel : MonoBehaviour
             default: return new Color(0.65f, 0.85f, 0.65f);
         }
     }
+    // Shows the level's unlocks over their backdrop with the upgrade panel hidden; false when there is nothing to show.
+    public bool ShowReward(LevelUnlockReward reward)
+    {
+        if (!IsReady || runtime == null || reward == null || !reward.HasContent) return false;
+        if (rewardView == null || !rewardView.IsConfigured)
+        {
+            Debug.LogWarning("Level-up reward view is not wired on Canvas Game UI; reward card skipped.", this);
+            return false;
+        }
+        IsShopOpen = false;
+        HideViews();
+        if (!rewardView.Show(reward)) return false;
+        sessionBackdrop?.Show();
+        return true;
+    }
     public void ShowChoices(IList<Offer> offers, int pending)
     {
         if (!IsReady || runtime == null) { WiringFailure(); return; }
         IsShopOpen = false;
-        Hide();
+        HideViews(); // the session backdrop stays: this modal replaces the reward (or the previous level's choices) behind the same blur
         var data = new List<LevelUpCardData>();
         foreach (var offer in offers)
             data.Add(new LevelUpCardData
@@ -66,6 +96,7 @@ public sealed class UpgradePanel : MonoBehaviour
                 Bonus = offer.Rule.stat == Stat.Quantity ? "+1" : $"+{offer.Rarity.bonus * offer.Target.Ratio(offer.Rule.stat) * 100:0.##}% base",
                 Preview = $"{offer.Before:0.###} → {offer.After:0.###}" + (offer.Rule.stat == Stat.AttackSpeed ? " attacks/s" : "")
             });
+        sessionBackdrop?.Show();
         if (!levelUpView.Show(data, pending)) WiringFailure();
     }
     public void ShowShop() => DisplayShop(true);
@@ -75,7 +106,7 @@ public sealed class UpgradePanel : MonoBehaviour
         if (!IsReady || runtime == null) { WiringFailure(); return; }
         shopRefresh = false;
         newOpen |= !shopView.gameObject.activeInHierarchy;
-        if (newOpen) Hide();
+        if (newOpen) HideImmediate();
         IsShopOpen = true;
         shopDefinitions.Clear(); shopTargets.Clear();
         var items = new List<SpecialUpgradeItemData>();
@@ -118,10 +149,24 @@ public sealed class UpgradePanel : MonoBehaviour
         UIEvents.TriggerCraftingUIClosed();
         TutorialEvents.InvokeCraftingClosed();
     }
+    // Closes whatever is open and ends the level-up session; the modals fade/scale out and the backdrop fades out in Play Mode.
     public void Hide()
     {
         hiding = true;
-        try { levelUpView?.Hide(); shopView?.Hide(); }
+        try { rewardView?.Hide(); levelUpView?.Hide(); shopView?.Hide(); sessionBackdrop?.Hide(); }
+        finally { hiding = false; }
+    }
+    // Tears everything down without animation, backdrop included.
+    public void HideImmediate()
+    {
+        HideViews();
+        sessionBackdrop?.HideImmediate();
+    }
+    // Replaces one modal by another: no close animation, the next Show animates in. The session backdrop is left alone.
+    private void HideViews()
+    {
+        hiding = true;
+        try { rewardView?.HideImmediate(); levelUpView?.HideImmediate(); shopView?.Hide(); }
         finally { hiding = false; }
     }
     private void WiringFailure()
@@ -131,7 +176,7 @@ public sealed class UpgradePanel : MonoBehaviour
         // A missing shop view must not leave the modal/input owner open either.
         if (IsShopOpen) CloseShop();
         else UIManager.Instance?.Flow?.Close(UIModal.Crafting);
-        Hide();
+        HideImmediate();
     }
     private void ViewHidden()
     {

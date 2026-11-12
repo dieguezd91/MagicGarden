@@ -208,6 +208,105 @@ public class UpgradeUIIntegrationTests
         Call(presenter, "Unbind", owner);
         Assert.That(Field(level, "Selected"), Is.Null); Assert.That(Field(shop, "Closed"), Is.Null);
     }
+    private object Reward(int level, string plantName, string spellName)
+    {
+        var reward = Activator.CreateInstance(Production("LevelUnlockReward"), level);
+        const BindingFlags any = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        if (plantName != null)
+        {
+            var plant = ScriptableObject.CreateInstance(Production("PlantDataSO")); created.Add(plant);
+            plant.GetType().GetField("plantName").SetValue(plant, plantName);
+            reward.GetType().GetMethod("AddPlant", any).Invoke(reward, new object[] { plant });
+        }
+        if (spellName != null)
+        {
+            var spell = ScriptableObject.CreateInstance(Production("SpellDataSO")); created.Add(spell);
+            spell.GetType().GetField("spellName", any).SetValue(spell, spellName);
+            reward.GetType().GetMethod("AddSpell", any).Invoke(reward, new object[] { spell });
+        }
+        return reward;
+    }
+    [Test] public void RewardCardShowsLevelSeedAndSpellAndContinueHidesItOnce()
+    {
+        var view = Clone("LevelUpReward", "LevelUpRewardView");
+        Assert.That(Property(view, "IsConfigured"), Is.True);
+        int continued = 0;
+        Listen(view, "Continued", (Action)(() => continued++));
+        Assert.That(Call(view, "Show", new object[] { null }), Is.False);
+        Assert.That(Call(view, "Show", Reward(3, "Sunflower", "Fireball")), Is.True);
+        Assert.That(Property(view, "IsVisible"), Is.True);
+        Assert.That((string)Property(Field(view, "headingLabel"), "text"), Does.Contain("3"));
+        Assert.That((string)Property(Field(view, "seedLabel"), "text"), Does.Contain("Sunflower"));
+        Assert.That((string)Property(Field(view, "spellLabel"), "text"), Does.Contain("Fireball"));
+        Click(Field(view, "continueButton")); Click(Field(view, "continueButton"));
+        Assert.That(continued, Is.EqualTo(1));
+        Assert.That(Property(view, "IsVisible"), Is.False);
+        Assert.That(Call(view, "Show", Reward(4, null, "Ice")), Is.True);
+        Assert.That(((GameObject)Field(view, "seedSlot")).activeSelf, Is.False);
+        Assert.That(((GameObject)Field(view, "spellSlot")).activeSelf, Is.True);
+    }
+    [Test] public void RewardHideWhileInactiveIsImmediateAndSafeAndHideAfterShowIsImmediateOutsidePlayMode()
+    {
+        var view = Clone("LevelUpReward", "LevelUpRewardView");
+        view.gameObject.SetActive(false);
+        Assert.DoesNotThrow(() => Call(view, "Hide"));
+        Assert.That(Property(view, "IsVisible"), Is.False); Assert.That(Property(view, "IsAnimating"), Is.False);
+        Assert.That(Call(view, "Show", Reward(3, "Sunflower", null)), Is.True);
+        Assert.That(Property(view, "IsAnimating"), Is.False, "EditMode snaps instead of tweening");
+        Assert.That(((CanvasGroup)Field(view, "group")).alpha, Is.EqualTo(1f));
+        Assert.That(((RectTransform)Field(view, "content")).localScale, Is.EqualTo(Vector3.one));
+        Call(view, "Hide");
+        Assert.That(Property(view, "IsVisible"), Is.False);
+    }
+    [Test] public void LevelUpPanelHideWhileInactiveIsImmediateAndNeverRaisesHidden()
+    {
+        var view = Clone("LevelUpPanel", "LevelUpPanelView");
+        int hidden = 0; Listen(view, "Hidden", (Action)(() => hidden++));
+        view.gameObject.SetActive(false); hidden = 0;
+        Assert.DoesNotThrow(() => Call(view, "Hide"));
+        Assert.That(Property(view, "IsVisible"), Is.False); Assert.That(hidden, Is.Zero);
+        Assert.That(Call(view, "Show", DataList("LevelUpCardData", 3), 2), Is.True);
+        Assert.That(Property(view, "IsAnimating"), Is.False); Assert.That(((CanvasGroup)Field(view, "group")).alpha, Is.EqualTo(1f));
+        Call(view, "Hide");
+        Assert.That(Property(view, "IsVisible"), Is.False); Assert.That(hidden, Is.Zero, "closing through Hide is not an external disable");
+    }
+    [Test] public void RewardHasContentOnlyWhenItUnlocksASeedOrASpell()
+    {
+        Assert.That(Property(Reward(3, null, null), "HasContent"), Is.False);
+        Assert.That(Property(Reward(3, "Sunflower", null), "HasContent"), Is.True);
+        Assert.That(Property(Reward(4, null, "Ice"), "HasContent"), Is.True);
+    }
+    [Test] public void RewardPrefabIsNestedAboveLevelUpPanelInCanvas()
+    {
+        var canvas = AssetDatabase.LoadAssetAtPath<GameObject>(CanvasPath);
+        var presenter = View(canvas, "UpgradePanel");
+        var reward = (Component)Field(presenter, "rewardView");
+        var level = (Component)Field(presenter, "levelUpView");
+        Assert.That(reward, Is.Not.Null);
+        Assert.That(reward.transform.parent, Is.SameAs(level.transform.parent));
+        Assert.That(reward.transform.GetSiblingIndex(), Is.GreaterThan(level.transform.GetSiblingIndex()));
+        Assert.That(reward.gameObject.activeSelf, Is.False);
+    }
+    [TestCase(5, 1, 5)]
+    [TestCase(5, 3, 3)]
+    public void PendingChoiceMapsToTheLevelThatGrantedIt(int current, int pending, int expected)
+    {
+        var method = Production("UpgradeRuntime").GetMethod("LevelForPendingChoice", BindingFlags.Public | BindingFlags.Static);
+        Assert.That(method.Invoke(null, new object[] { current, pending }), Is.EqualTo(expected));
+    }
+    [TestCase("Assets/Prefabs/UI/Canvas/Canvas Game UI.prefab")]
+    [TestCase("Assets/Prefabs/UI/Game UI.prefab")]
+    public void InventoryUsesSharedBackdropInsteadOfDepthOfFieldBlur(string path)
+    {
+        var root = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+        var controller = root.GetComponentInChildren(Production("GameStateUIController"), true);
+        Assert.That(controller, Is.Not.Null);
+        Assert.That(controller.GetType().GetField("blurVolume", BindingFlags.Instance | BindingFlags.NonPublic), Is.Null);
+        var backdrop = (Component)Field(controller, "inventoryBackdrop");
+        Assert.That(backdrop, Is.Not.Null);
+        Assert.That(backdrop.GetType().Name, Is.EqualTo("UIBackdrop"));
+        Assert.That(backdrop.transform.IsChildOf(root.transform), Is.True);
+    }
     [Test] public void UnwiredViewsRejectDisplayWithoutConstructingFallbackObjects()
     {
         var root = new GameObject("Unwired view"); created.Add(root);
