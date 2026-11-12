@@ -7,6 +7,8 @@ public sealed class UpgradePanel : MonoBehaviour
 {
     [SerializeField] private LevelUpPanelView levelUpView;
     [SerializeField] private SpecialUpgradePanelView shopView;
+    [Tooltip("Optional: shows the seeds/spells unlocked by the level before its upgrade choice.")]
+    [SerializeField] private LevelUpRewardView rewardView;
     private UpgradeRuntime runtime;
     private bool shopRefresh, hiding;
     private readonly List<SpecialDefinition> shopDefinitions = new List<SpecialDefinition>();
@@ -29,6 +31,7 @@ public sealed class UpgradePanel : MonoBehaviour
         shopView.Purchased += Purchase;
         shopView.Closed += CloseShop;
         shopView.Hidden += ViewHidden;
+        if (rewardView != null) rewardView.Continued += RewardContinued;
         Hide();
         return true;
     }
@@ -38,9 +41,12 @@ public sealed class UpgradePanel : MonoBehaviour
         Hide();
         if (levelUpView != null) { levelUpView.Selected -= Select; levelUpView.Hidden -= ViewHidden; }
         if (shopView != null) { shopView.Purchased -= Purchase; shopView.Closed -= CloseShop; shopView.Hidden -= ViewHidden; }
+        if (rewardView != null) rewardView.Continued -= RewardContinued;
         runtime = null;
     }
-    private void Select(int index) => runtime?.Choose(index);
+    // Cards stay visible but dimmed behind the reward; selection only after Continue.
+    private void Select(int index) { if (rewardView == null || !rewardView.IsVisible) runtime?.Choose(index); }
+    private void RewardContinued() => levelUpView.FocusFirst();
     public void RequestShopRefresh() { if (IsShopOpen) shopRefresh = true; }
     private static Color ColorFor(Rarity rarity)
     {
@@ -52,7 +58,8 @@ public sealed class UpgradePanel : MonoBehaviour
             default: return new Color(0.65f, 0.85f, 0.65f);
         }
     }
-    public void ShowChoices(IList<Offer> offers, int pending)
+    public void ShowChoices(IList<Offer> offers, int pending) => ShowChoices(offers, pending, null);
+    public void ShowChoices(IList<Offer> offers, int pending, LevelUnlockReward reward)
     {
         if (!IsReady || runtime == null) { WiringFailure(); return; }
         IsShopOpen = false;
@@ -66,7 +73,10 @@ public sealed class UpgradePanel : MonoBehaviour
                 Bonus = offer.Rule.stat == Stat.Quantity ? "+1" : $"+{offer.Rarity.bonus * offer.Target.Ratio(offer.Rule.stat) * 100:0.##}% base",
                 Preview = $"{offer.Before:0.###} → {offer.After:0.###}" + (offer.Rule.stat == Stat.AttackSpeed ? " attacks/s" : "")
             });
-        if (!levelUpView.Show(data, pending)) WiringFailure();
+        if (!levelUpView.Show(data, pending)) { WiringFailure(); return; }
+        if (reward == null) return;
+        if (rewardView == null || !rewardView.Show(reward))
+            Debug.LogWarning("Level-up reward view is not wired on Canvas Game UI; reward card skipped.", this);
     }
     public void ShowShop() => DisplayShop(true);
     private void RefreshShop() => DisplayShop(false);
@@ -121,7 +131,7 @@ public sealed class UpgradePanel : MonoBehaviour
     public void Hide()
     {
         hiding = true;
-        try { levelUpView?.Hide(); shopView?.Hide(); }
+        try { rewardView?.Hide(); levelUpView?.Hide(); shopView?.Hide(); }
         finally { hiding = false; }
     }
     private void WiringFailure()

@@ -42,6 +42,12 @@ public sealed class LevelUpPanelView : MonoBehaviour
         EventSystem.current?.SetSelectedGameObject(empty ? continueButton.gameObject : cards[0].SelectButton.gameObject);
         return true;
     }
+    public void FocusFirst()
+    {
+        if (!IsVisible) return;
+        var target = continueButton.gameObject.activeSelf ? continueButton.gameObject : cards[0].SelectButton.gameObject;
+        EventSystem.current?.SetSelectedGameObject(target);
+    }
     private void Select(int index) => Selected?.Invoke(index);
     private void Continue() => Selected?.Invoke(-1);
     public void Hide() { if (root != null) root.SetActive(false); }

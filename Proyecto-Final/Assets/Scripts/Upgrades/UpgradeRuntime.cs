@@ -17,6 +17,7 @@ public sealed class UpgradeRuntime : MonoBehaviour
     private readonly Dictionary<string, ScalingProfile> profiles = new Dictionary<string, ScalingProfile>();
     private readonly System.Random random = new System.Random();
     private PlayerExperienceSystem experience;
+    private int lastRewardLevel;
     private LifeController playerLife;
     private PlayerMovementController movement;
     private PauseController pause;
@@ -110,11 +111,21 @@ public sealed class UpgradeRuntime : MonoBehaviour
         foreach (var consumer in FindObjectsOfType<T>())
             if (consumer.enabled) { suspendedInteractions.Add(consumer); consumer.enabled = false; }
     }
+    // Pending choices are consumed oldest first, so the shown choice belongs to the earliest unconsumed level.
+    public static int LevelForPendingChoice(int currentLevel, int pendingChoices) => currentLevel - pendingChoices + 1;
     private void ShowNextChoice()
     {
         RefreshTargets();
         offers = OfferSelector.Select(State, targets, Balance, random);
-        panel.ShowChoices(offers, experience.PendingChoices);
+        int level = LevelForPendingChoice(experience.CurrentLevel, experience.PendingChoices);
+        LevelUnlockReward reward = null;
+        if (level != lastRewardLevel)
+        {
+            lastRewardLevel = level;
+            var unlocks = experience.GetComponent<PlayerContentUnlockSystem>();
+            reward = unlocks != null ? unlocks.GetLevelReward(level) : null;
+        }
+        panel.ShowChoices(offers, experience.PendingChoices, reward);
     }
     public void Choose(int index)
     {
@@ -165,6 +176,7 @@ public sealed class UpgradeRuntime : MonoBehaviour
     }
     private void ResetRun()
     {
+        lastRewardLevel = 0;
         ReleaseChoice();
         State.Clear();
         RefreshPlayerHealth();

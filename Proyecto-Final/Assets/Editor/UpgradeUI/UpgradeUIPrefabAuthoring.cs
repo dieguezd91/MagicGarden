@@ -56,6 +56,69 @@ public static class UpgradeUIPrefabAuthoring
         Debug.Log("Upgrade UI authoring complete: four persistent prefabs, three nested card sources, two nested panels, existing Canvas only.");
     }
 
+    [MenuItem("Tools/Magic Garden/Create level-up reward prefab (once)")]
+    public static void GenerateReward()
+    {
+        string path = Folder + "/LevelUpReward.prefab";
+        if (File.Exists(path)) throw new InvalidOperationException("LevelUpReward already exists. Edit it in the Inspector; this helper will not overwrite it.");
+        font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Plugins/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset");
+        if (font == null) throw new InvalidOperationException("Existing TMP font is missing; no replacement font generated.");
+        var root = Rect("LevelUpReward", null, Vector2.zero, Vector2.one);
+        GameObject prefab;
+        try
+        {
+            var view = root.gameObject.AddComponent<LevelUpRewardView>();
+            Ref(view, "root", root.gameObject);
+            Ref(view, "backdrop", CreateBackdrop(root));
+            var card = Rect("Reward card", root, new Vector2(.35f, .22f), new Vector2(.65f, .78f));
+            Background(card, true);
+            Ref(view, "headingLabel", Label("Heading", card, "LEVEL N — New unlocks", .05f, .82f, .95f, .96f, 36));
+            Slot(view, card, "seed", "Seed: name", .54f, .78f);
+            Slot(view, card, "spell", "Spell: name", .28f, .52f);
+            var continueRect = Rect("Continue", card, new Vector2(.25f, .05f), new Vector2(.75f, .19f));
+            var button = Button(continueRect);
+            button.navigation = new Navigation { mode = Navigation.Mode.None };
+            Ref(view, "continueButton", button);
+            Label("Continue label", continueRect, "Continue", 0, 0, 1, 1, 32);
+            root.gameObject.SetActive(false);
+            prefab = Save(root, "LevelUpReward");
+        }
+        finally { UnityEngine.Object.DestroyImmediate(root.gameObject); }
+        var canvas = PrefabUtility.LoadPrefabContents(CanvasPath);
+        try
+        {
+            var presenter = canvas.GetComponent<UpgradePanel>();
+            if (presenter == null) throw new InvalidOperationException("Canvas has no UpgradePanel presenter.");
+            var serialized = new SerializedObject(presenter);
+            var level = (Component)serialized.FindProperty("levelUpView").objectReferenceValue;
+            if (level == null) throw new InvalidOperationException("UpgradePanel.levelUpView is not wired.");
+            var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, level.transform.parent);
+            instance.transform.SetSiblingIndex(level.transform.GetSiblingIndex() + 1);
+            Ref(presenter, "rewardView", instance.GetComponent<LevelUpRewardView>());
+            PrefabUtility.SaveAsPrefabAsset(canvas, CanvasPath);
+        }
+        finally { PrefabUtility.UnloadPrefabContents(canvas); }
+        AssetDatabase.SaveAssets();
+        Debug.Log("Level-up reward prefab authored and nested above LevelUpPanel: " + path);
+    }
+    // Shared dimmed backdrop (UIBackdrop): full-screen dark image that also blocks clicks to UI behind it.
+    public static UIBackdrop CreateBackdrop(RectTransform parent)
+    {
+        var rect = Rect("Backdrop", parent, Vector2.zero, Vector2.one);
+        var image = rect.gameObject.AddComponent<Image>();
+        image.color = new Color(0f, 0f, 0f, .6f); image.raycastTarget = true;
+        rect.gameObject.AddComponent<CanvasGroup>();
+        return rect.gameObject.AddComponent<UIBackdrop>();
+    }
+    private static void Slot(LevelUpRewardView view, RectTransform card, string kind, string text, float y0, float y1)
+    {
+        var slot = Rect(kind + " slot", card, new Vector2(.05f, y0), new Vector2(.95f, y1));
+        Ref(view, kind + "Slot", slot.gameObject);
+        Ref(view, kind + "Icon", Icon(slot, new Vector2(0, .05f), new Vector2(.28f, .95f)));
+        var label = Label(kind + " label", slot, text, .32f, 0, 1, 1, 30);
+        label.alignment = TextAlignmentOptions.Left;
+        Ref(view, kind + "Label", label);
+    }
     private static GameObject CreateCard()
     {
         var root = Rect("LevelUpCard", null, Vector2.zero, Vector2.one);
