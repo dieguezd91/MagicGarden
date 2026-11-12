@@ -166,7 +166,8 @@ public sealed class UpgradeRuntime : MonoBehaviour
         if (experience.PendingChoices > 0) ShowNextChoice();
         else ReleaseChoice();
     }
-    private void ReleaseChoice()
+    // animate=false while the runtime itself is going away: nothing may start a tween then.
+    private void ReleaseChoice(bool animate = true)
     {
         if (!choosing) return;
         choosing = false;
@@ -177,7 +178,7 @@ public sealed class UpgradeRuntime : MonoBehaviour
         UIManager.Instance?.Flow?.Close(UIModal.LevelUp);
         foreach (var interaction in suspendedInteractions) if (interaction != null) interaction.enabled = true;
         suspendedInteractions.Clear();
-        panel?.Hide();
+        if (animate) panel?.Hide(); else panel?.HideImmediate();
         if (pause == null || !pause.IsPaused) Time.timeScale = savedScale;
     }
     private void PhaseChanged(GamePhase phase)
@@ -186,7 +187,7 @@ public sealed class UpgradeRuntime : MonoBehaviour
         if (phase == GamePhase.GameOver || phase == GamePhase.MainMenu) ReleaseChoice();
         if (panel != null && panel.IsShopOpen && phase != GamePhase.Day) panel.CloseShop();
     }
-    private void OnDisable() { ReleaseChoice(); panel?.CloseShop(); }
+    private void OnDisable() { ReleaseChoice(false); panel?.CloseShop(); }
     private void OnDestroy()
     {
         UIEvents.OnCraftingUIToggleRequested -= ToggleShop;
@@ -304,7 +305,7 @@ public sealed class UpgradeRuntime : MonoBehaviour
         }
     }
     public void CloseShop() => panel?.CloseShop();
-    public void PanelDisabled() => ReleaseChoice();
+    public void PanelDisabled() => ReleaseChoice(false); // the panel is already going away: no close tween
     public bool CanPurchase(SpecialDefinition definition, Target target)
     {
         return !buying && !choosing && target != null && FindTarget(target.Id) != null &&

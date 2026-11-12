@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6504375780108626764}
   - component: {fileID: 5057740401442965196}
   - component: {fileID: 7053530441230739179}
+  - component: {fileID: 8989704035467405241}
   m_Layer: 5
   m_Name: LevelUpPanel
   m_TagString: Untagged
@@ -61,6 +62,14 @@ MonoBehaviour:
   - {fileID: 655438583293427891}
   - {fileID: 3869920023787024314}
   - {fileID: 2829812640941656360}
+  content: {fileID: 900000000000000002}
+  group: {fileID: 8989704035467405241}
+  tween:
+    openDuration: 0.3
+    openEase: 27
+    closeDuration: 0.25
+    closeEase: 26
+    hiddenScale: 0.85
 --- !u!222 &5057740401442965196
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -99,6 +108,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 0.78125
+--- !u!225 &8989704035467405241
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 409761589013857790}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &900000000000000001
 GameObject:
   m_ObjectHideFlags: 0
@@ -159,8 +180,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1

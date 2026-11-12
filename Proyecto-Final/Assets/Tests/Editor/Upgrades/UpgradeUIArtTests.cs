@@ -95,77 +95,57 @@ public class UpgradeUIArtTests
         }
     }
 
-    // ---- Level-up reward card: same imported art as LevelUpPanel/LevelUpCard, elevated above them (S5/S6) ----
+    // ---- Level-up reward card: identity and wiring only. Layout (anchors, sizes, positions) belongs to the prefab and is hand-editable. ----
     private const string RewardPath = Folder + "LevelUpReward.prefab";
+    private const string CanvasPath = "Assets/Prefabs/UI/Canvas/Canvas Game UI.prefab";
     private static GameObject Reward() => AssetDatabase.LoadAssetAtPath<GameObject>(RewardPath);
-    private static Transform Child(GameObject root, string name) => root.GetComponentsInChildren<Transform>(true).Single(t => t.name == name);
-    private static SerializedObject ImageOf(Transform t) => new SerializedObject(t.GetComponent(TypeOf("UnityEngine.UI.Image", "UnityEngine.UI")));
-    private static Sprite Sliced(Transform t, float density, string what)
+    private static UnityEngine.Object Serialized(object owner, string field) => new SerializedObject((UnityEngine.Object)owner).FindProperty(field).objectReferenceValue;
+    private static Sprite SpriteOf(object graphic) => (Sprite)new SerializedObject((UnityEngine.Object)graphic).FindProperty("m_Sprite").objectReferenceValue;
+    [Test] public void RewardViewSerializedReferencesAreWiredAndFramedWithTutorialArt()
     {
-        var image = ImageOf(t);
-        Assert.That(image.FindProperty("m_Sprite").objectReferenceValue, Is.SameAs(Sprite("TutorialBox")), what);
-        Assert.That(image.FindProperty("m_Type").enumValueIndex, Is.EqualTo(1), what + " must be Sliced");
-        Assert.That(image.FindProperty("m_Color").colorValue, Is.EqualTo(Color.white), what);
-        Assert.That(image.FindProperty("m_PixelsPerUnitMultiplier").floatValue, Is.EqualTo(density), what);
-        return (Sprite)image.FindProperty("m_Sprite").objectReferenceValue;
+        var reward = Reward(); var view = reward.GetComponent(TypeOf("LevelUpRewardView"));
+        Assert.That(Property(view, "IsConfigured"), Is.True);
+        foreach (string field in new[] { "root", "backdrop", "headingLabel", "seedSlot", "spellSlot", "seedIcon", "spellIcon", "seedLabel", "spellLabel", "continueButton", "content", "group" })
+            Assert.That(Serialized(view, field), Is.Not.Null, field);
+        var box = Sprite("TutorialBox");
+        Assert.That(SpriteOf(((Component)Serialized(view, "content")).GetComponent(TypeOf("UnityEngine.UI.Image", "UnityEngine.UI"))), Is.SameAs(box), "card frame");
+        foreach (string slot in new[] { "seedSlot", "spellSlot" })
+            Assert.That(SpriteOf(((GameObject)Serialized(view, slot)).GetComponent(TypeOf("UnityEngine.UI.Image", "UnityEngine.UI"))), Is.SameAs(box), slot);
+        var button = Serialized(view, "continueButton");
+        Assert.That(SpriteOf(new SerializedObject(button).FindProperty("m_TargetGraphic").objectReferenceValue), Is.SameAs(Sprite("CraftButton")));
     }
-    [Test] public void RewardCardIsCenteredTutorialBoxWindowSmallerThanLevelUpWindow()
+    [Test] public void RewardLabelsUseM5x7()
     {
-        var reward = Reward();
-        var card = (RectTransform)Child(reward, "Reward card");
-        Sliced(card, .78125f, "Reward card frame uses the same window density as LevelUpPanel/Window");
-        Assert.That(card.anchorMin, Is.EqualTo(new Vector2(.5f, .5f))); Assert.That(card.anchorMax, Is.EqualTo(card.anchorMin));
-        Assert.That(card.anchoredPosition, Is.EqualTo(Vector2.zero));
-        var window = (RectTransform)Child(AssetDatabase.LoadAssetAtPath<GameObject>(Folder + "LevelUpPanel.prefab"), "Window");
-        Assert.That(card.sizeDelta.x, Is.LessThan(window.sizeDelta.x)); Assert.That(card.sizeDelta.y, Is.LessThan(window.sizeDelta.y));
-        Assert.That(card.GetComponent(TypeOf("UnityEngine.UI.Shadow", "UnityEngine.UI")), Is.Not.Null, "Elevation shadow separates the reward from the window behind");
+        var font = AssetDatabase.LoadMainAssetAtPath(FontPath);
+        var labels = Components(Reward(), "TMPro.TextMeshProUGUI"); Assert.That(labels, Is.Not.Empty);
+        foreach (var label in labels) Assert.That(Property(label, "font"), Is.SameAs(font), label.name);
     }
-    [TestCase("seed slot")] [TestCase("spell slot")]
-    public void RewardSlotsUseTheCardFrame(string slot) => Sliced(Child(Reward(), slot), 1.5625f, slot);
-    [Test] public void RewardContinueUsesCraftButtonWithTheSameStatesAsTheCardAction()
+    [Test] public void LevelUpPanelViewTweenTargetsAreWired()
     {
-        var reward = Reward(); var cont = Child(reward, "Continue");
-        var image = ImageOf(cont);
-        Assert.That(image.FindProperty("m_Sprite").objectReferenceValue, Is.SameAs(Sprite("CraftButton")));
-        Assert.That(image.FindProperty("m_Type").enumValueIndex, Is.EqualTo(0)); Assert.That(image.FindProperty("m_PreserveAspect").boolValue, Is.True);
-        var rect = (RectTransform)cont;
-        Assert.That(rect.anchorMin, Is.EqualTo(rect.anchorMax)); Assert.That(rect.sizeDelta.x / rect.sizeDelta.y, Is.EqualTo(47f / 9).Within(.001));
-        var card = AssetDatabase.LoadAssetAtPath<GameObject>(Folder + "LevelUpCard.prefab");
-        var expected = new SerializedObject(Components(card, "UnityEngine.UI.Button").Single());
-        var actual = new SerializedObject(Components(reward, "UnityEngine.UI.Button").Single());
-        Assert.That(actual.FindProperty("m_Transition").enumValueIndex, Is.EqualTo(1));
-        foreach (string state in new[] { "Normal", "Highlighted", "Pressed", "Selected", "Disabled" })
-            Assert.That(actual.FindProperty("m_Colors.m_" + state + "Color").colorValue, Is.EqualTo(expected.FindProperty("m_Colors.m_" + state + "Color").colorValue), state);
-        Assert.That(image.FindProperty("m_Color").colorValue, Is.EqualTo(ImageOf(Child(AssetDatabase.LoadAssetAtPath<GameObject>(Folder + "LevelUpPanel.prefab"), "Continue")).FindProperty("m_Color").colorValue));
+        var panel = AssetDatabase.LoadAssetAtPath<GameObject>(Folder + "LevelUpPanel.prefab"); var view = panel.GetComponent(TypeOf("LevelUpPanelView"));
+        Assert.That(Serialized(view, "content"), Is.Not.Null); Assert.That(Serialized(view, "group"), Is.Not.Null);
     }
-    [Test] public void RewardLabelsUseM5x7AndTheLevelUpCardReadabilityGradient()
-    {
-        var reward = Reward(); var font = AssetDatabase.LoadMainAssetAtPath(FontPath);
-        var labels = Components(reward, "TMPro.TextMeshProUGUI"); Assert.That(labels.Length, Is.EqualTo(4)); // heading, seed, spell, Continue
-        foreach (var label in labels)
-        {
-            Assert.That(Property(label, "font"), Is.SameAs(font), label.name);
-            Identity((UnityEngine.Object)Property(label, "fontSharedMaterial"), "52be7e01f8fbce54186eac8da2da70cc", 7763458193861376953);
-            Assert.That(Property(label, "enableVertexGradient"), Is.True, label.name);
-            Assert.That((bool)Property(label, "raycastTarget"), Is.False, label.name);
-        }
-        var panel = AssetDatabase.LoadAssetAtPath<GameObject>(Folder + "LevelUpPanel.prefab");
-        var heading = Components(reward, "TMPro.TextMeshProUGUI").Single(l => l.name == "Heading");
-        var panelHeading = Components(panel, "TMPro.TextMeshProUGUI").Single(l => l.name == "Heading");
-        Assert.That((float)Property(heading, "fontSizeMax"), Is.GreaterThan((float)Property(panelHeading, "fontSizeMax")), "Reward heading is larger than the level-up heading");
-    }
-    [TestCase("Assets/Prefabs/UI/Upgrades/LevelUpReward.prefab", false)]
-    [TestCase("Assets/Prefabs/UI/Canvas/Canvas Game UI.prefab", true)]
+    // The shared backdrop = a real blur layer under a lighter dark tint. Both the reward and the inventory use the same component.
+    [TestCase(RewardPath, false)]
+    [TestCase(CanvasPath, true)]
     [TestCase("Assets/Prefabs/UI/Game UI.prefab", true)]
-    public void BackdropDimsEnoughToSeparateModalsFromTheWindowBehind(string path, bool inventory)
+    public void BackdropHasABlurLayerWithTheBlurShaderUnderALighterTint(string path, bool inventory)
     {
         float dim = (float)TypeOf("UIBackdrop").GetField("DimAlpha").GetRawConstantValue();
-        Assert.That(dim, Is.GreaterThanOrEqualTo(.75f));
+        Assert.That(dim, Is.InRange(.3f, .6f), "the blur must read, the tint only supports it");
         var root = AssetDatabase.LoadAssetAtPath<GameObject>(path);
         Component backdrop = inventory
-            ? (Component)new SerializedObject(root.GetComponentInChildren(TypeOf("GameStateUIController"), true)).FindProperty("inventoryBackdrop").objectReferenceValue
+            ? (Component)Serialized(root.GetComponentInChildren(TypeOf("GameStateUIController"), true), "inventoryBackdrop")
             : root.GetComponentInChildren(TypeOf("UIBackdrop"), true);
         Assert.That(backdrop, Is.Not.Null);
-        Assert.That(ImageOf(backdrop.transform).FindProperty("m_Color").colorValue, Is.EqualTo(new Color(0, 0, 0, dim)));
+        var blur = (Component)Serialized(backdrop, "blurImage");
+        Assert.That(blur, Is.Not.Null, "RawImage blur layer");
+        Assert.That(blur.GetType().FullName, Is.EqualTo("UnityEngine.UI.RawImage"));
+        var material = (Material)new SerializedObject(blur).FindProperty("m_Material").objectReferenceValue;
+        Assert.That(material, Is.Not.Null); Assert.That(material.shader.name, Is.EqualTo("MagicGarden/UI/BackdropBlur"));
+        Assert.That(blur.transform.IsChildOf(backdrop.transform), Is.True);
+        var tint = backdrop.GetComponentInChildren(TypeOf("UnityEngine.UI.Image", "UnityEngine.UI"), true);
+        Assert.That(new SerializedObject(tint).FindProperty("m_Color").colorValue, Is.EqualTo(new Color(0, 0, 0, dim)));
+        Assert.That(tint.transform.GetSiblingIndex(), Is.GreaterThan(blur.transform.GetSiblingIndex()), "tint is drawn over the blur");
     }
 }

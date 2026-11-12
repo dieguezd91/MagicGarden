@@ -247,6 +247,34 @@ public class UpgradeUIIntegrationTests
         Assert.That(((GameObject)Field(view, "seedSlot")).activeSelf, Is.False);
         Assert.That(((GameObject)Field(view, "spellSlot")).activeSelf, Is.True);
     }
+    [Test] public void RewardHideWhileInactiveIsImmediateAndSafeAndHideAfterShowIsImmediateOutsidePlayMode()
+    {
+        var view = Clone("LevelUpReward", "LevelUpRewardView");
+        var backdrop = (Component)Field(view, "backdrop");
+        view.gameObject.SetActive(false);
+        Assert.DoesNotThrow(() => Call(view, "Hide"));
+        Assert.That(Property(view, "IsVisible"), Is.False); Assert.That(Property(view, "IsAnimating"), Is.False);
+        Assert.That(backdrop.gameObject.activeSelf, Is.False);
+        Assert.That(((CanvasGroup)backdrop.GetComponent(typeof(CanvasGroup))).alpha, Is.Zero);
+        Assert.That(Call(view, "Show", Reward(3, "Sunflower", null)), Is.True);
+        Assert.That(Property(view, "IsAnimating"), Is.False, "EditMode snaps instead of tweening");
+        Assert.That(((CanvasGroup)Field(view, "group")).alpha, Is.EqualTo(1f));
+        Assert.That(((RectTransform)Field(view, "content")).localScale, Is.EqualTo(Vector3.one));
+        Call(view, "Hide");
+        Assert.That(Property(view, "IsVisible"), Is.False); Assert.That(backdrop.gameObject.activeSelf, Is.False);
+    }
+    [Test] public void LevelUpPanelHideWhileInactiveIsImmediateAndNeverRaisesHidden()
+    {
+        var view = Clone("LevelUpPanel", "LevelUpPanelView");
+        int hidden = 0; Listen(view, "Hidden", (Action)(() => hidden++));
+        view.gameObject.SetActive(false); hidden = 0;
+        Assert.DoesNotThrow(() => Call(view, "Hide"));
+        Assert.That(Property(view, "IsVisible"), Is.False); Assert.That(hidden, Is.Zero);
+        Assert.That(Call(view, "Show", DataList("LevelUpCardData", 3), 2), Is.True);
+        Assert.That(Property(view, "IsAnimating"), Is.False); Assert.That(((CanvasGroup)Field(view, "group")).alpha, Is.EqualTo(1f));
+        Call(view, "Hide");
+        Assert.That(Property(view, "IsVisible"), Is.False); Assert.That(hidden, Is.Zero, "closing through Hide is not an external disable");
+    }
     [Test] public void RewardHasContentOnlyWhenItUnlocksASeedOrASpell()
     {
         Assert.That(Property(Reward(3, null, null), "HasContent"), Is.False);

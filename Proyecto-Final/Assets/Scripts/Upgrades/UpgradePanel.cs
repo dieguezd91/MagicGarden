@@ -16,7 +16,7 @@ public sealed class UpgradePanel : MonoBehaviour
     public bool IsShopOpen { get; private set; }
     public bool IsReady => isActiveAndEnabled && levelUpView != null && levelUpView.IsConfigured && shopView != null && shopView.IsConfigured;
 
-    private void Awake() => Hide();
+    private void Awake() => HideImmediate();
     public bool Initialize(UpgradeRuntime owner)
     {
         if (owner == null || !IsReady || (runtime != null && runtime != owner))
@@ -32,20 +32,26 @@ public sealed class UpgradePanel : MonoBehaviour
         shopView.Closed += CloseShop;
         shopView.Hidden += ViewHidden;
         if (rewardView != null) rewardView.Continued += RewardContinued;
-        Hide();
+        HideImmediate();
         return true;
     }
     public void Unbind(UpgradeRuntime owner)
     {
         if (runtime != owner) return;
-        Hide();
+        HideImmediate();
         if (levelUpView != null) { levelUpView.Selected -= Select; levelUpView.Hidden -= ViewHidden; }
         if (shopView != null) { shopView.Purchased -= Purchase; shopView.Closed -= CloseShop; shopView.Hidden -= ViewHidden; }
         if (rewardView != null) rewardView.Continued -= RewardContinued;
         runtime = null;
     }
     // The reward is shown alone; selection is only possible once Continue brought the choices up.
-    private void Select(int index) { if (rewardView == null || !rewardView.IsVisible) runtime?.Choose(index); }
+    // Also blocked while the choices are still popping in or closing.
+    private void Select(int index)
+    {
+        if (rewardView != null && (rewardView.IsVisible || rewardView.IsAnimating)) return;
+        if (levelUpView != null && levelUpView.IsAnimating) return;
+        runtime?.Choose(index);
+    }
     private void RewardContinued() => runtime?.RewardContinued();
     public void RequestShopRefresh() { if (IsShopOpen) shopRefresh = true; }
     private static Color ColorFor(Rarity rarity)
@@ -68,14 +74,14 @@ public sealed class UpgradePanel : MonoBehaviour
             return false;
         }
         IsShopOpen = false;
-        Hide();
+        HideImmediate();
         return rewardView.Show(reward);
     }
     public void ShowChoices(IList<Offer> offers, int pending)
     {
         if (!IsReady || runtime == null) { WiringFailure(); return; }
         IsShopOpen = false;
-        Hide();
+        HideImmediate();
         var data = new List<LevelUpCardData>();
         foreach (var offer in offers)
             data.Add(new LevelUpCardData
@@ -94,7 +100,7 @@ public sealed class UpgradePanel : MonoBehaviour
         if (!IsReady || runtime == null) { WiringFailure(); return; }
         shopRefresh = false;
         newOpen |= !shopView.gameObject.activeInHierarchy;
-        if (newOpen) Hide();
+        if (newOpen) HideImmediate();
         IsShopOpen = true;
         shopDefinitions.Clear(); shopTargets.Clear();
         var items = new List<SpecialUpgradeItemData>();
@@ -137,10 +143,18 @@ public sealed class UpgradePanel : MonoBehaviour
         UIEvents.TriggerCraftingUIClosed();
         TutorialEvents.InvokeCraftingClosed();
     }
+    // Closes whatever is open; the level-up modals fade/scale out in Play Mode.
     public void Hide()
     {
         hiding = true;
         try { rewardView?.Hide(); levelUpView?.Hide(); shopView?.Hide(); }
+        finally { hiding = false; }
+    }
+    // Replaces one modal by another (or tears down): no close animation, the next Show animates in.
+    public void HideImmediate()
+    {
+        hiding = true;
+        try { rewardView?.HideImmediate(); levelUpView?.HideImmediate(); shopView?.Hide(); }
         finally { hiding = false; }
     }
     private void WiringFailure()
@@ -150,7 +164,7 @@ public sealed class UpgradePanel : MonoBehaviour
         // A missing shop view must not leave the modal/input owner open either.
         if (IsShopOpen) CloseShop();
         else UIManager.Instance?.Flow?.Close(UIModal.Crafting);
-        Hide();
+        HideImmediate();
     }
     private void ViewHidden()
     {

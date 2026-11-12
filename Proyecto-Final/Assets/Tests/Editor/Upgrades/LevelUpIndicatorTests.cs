@@ -75,6 +75,46 @@ public class LevelUpIndicatorTests
         Assert.That(Field(indicator, "experience"), Is.SameAs(prefab.GetComponent(Production("PlayerExperienceSystem"))));
     }
 
+    private const string GlowMaterial = "Assets/Sprites/SpriteSheets/ShaderEffects/GlowEffect.mat";
+
+    // The world sprites that stand out (player body, Spider) use this unlit glow material instead of the lit sprite default,
+    // so the global day/night Light2D does not dim them. The indicator must use it as well.
+    [Test] public void IndicatorUsesTheSameUnlitGlowMaterialAsThePlayerBody()
+    {
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefab);
+        var indicator = prefab.GetComponentInChildren(Production("LevelUpIndicator"), true);
+        var icon = (SpriteRenderer)Field(indicator, "icon");
+        var glow = AssetDatabase.LoadAssetAtPath<Material>(GlowMaterial);
+        Assert.That(glow, Is.Not.Null);
+        Assert.That(prefab.GetComponent<SpriteRenderer>().sharedMaterial, Is.SameAs(glow), "premise: the player body uses GlowEffect");
+        Assert.That(icon.sharedMaterial, Is.SameAs(glow));
+    }
+
+    [Test] public void PopOvershootsTheRestingScaleThenSettlesAtIt()
+    {
+        var indicator = Rig(out _, out var icon);
+        float rest = indicator.transform.localScale.x;
+        Call(indicator, "Play");
+        Call(indicator, "Tick", 0.12f); // 60% of the 0.2s pop: the peak
+        Assert.That(indicator.transform.localScale.x, Is.GreaterThan(rest * 1.15f), "visible overshoot");
+        Call(indicator, "Tick", 0.08f);
+        Assert.That(indicator.transform.localScale.x, Is.EqualTo(rest).Within(.001f), "settled at the end of the pop");
+    }
+
+    [Test] public void HoldKeepsBobbingAndBreathingAroundTheRisenPositionUntilItFades()
+    {
+        var indicator = Rig(out _, out var icon);
+        Call(indicator, "Play");
+        Call(indicator, "Tick", 0.6f); // pop + rise done: hold starts
+        var samples = new List<Vector3>();
+        var scales = new List<float>();
+        for (int i = 0; i < 6; i++) { Call(indicator, "Tick", 0.05f); samples.Add(indicator.transform.localPosition); scales.Add(indicator.transform.localScale.x); }
+        Assert.That(samples.Select(p => p.y).Distinct().Count(), Is.GreaterThan(3), "bobs while holding");
+        Assert.That(scales.Max() - scales.Min(), Is.GreaterThan(.02f), "breathes while holding");
+        Assert.That(samples.All(p => p.y > 1.5f), Is.True, "stays above the resting position");
+        Assert.That(icon.color.a, Is.EqualTo(1f).Within(.001f));
+    }
+
     private Component Rig(out Component experience, out SpriteRenderer icon)
     {
         var player = new GameObject("Indicator test player"); created.Add(player);
