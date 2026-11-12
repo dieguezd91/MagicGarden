@@ -126,6 +126,7 @@ public class Plant : MonoBehaviour
 
         plantLifeController.onDeath.AddListener(HandlePlantDeath);
         plantLifeController.onHealthChanged.AddListener(HandleHealthChanged);
+        plantLifeController.onDamaged.AddListener(HandlePlantDamaged);
 
         ScheduleNextIdleSound();
     }
@@ -141,6 +142,7 @@ public class Plant : MonoBehaviour
         {
             plantLifeController.onDeath.RemoveListener(HandlePlantDeath);
             plantLifeController.onHealthChanged.RemoveListener(HandleHealthChanged);
+            plantLifeController.onDamaged.RemoveListener(HandlePlantDamaged);
         }
     }
 
@@ -203,6 +205,18 @@ public class Plant : MonoBehaviour
             }
             particlesActivated = false;
         }
+    }
+
+    private float nextHurtSoundTime;
+    private static float lastGrownSoundTime = float.MinValue;
+
+    // The hurt clip was assigned on every plant but nothing ever played it.
+    private void HandlePlantDamaged(float damage, LifeController.DamageType damageType)
+    {
+        if (plantLifeController.currentHealth <= 0f) return; // killing blow: the die sound plays instead
+        if (Time.time < nextHurtSoundTime) return;
+        nextHurtSoundTime = Time.time + (damageType == LifeController.DamageType.DamageOverTime ? 0.6f : 0.3f);
+        PlaySound(PlantSoundType.Hurt);
     }
 
     private void HandleHealthChanged(float currentHealth, float maxHealth)
@@ -284,7 +298,12 @@ public class Plant : MonoBehaviour
         }
 
         OnMature();
-        PlaySound(PlantSoundType.Grown);
+        // Many plants mature at once at dawn: one growth sound per 0.2 s across all plants.
+        if (Time.time - lastGrownSoundTime >= 0.2f || Time.time < lastGrownSoundTime)
+        {
+            lastGrownSoundTime = Time.time;
+            PlaySound(PlantSoundType.Grown);
+        }
 
         if (plantCollider != null)
             plantCollider.enabled = true;

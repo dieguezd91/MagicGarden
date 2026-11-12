@@ -236,7 +236,7 @@ MonoBehaviour:
   interactSound:
     clips:
     - {fileID: 8300000, guid: 719f44f75d52a9b45b0b4ca94c447a13, type: 3}
-    volume: 0.5
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -245,7 +245,7 @@ MonoBehaviour:
   completeSound:
     clips:
     - {fileID: 8300000, guid: e00fa9c3d22cc1a479bb027179606bcf, type: 3}
-    volume: 0.5
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.1
     loop: 0

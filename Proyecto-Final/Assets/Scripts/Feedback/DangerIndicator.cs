@@ -12,9 +12,18 @@ public class DangerIndicator : MonoBehaviour
 
     private bool isActive = false;
 
+    // The prefab leaves player/house/camera unassigned; resolve them at runtime instead of throwing every frame.
+    private bool ResolveReferences()
+    {
+        if (player == null) { var pc = FindObjectOfType<PlayerController>(); if (pc != null) player = pc.transform; }
+        if (house == null) { var h = FindObjectOfType<HouseLifeController>(); if (h != null) house = h.transform; }
+        if (mainCamera == null) mainCamera = Camera.main;
+        return player != null && house != null && mainCamera != null && uiIndicator != null;
+    }
+
     private void Update()
     {
-        if (!isActive) return;
+        if (!isActive || !ResolveReferences()) return;
 
         Vector3 dir = house.position - player.position;
         Vector3 screenCenter = new Vector3(Screen.width, Screen.height, 0f) / 2f;
@@ -35,6 +44,7 @@ public class DangerIndicator : MonoBehaviour
 
     public void Activate()
     {
+        if (!ResolveReferences()) return;
         isActive = true;
         uiIndicator.gameObject.SetActive(true);
     }
@@ -42,7 +52,7 @@ public class DangerIndicator : MonoBehaviour
     public void Deactivate()
     {
         isActive = false;
-        uiIndicator.gameObject.SetActive(false);
+        if (uiIndicator != null) uiIndicator.gameObject.SetActive(false);
     }
 }
 

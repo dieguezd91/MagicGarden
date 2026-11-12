@@ -38,6 +38,24 @@ public class EnemySoundBase : MonoBehaviour
         };
     }
     
+    // Shared by all enemies: a horde produced ~200 step sounds/min, mostly off-screen, flooding the voice pool.
+    private const float StepAudibleDistance = 18f;   // matches SoundManager's silent distance
+    private const float MinSecondsBetweenSteps = 0.08f;
+    private static float lastStepTime = float.MinValue;
+    private static Camera cachedCamera;
+
+    private static bool StepBudgetAllows(Transform at)
+    {
+        if (cachedCamera == null) cachedCamera = Camera.main;
+        if (cachedCamera != null && Vector2.Distance(cachedCamera.transform.position, at.position) > StepAudibleDistance)
+            return false;
+        // Time.time < last covers a stale static after an editor play session without domain reload.
+        if (Time.time - lastStepTime < MinSecondsBetweenSteps && Time.time >= lastStepTime)
+            return false;
+        lastStepTime = Time.time;
+        return true;
+    }
+
     public SoundClipData GetSound(EnemySoundType soundType)
     {
         if (soundDictionary == null) Initialize();
@@ -60,7 +78,7 @@ public class EnemySoundBase : MonoBehaviour
     /// Plays the sound for the given EnemySoundType using SoundManager's pooling system.
     /// Adds defensive logging when data or manager is missing.
     /// </summary>
-    public void PlaySound(EnemySoundType soundType, SoundSourceType sourceType = SoundSourceType.Global, Transform parent = null)
+    public void PlaySound(EnemySoundType soundType, SoundSourceType sourceType = SoundSourceType.Global, Transform parent = null, bool skipStepBudget = false)
     {
         var soundData = GetSound(soundType);
         if (soundData == null)
@@ -81,6 +99,10 @@ public class EnemySoundBase : MonoBehaviour
             Debug.LogWarning($"[{gameObject.name}] EnemySoundBase: SoundManager.Instance is null. Cannot play '{soundType}'.");
             return;
         }
+
+        // Animation-driven footsteps (e.g. the boss) are few and must land on the frame, so they skip the shared budget.
+        if (soundType == EnemySoundType.Steps && !skipStepBudget && !StepBudgetAllows(parent == null ? transform : parent))
+            return;
 
         SoundManager.Instance.PlayClip(soundData, sourceType, parent == null ? this.transform : parent);
         soundData.SetLastPlayTime();

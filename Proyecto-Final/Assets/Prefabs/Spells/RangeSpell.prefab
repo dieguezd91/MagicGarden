@@ -10126,7 +10126,7 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 2629ce31e1f343c2b9e012369afe1a78, type: 3}
     - {fileID: 8300000, guid: 32b928fec3c2428bab68f686badfb29a, type: 3}
     - {fileID: 8300000, guid: b632b77bac8e461fa6b56595445ab18d, type: 3}
-    volume: 0.7
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.08
     loop: 0

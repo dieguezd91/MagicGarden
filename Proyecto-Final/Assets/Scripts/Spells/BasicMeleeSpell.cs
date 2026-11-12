@@ -58,11 +58,7 @@ public class BasicMeleeSpell : Spell
         }
 
         ShowSlashEffect();
-
-        if (SoundManager.Instance != null)
-        {
-            SoundManager.Instance.Play("PlayerSwordSwing", SoundSourceType.Global, transform);
-        }
+        // The swing is the prefab's castSound (played by PlayerSpellController), replacing the generic "ShootSpell".
     }
 
     private void ShowSlashEffect()
