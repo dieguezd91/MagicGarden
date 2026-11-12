@@ -327,14 +327,13 @@ MonoBehaviour:
     cooldownTime: 5
   attack:
     clips:
-    - {fileID: 8300000, guid: 59650c1c69a58aa4c85727ab82357635, type: 3}
-    - {fileID: 8300000, guid: 347b0656243ed834fb48f5a46133f80b, type: 3}
-    volume: 0.7
+    - {fileID: 8300000, guid: 7cb9107ea4864112b4754ea9dd84efea, type: 3}
+    volume: 0.5
     pitch: 1
-    pitchVariation: 0.05
+    pitchVariation: 0.08
     loop: 0
     randomizeClip: 1
-    cooldownTime: 0
+    cooldownTime: 0.0
   special:
     clips: []
     volume: 1

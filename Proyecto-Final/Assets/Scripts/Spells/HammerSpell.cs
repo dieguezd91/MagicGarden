@@ -66,15 +66,7 @@ public class HammerSpell : Spell
         }
 
         ShowHammerEffect();
-
-        if (SoundManager.Instance != null)
-        {
-            SoundManager.Instance.Play(
-                "PlayerSwordSwing",
-                SoundSourceType.Global,
-                transform
-            );
-        }
+        // Swing/slam sound is the prefab's castSound, played by PlayerSpellController.
     }
 
     private void ShowHammerEffect()

@@ -34,6 +34,8 @@ public class HouseDamageNotifier : MonoBehaviour
         if (dist <= ignoreRadius)
             return;
 
+        // Only when the warning first appears, not on every hit while it is showing.
+        if (!IsInvoking(nameof(DeactivateIndicator))) SoundManager.Instance?.Play("UI_Warning");
         dangerIndicator.Activate();
 
         CancelInvoke(nameof(DeactivateIndicator));

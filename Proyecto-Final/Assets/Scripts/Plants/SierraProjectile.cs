@@ -21,6 +21,11 @@ public class SierraProjectile : Spell
     [Header("VFX")]
     [SerializeField] private ParticleSystem attackParticles;
 
+    [Header("SAW SOUND")]
+    [Tooltip("Must have Loop on. Plays while attached (impactSound is the bite).")]
+    [SerializeField] private SoundClipData grindLoopSound;
+    private AudioSource grindSource;
+
     private ProjectileState state = ProjectileState.Idle;
 
     private SierraPlant ownerPlant;
@@ -181,6 +186,17 @@ public class SierraProjectile : Spell
 
         if (attackParticles != null)
             attackParticles.Play();
+
+        PlayImpactSound();
+        grindSource = SoundManager.Instance?.PlayClip(grindLoopSound, SoundSourceType.Localized, transform);
+    }
+
+    private void StopGrind()
+    {
+        // The pooled source may already have been reused for another clip.
+        if (grindSource != null && grindSource.loop && grindLoopSound != null && System.Array.IndexOf(grindLoopSound.clips, grindSource.clip) >= 0)
+            grindSource.Stop();
+        grindSource = null;
     }
 
     private void UpdateAttached()
@@ -213,6 +229,7 @@ public class SierraProjectile : Spell
             return;
 
         state = ProjectileState.Returning;
+        StopGrind();
 
         attachedTargetLife = null;
         initialTarget = null;
@@ -272,6 +289,7 @@ public class SierraProjectile : Spell
 
     private void OnDestroy()
     {
+        StopGrind();
         if (attackParticles != null)
         {
             attackParticles.Stop(

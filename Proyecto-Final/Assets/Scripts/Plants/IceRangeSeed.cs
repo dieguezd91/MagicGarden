@@ -7,6 +7,7 @@ public class IceRangeSeed : Spell
 
     [Header("ICE AREA")]
     [SerializeField] private GameObject iceSlowArea;
+    [SerializeField] private SoundClipData freezeAreaSound;
 
     public override MagicGarden.Target DescribeUpgradeTarget(string id, string displayName)
     {
@@ -67,6 +68,7 @@ public class IceRangeSeed : Spell
         var area = iceSlowArea.GetComponent<IceSlowArea>();
         if (area != null) area.SetUpgradeTarget(UpgradeTargetId, UpgradeCapability);
         iceSlowArea.SetActive(true);
+        SoundManager.Instance?.PlayClip(freezeAreaSound, SoundSourceType.Localized, iceSlowArea.transform);
     }
 
     public void SetDirection(Vector2 newDirection)

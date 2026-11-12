@@ -481,6 +481,142 @@ MonoBehaviour:
     loop: 0
     mute: 0
     audioSource: {fileID: 0}
+  - name: Night_Start
+    clip: {fileID: 8300000, guid: c601648fa8624344fb77dacba0faf1e9, type: 3}
+    volume: 0.7
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: Horde_Start_1
+    clip: {fileID: 8300000, guid: 951f049c7ac7d904abd62fa6a679b18f, type: 3}
+    volume: 0.7
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: Horde_Start_2
+    clip: {fileID: 8300000, guid: 63391a46b6e55c048b8ebc3c40c6af88, type: 3}
+    volume: 0.7
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: Boss_Night_Start
+    clip: {fileID: 8300000, guid: c629d783500c74544b0deb1ce67273cd, type: 3}
+    volume: 0.8
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: Boss_Night_Complete
+    clip: {fileID: 8300000, guid: 8d723b9fa4c91e24f9be1795632ad141, type: 3}
+    volume: 0.8
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: Game_Over
+    clip: {fileID: 8300000, guid: c0a9abb3717017745ba113e3fd47c9ba, type: 3}
+    volume: 0.8
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: Level_Up
+    clip: {fileID: 8300000, guid: 856cb36a9fb220443bb45e32c48e4227, type: 3}
+    volume: 0.7
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: Ritual_Buff_Activate
+    clip: {fileID: 8300000, guid: c08f20931058db543bdeb27b3c12b36c, type: 3}
+    volume: 0.7
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: Player_Low_Health_Heartbeat_Loop
+    clip: {fileID: 8300000, guid: a9ad50698cb1654499fc188bfb8845c5, type: 3}
+    volume: 0.6
+    pitch: 1
+    playOnAwake: 0
+    loop: 1
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: Player_Spell_No_Mana
+    clip: {fileID: 8300000, guid: c0bcc17cbf76ce34fbc24e16b49f18e4, type: 3}
+    volume: 0.6
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Prompt_Show
+    clip: {fileID: 8300000, guid: cf05e1d897b2dd3418a56e7c6343f68d, type: 3}
+    volume: 0.4
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Spell_Slot_Select
+    clip: {fileID: 8300000, guid: 1c3adb46ea378e3408e83c29a83f2c8c, type: 3}
+    volume: 0.5
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Warning
+    clip: {fileID: 8300000, guid: 1e025df96cc97b344a806af263a560fc, type: 3}
+    volume: 0.6
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Slot_Pickup
+    clip: {fileID: 8300000, guid: 242ecb2a8e7d58e4d88db7ccb66c6c98, type: 3}
+    volume: 0.5
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Slot_Drop
+    clip: {fileID: 8300000, guid: f1fdc9d1c0a81ae41a25432508f7953f, type: 3}
+    volume: 0.5
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Loadout_Confirm
+    clip: {fileID: 8300000, guid: c7c1bb2bad659e94a8afc14e7b4e9864, type: 3}
+    volume: 0.6
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: Upgrade_Select
+    clip: {fileID: 8300000, guid: 8e5c89d02e2ac6f498aff9ce8467ae4d, type: 3}
+    volume: 0.6
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
   audioSourcePool:
   - {fileID: 1690673462770734548}
   - {fileID: 2258096517755013636}

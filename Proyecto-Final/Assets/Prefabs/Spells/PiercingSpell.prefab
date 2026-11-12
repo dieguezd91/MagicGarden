@@ -10121,6 +10121,28 @@ MonoBehaviour:
   lifeTime: 3
   floatingDamagePrefab: {fileID: 8011744024934345175, guid: b18d5e020de9918429f62b516be2ef30, type: 3}
   impactParticlesPrefab: {fileID: 491567316690014037, guid: b4718f9f977adb740a54a6ea904ae4f7, type: 3}
+  castSound:
+    clips:
+    - {fileID: 8300000, guid: 1b894f1481624e6a9cb89f1ad0b2bd82, type: 3}
+    - {fileID: 8300000, guid: 56babef83d7949998b945e48b9b377aa, type: 3}
+    - {fileID: 8300000, guid: 0eb156d6a9ed43e9aa0a63b29d085f98, type: 3}
+    volume: 0.7
+    pitch: 1
+    pitchVariation: 0.06
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  impactSound:
+    clips:
+    - {fileID: 8300000, guid: 5044e98d6700470d86d2f6348b725333, type: 3}
+    - {fileID: 8300000, guid: 8ca1e0abd865420cb75f1a4f76311b80, type: 3}
+    - {fileID: 8300000, guid: 4f8a7a3237d042a09fdd8c44d1403235, type: 3}
+    volume: 0.7
+    pitch: 1
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
   speed: 10
   firstHitDamage: 30
   followingHitDamage: 15

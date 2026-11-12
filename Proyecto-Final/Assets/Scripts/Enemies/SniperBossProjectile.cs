@@ -3,6 +3,14 @@ using UnityEngine;
 
 public class SniperBossProjectile : MonoBehaviour
 {
+    [Header("Sound")]
+    [SerializeField] private SoundClipData impactSound;
+
+    private void PlayImpactSound()
+    {
+        // Positioned where it lands; the projectile is destroyed right after.
+        SoundManager.Instance?.PlayClip(impactSound, SoundSourceType.Localized, transform);
+    }
     private Transform owner;
     private Vector2 direction;
 
@@ -64,6 +72,7 @@ public class SniperBossProjectile : MonoBehaviour
             return;
 
         hasHit = true;
+        PlayImpactSound();
 
         if (target.CompareTag("Home"))
         {

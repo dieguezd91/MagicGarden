@@ -114,6 +114,8 @@ public class Spider : EnemyBase
     {
         float damage = Random.Range(minDamage, maxDamage);
 
+        PlayEnemySound(EnemySoundType.Impact, SoundSourceType.Localized, target.transform);
+
         if (target.TryGetComponent(out LifeController life))
         {
             life.TakeDamage(damage);

@@ -362,6 +362,16 @@ MonoBehaviour:
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
+  impact:
+    clips:
+    - {fileID: 8300000, guid: 63af3670d33840d981884e3dc13f4971, type: 3}
+    - {fileID: 8300000, guid: 650f6a5ac4974e26b6984fb2974fdfb4, type: 3}
+    volume: 0.6
+    pitch: 1
+    pitchVariation: 0.08
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.0
 --- !u!1 &1692829016251714825
 GameObject:
   m_ObjectHideFlags: 0

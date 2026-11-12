@@ -157,6 +157,8 @@ public class SniperBoss : Boss
         Vector2 direction =
             (targetPosition - origin.position).normalized;
 
+        PlayEnemySound(EnemySoundType.Attack, SoundSourceType.Localized, origin);
+
         GameObject projectileObject = Instantiate(
             sniperData.ProjectilePrefab,
             origin.position,

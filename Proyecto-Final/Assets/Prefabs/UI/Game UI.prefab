@@ -2393,6 +2393,9 @@ MonoBehaviour:
   musicSlider: {fileID: 6274973326503030650}
   sfxSlider: {fileID: 5382776727498028253}
   muteButton: {fileID: 1754022704461259141}
+  sliderTickClip: {fileID: 0}
+  sliderTickMixerGroup: {fileID: -8065833381815908007, guid: 5e6626574c6616a40a8e778a90666ada, type: 2}
+  sliderTickVolume: 0.35
 --- !u!114 &4455532361817896765
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18246,7 +18249,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 32767
+  m_SortingOrder: 9000
   m_TargetDisplay: 0
 --- !u!1 &7178163177222214065
 GameObject:

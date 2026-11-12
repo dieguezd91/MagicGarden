@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 994721063522815017}
   - component: {fileID: -3057195719694939928}
   - component: {fileID: 6808996470455045839}
+  - component: {fileID: 4777378912789267037}
   m_Layer: 9
   m_Name: Electric Orchid
   m_TagString: Plant
@@ -363,3 +364,55 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e400af25d19a07c4e958e96698123925, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &4777378912789267037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6736001113723686055}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1477084f3e3c4b9ba2f30b312d49820c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  grown:
+    clips:
+    - {fileID: 8300000, guid: 896700b1a2f94d7468d0c163c0063d50, type: 3}
+    - {fileID: 8300000, guid: 338d547ff7d49e141abc3de468052a7d, type: 3}
+    volume: 0.6
+    pitch: 1
+    pitchVariation: 0.05
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.0
+  attack:
+    clips:
+    - {fileID: 8300000, guid: 3f58a24dcb8abbe478e42376f3c38cd9, type: 3}
+    - {fileID: 8300000, guid: db35e9a64ae4fea4eb2482e22b6636d7, type: 3}
+    - {fileID: 8300000, guid: e9af8d3f2a90ce94faf7430897e04826, type: 3}
+    volume: 0.4
+    pitch: 1
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  hit:
+    clips:
+    - {fileID: 8300000, guid: 04ef33e1ab9a9ab428753072ad6cf9e3, type: 3}
+    - {fileID: 8300000, guid: debf87092e3ec1840b12b3293ca668ce, type: 3}
+    volume: 0.35
+    pitch: 1
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  loop:
+    clips:
+    - {fileID: 8300000, guid: 7f14fb2d743228e40bbc87b9ef38ec5e, type: 3}
+    volume: 0.25
+    pitch: 1
+    pitchVariation: 0.03
+    loop: 1
+    randomizeClip: 1
+    cooldownTime: 0.0

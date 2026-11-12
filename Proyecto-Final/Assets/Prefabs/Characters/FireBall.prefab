@@ -9791,6 +9791,16 @@ MonoBehaviour:
   impactParticlesPrefab: {fileID: 491567316690014037, guid: ee269b145022c494b8a6424f16134fdc, type: 3}
   cameraShakeIntensity: 0.3
   cameraShakeDuration: 0.3
+  impactSound:
+    clips:
+    - {fileID: 8300000, guid: 1087723958504221a033ac5394186432, type: 3}
+    - {fileID: 8300000, guid: 257f5188bccf43c59aef6b054e30cc12, type: 3}
+    volume: 0.55
+    pitch: 1
+    pitchVariation: 0.08
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.0
 --- !u!198 &8098347604227706814
 ParticleSystem:
   m_ObjectHideFlags: 0

@@ -3,6 +3,9 @@ using UnityEngine.Events;
 
 public class HouseLifeController : MonoBehaviour
 {
+    [Header("Sound")]
+    [Tooltip("Random clip per hit.")]
+    [SerializeField] private SoundClipData hitSound;
     [Header("HEALTH SETTINGS")]
     public float maxHealth = 1000f;
     public float currentHealth;
@@ -50,7 +53,11 @@ public class HouseLifeController : MonoBehaviour
         if (damage > 0f)
         {
             onDamaged?.Invoke(damage);
-            SoundManager.Instance.Play("HouseHit");
+            if (SoundManager.Instance != null && hitSound != null && hitSound.CanPlay())
+            {
+                SoundManager.Instance.PlayClip(hitSound, SoundSourceType.Localized, transform);
+                hitSound.SetLastPlayTime();
+            }
             PlayDamageParticles();
         }
 

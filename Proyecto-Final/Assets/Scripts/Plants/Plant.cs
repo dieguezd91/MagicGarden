@@ -46,6 +46,10 @@ public class Plant : MonoBehaviour
     private Collider2D plantCollider;
 
     public PlantSoundBase SoundBase => _soundBase;
+    protected void PlaySound(PlantSoundType type)
+    {
+        if (_soundBase != null) _soundBase.PlaySound(type, SoundSourceType.Localized, transform);
+    }
     public string UpgradeId => plantData != null ? plantData.UpgradeLineId : null;
     public virtual MagicGarden.Target DescribeUpgradeTarget()
     {
@@ -280,6 +284,7 @@ public class Plant : MonoBehaviour
         }
 
         OnMature();
+        PlaySound(PlantSoundType.Grown);
 
         if (plantCollider != null)
             plantCollider.enabled = true;

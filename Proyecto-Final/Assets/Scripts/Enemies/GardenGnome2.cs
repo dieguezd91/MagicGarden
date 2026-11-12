@@ -169,6 +169,7 @@ public class GardenGnome2 : EnemyBase
 
     public void Explode()
     {
+        PlayEnemySound(EnemySoundType.Impact, SoundSourceType.Localized, transform);
         if (targetLife != null && targetLife.IsTargetable())
         {
             float damage = Random.Range(

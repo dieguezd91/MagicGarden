@@ -10121,6 +10121,17 @@ MonoBehaviour:
   lifeTime: 3
   floatingDamagePrefab: {fileID: 8011744024934345175, guid: b18d5e020de9918429f62b516be2ef30, type: 3}
   impactParticlesPrefab: {fileID: 491567316690014037, guid: b4718f9f977adb740a54a6ea904ae4f7, type: 3}
+  impactSound:
+    clips:
+    - {fileID: 8300000, guid: 2629ce31e1f343c2b9e012369afe1a78, type: 3}
+    - {fileID: 8300000, guid: 32b928fec3c2428bab68f686badfb29a, type: 3}
+    - {fileID: 8300000, guid: b632b77bac8e461fa6b56595445ab18d, type: 3}
+    volume: 0.7
+    pitch: 1
+    pitchVariation: 0.08
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
   speed: 10
 --- !u!1 &8701345492937397947
 GameObject:

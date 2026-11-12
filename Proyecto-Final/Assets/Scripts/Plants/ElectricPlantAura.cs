@@ -14,6 +14,11 @@ public class ElectricPlantAura : Plant
     [Header("VFX & Feedback")]
     [SerializeField] private GameObject floatingDamagePrefab;
 
+    [Header("Sound")]
+    [Tooltip("Seconds between zap/hit sounds, shared by every orchid so several don't stack.")]
+    [SerializeField] private float zapSoundInterval = 1.2f;
+    private static float lastZapSoundTime = float.MinValue;
+
     public void Describe(MagicGarden.Target target)
     {
         target.Capability = "ElectricPlantAura";
@@ -35,6 +40,8 @@ public class ElectricPlantAura : Plant
     {
         while (true)
         {
+            // Hum only once grown, matching when the plant is "on".
+            if (IsFullyGrown() && SoundBase != null) SoundBase.PlayLoop();
             ApplyAreaEffects();
 
             yield return new WaitForSeconds(areaCheckInterval);
@@ -56,6 +63,7 @@ public class ElectricPlantAura : Plant
             Upgraded(MagicGarden.Stat.Damage, damagePerSecond) *
             areaCheckInterval;
 
+        bool hitAny = false;
         foreach (var hit in hits)
         {
             LifeController enemyLife = hit.GetComponent<LifeController>();
@@ -64,8 +72,17 @@ public class ElectricPlantAura : Plant
                 continue;
 
             enemyLife.TakeDamage(damage);
+            hitAny = true;
 
             ShowDamageText(enemyLife.transform, damage);
+        }
+
+        // Damage ticks every areaCheckInterval; sound only once per zapSoundInterval across all orchids.
+        // Time.time < last covers a stale static after an editor play session without domain reload.
+        if (hitAny && (Time.time - lastZapSoundTime >= zapSoundInterval || Time.time < lastZapSoundTime))
+        {
+            lastZapSoundTime = Time.time;
+            PlaySound(Random.value < 0.6f ? PlantSoundType.Attack : PlantSoundType.Hit);
         }
     }
 

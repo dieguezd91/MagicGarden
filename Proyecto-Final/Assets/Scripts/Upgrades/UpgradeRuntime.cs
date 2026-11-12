@@ -93,6 +93,7 @@ public sealed class UpgradeRuntime : MonoBehaviour
             (tutorial.IsPlayerGated() || !tutorial.CanAcceptPlayerInput() ||
              tutorial.GetCurrentObjectiveType() == TutorialObjectiveType.Wait || (tutorialUI != null && tutorialUI.IsTyping))) return;
         if (!flow.Open(UIModal.LevelUp)) return;
+        SoundManager.Instance?.Play("Level_Up"); // when the player sees the level-up, which can be later than the XP gain
         savedScale = Time.timeScale;
         choosing = true;
         GameFlowController.Instance.IsChoosingUpgrade = true;
@@ -119,6 +120,7 @@ public sealed class UpgradeRuntime : MonoBehaviour
     public void Choose(int index)
     {
         if (!choosing || experience.PendingChoices <= 0) return;
+        SoundManager.Instance?.Play("Upgrade_Select");
         if (offers.Count == 0)
         {
             experience.ConsumeChoice(); // Explicit Continue for exhausted pools, never silently soft-lock.

@@ -117,6 +117,7 @@ public class GardenGnome : EnemyBase
     private IEnumerator ClingAndExplode(Rigidbody2D playerRb)
     {
         isClinging = true;
+        PlayEnemySound(EnemySoundType.Attack, SoundSourceType.Localized, transform);
         rb.velocity = Vector2.zero;
         rb.isKinematic = true;
 
@@ -146,6 +147,7 @@ public class GardenGnome : EnemyBase
 
     public void Explode()
     {
+        PlayEnemySound(EnemySoundType.Impact, SoundSourceType.Localized, transform);
         // 1. Lógica de Daño
         if (targetLife != null && targetLife.IsTargetable())
         {

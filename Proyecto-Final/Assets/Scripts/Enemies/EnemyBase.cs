@@ -346,8 +346,14 @@ public abstract class EnemyBase : MonoBehaviour, IEnemy
     {
         //Debug.Log($"[EnemyBase] {gameObject.name} OnDamaged invoked. Damage={damage} Type={damageType}");
 
+        // Saw/trails damage every frame and auras every 0.1s; without this the hurt sound restarts constantly.
+        if (Time.time < nextHurtSoundTime) return;
+        nextHurtSoundTime = Time.time + (damageType == LifeController.DamageType.DamageOverTime ? 0.5f : 0.2f);
+
         PlayEnemySound(EnemySoundType.Hurt, SoundSourceType.Localized, transform);
     }
+
+    private float nextHurtSoundTime;
 
     // Called when LifeController invokes onDeath
     private void OnLifeDeath()

@@ -116,6 +116,7 @@ public class SpellInventory : MonoBehaviour
         if (UpgradeRuntime.GameplayBlocked) return;
         if (index < 0 || index >= spellSlots.Length) return;
 
+        if (index != selectedSlotIndex) SoundManager.Instance?.Play("UI_Spell_Slot_Select");
         selectedSlotIndex = index;
         onSpellSlotSelected?.Invoke(selectedSlotIndex);
     }

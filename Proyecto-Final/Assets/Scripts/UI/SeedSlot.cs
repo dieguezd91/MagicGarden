@@ -227,6 +227,7 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (!CanStartDrag()) return;
+        SoundManager.Instance?.Play("UI_Slot_Pickup");
         OnDragStarted?.Invoke(SlotIndex);
     }
 
@@ -237,6 +238,7 @@ public class SeedSlot : ImprovedUIButton, IBeginDragHandler, IDragHandler, IEndD
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        SoundManager.Instance?.Play("UI_Slot_Drop");
         OnDragEnded?.Invoke(SlotIndex, eventData);
     }
 }

@@ -13,7 +13,10 @@ namespace MagicGarden.LoadoutUI
         public void OnBeginDrag(PointerEventData data)
         {
             if (data.button == PointerEventData.InputButton.Left && owner != null && owner.BeginOptionDrag(this, optionIndex, data))
+            {
                 data.eligibleForClick = false;
+                SoundManager.Instance?.Play("UI_Slot_Pickup");
+            }
         }
         public void OnDrag(PointerEventData data) { if (owner != null) owner.MoveOptionDrag(this, data); }
         public void OnEndDrag(PointerEventData data) { if (owner != null) owner.EndOptionDrag(this, data); }

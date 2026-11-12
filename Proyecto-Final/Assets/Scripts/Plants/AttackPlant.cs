@@ -151,6 +151,7 @@ public class AttackPlant : Plant
     public void OnShootAnimationEvent()
     {
         if (UpgradeRuntime.GameplayBlocked || projectile == null || queuedTarget == null || !queuedTarget.gameObject.activeInHierarchy) return;
+        PlaySound(PlantSoundType.Attack);
         ShootAt(queuedTarget);
         int additional = Mathf.Max(Mathf.RoundToInt(UpgradeRuntime.EffectValue(UpgradeId, MagicGarden.EffectKind.AdditionalTargets)), 0);
         if (additional <= 0) return;

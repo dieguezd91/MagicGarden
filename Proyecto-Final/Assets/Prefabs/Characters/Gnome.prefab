@@ -5271,13 +5271,13 @@ MonoBehaviour:
     cooldownTime: 0
   attack:
     clips:
-    - {fileID: 8300000, guid: b19a78705afc458449f9769c62baea91, type: 3}
-    volume: 0.4
+    - {fileID: 8300000, guid: 34e648888bdb454ca94147a56c6f5fcd, type: 3}
+    volume: 0.5
     pitch: 1
     pitchVariation: 0.1
     loop: 0
     randomizeClip: 1
-    cooldownTime: 0
+    cooldownTime: 0.0
   special:
     clips: []
     volume: 1
@@ -5302,6 +5302,15 @@ MonoBehaviour:
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
+  impact:
+    clips:
+    - {fileID: 8300000, guid: 234c3752abfc4cda82469a0a5cd3719e, type: 3}
+    volume: 0.75
+    pitch: 1
+    pitchVariation: 0.06
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.0
 --- !u!1001 &2888283139860618534
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -10117,6 +10117,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ee12e4ec5ecac4d837483a0e7d7cdf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  impactSound:
+    clips:
+    - {fileID: 8300000, guid: 575213008a164c13b2ecdbed267bb004, type: 3}
+    volume: 0.55
+    pitch: 1
+    pitchVariation: 0.08
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.0
 --- !u!1 &8701345492937397947
 GameObject:
   m_ObjectHideFlags: 0

@@ -161447,6 +161447,17 @@ MonoBehaviour:
       m_Calls: []
   damageParticles: {fileID: 412191099}
   minParticleInterval: 0.1
+  hitSound:
+    clips:
+    - {fileID: 8300000, guid: cd47b3840f1aac94aa040423640be064, type: 3}
+    - {fileID: 8300000, guid: 84f136eeaa587d44598c3d5734652309, type: 3}
+    - {fileID: 8300000, guid: 8709f98114a64bb43bd1c9ef291e7a61, type: 3}
+    volume: 0.7
+    pitch: 1
+    pitchVariation: 0.06
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.1
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0

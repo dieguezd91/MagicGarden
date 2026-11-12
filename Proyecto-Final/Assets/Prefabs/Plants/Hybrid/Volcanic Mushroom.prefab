@@ -364,13 +364,16 @@ MonoBehaviour:
     randomizeClip: 1
     cooldownTime: 0
   attack:
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 198b650f401fff44299b0b1a64ec36ea, type: 3}
+    - {fileID: 8300000, guid: 60e7916697391124e9141642544ec14c, type: 3}
+    - {fileID: 8300000, guid: 3fe40f767fa10c8419353841b103f108, type: 3}
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.1
     loop: 0
     randomizeClip: 1
-    cooldownTime: 0
+    cooldownTime: 0.0
   hurt:
     clips:
     - {fileID: 8300000, guid: ad8829dd6d25bd144bc66597635d1f3c, type: 3}
@@ -389,6 +392,16 @@ MonoBehaviour:
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
+  grown:
+    clips:
+    - {fileID: 8300000, guid: 896700b1a2f94d7468d0c163c0063d50, type: 3}
+    - {fileID: 8300000, guid: 338d547ff7d49e141abc3de468052a7d, type: 3}
+    volume: 0.6
+    pitch: 1
+    pitchVariation: 0.05
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0.0
 --- !u!1001 &5836779166578172002
 PrefabInstance:
   m_ObjectHideFlags: 0
