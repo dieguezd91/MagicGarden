@@ -210,9 +210,6 @@ public class PlayerAbilitySystem : MonoBehaviour
 
     private void HandleCycleInput(int direction)
     {
-        if (!IsAbilityGameState()) return;
-        if ((pauseController != null && pauseController.IsPaused)) return;
-
         CycleAbility(direction);
     }
 
@@ -251,9 +248,6 @@ public class PlayerAbilitySystem : MonoBehaviour
 
     private void HandleScrollInput(float scrollDelta)
     {
-        if (isDigging || isHarvesting) return;
-        if (!IsAbilityGameState()) return;
-
         int direction = scrollDelta > 0 ? -1 : 1;
         CycleAbility(direction);
     }
@@ -834,8 +828,35 @@ public class PlayerAbilitySystem : MonoBehaviour
 
     private bool IsAbilityGameState()
     {
-        var phase = GameFlowController.Instance.CurrentPhase;
-        return !UpgradeRuntime.GameplayBlocked && phase == GamePhase.Day;
+        if (UpgradeRuntime.GameplayBlocked)
+            return false;
+
+        if (GameFlowController.Instance == null)
+            return false;
+
+        if (GameFlowController.Instance.CurrentPhase != GamePhase.Day)
+            return false;
+
+        if (pauseController != null && pauseController.IsPaused)
+            return false;
+
+        if (UIManager.Instance != null && UIManager.Instance.IsInventoryOpen())
+            return false;
+
+        int houseLayer = LayerMask.NameToLayer("House");
+
+        if (houseLayer != -1)
+        {
+            Collider2D houseHit = Physics2D.OverlapPoint(
+                transform.position,
+                1 << houseLayer
+            );
+
+            if (houseHit != null)
+                return false;
+        }
+
+        return true;
     }
 
     public bool IsBusy()
