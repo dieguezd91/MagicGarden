@@ -202,7 +202,7 @@ MonoBehaviour:
   idleSoundMaxTime: 15
   projectile: {fileID: 8215708087478250761, guid: 51ebf1bfd9068e141bc7fa4f60719164, type: 3}
   firePoint: {fileID: 5461837167220732977}
-  cooldown: 2
+  cooldown: 2.5
   detectionRange: 8
   enemyLayer:
     serializedVersion: 2

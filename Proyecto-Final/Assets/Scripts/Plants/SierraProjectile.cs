@@ -37,10 +37,18 @@ public class SierraProjectile : Spell
     private float distanceTravelled;
     private float attachedTime;
 
+    private Rigidbody2D projectileBody;
+    private bool originalBodySimulation;
+
     private bool ownerNotified;
 
     protected override void Awake()
     {
+        projectileBody = GetComponent<Rigidbody2D>();
+
+        if (projectileBody != null)
+            originalBodySimulation = projectileBody.simulated;
+
         lifeTime = 0f;
         base.Awake();
     }
@@ -116,6 +124,12 @@ public class SierraProjectile : Spell
             return;
         }
 
+        Vector2 targetDirection =
+            (Vector2)initialTarget.position - (Vector2)transform.position;
+
+        if (targetDirection.sqrMagnitude > 0.001f)
+            direction = targetDirection.normalized;
+
         float movement = speed * Time.deltaTime;
 
         transform.position += (Vector3)(direction * movement);
@@ -135,21 +149,33 @@ public class SierraProjectile : Spell
         if (state != ProjectileState.Flying)
             return;
 
-        if (!collision.CompareTag("Enemy") &&
-            !collision.transform.root.CompareTag("Enemy"))
-        {
+        Transform enemyRoot = FindEnemyRoot(collision.transform);
+
+        if (enemyRoot == null)
             return;
-        }
 
         LifeController life = collision.GetComponentInParent<LifeController>();
 
         if (life == null || !life.IsAlive())
             return;
 
-        AttachToEnemy(life);
+        AttachToEnemy(life, enemyRoot);
     }
 
-    private void AttachToEnemy(LifeController life)
+    private Transform FindEnemyRoot(Transform current)
+    {
+        while (current != null)
+        {
+            if (current.CompareTag("Enemy"))
+                return current;
+
+            current = current.parent;
+        }
+
+        return null;
+    }
+
+    private void AttachToEnemy(LifeController life, Transform enemyRoot)
     {
         if (life == null || !life.IsAlive())
         {
@@ -160,27 +186,34 @@ public class SierraProjectile : Spell
         attachedTargetLife = life;
         initialTarget = null;
 
-        Transform enemy = life.transform;
-        Transform gripPoint = FindChildRecursive(enemy, gripPointName);
+        Transform gripPoint = FindChildRecursive(enemyRoot, gripPointName);
+
+        Transform attachParent = gripPoint != null
+            ? gripPoint
+            : enemyRoot;
+
+        if (projectileBody != null)
+        {
+            projectileBody.velocity = Vector2.zero;
+            projectileBody.angularVelocity = 0f;
+            projectileBody.simulated = false;
+        }
+
+        transform.SetParent(attachParent, false);
 
         if (gripPoint != null)
-        {
-            transform.SetParent(gripPoint);
             transform.localPosition = Vector3.zero;
-            transform.localRotation = Quaternion.identity;
-        }
         else
-        {
-            transform.SetParent(enemy);
             transform.localPosition = fallbackAttachOffset;
-            transform.localRotation = Quaternion.identity;
-        }
+
+        transform.localRotation = Quaternion.identity;
 
         attachedTime = 0f;
         state = ProjectileState.Attached;
 
         if (attackParticles != null)
             attackParticles.Play();
+
     }
 
     private void UpdateAttached()
@@ -218,6 +251,13 @@ public class SierraProjectile : Spell
         initialTarget = null;
 
         transform.SetParent(null, true);
+
+        if (projectileBody != null)
+        {
+            projectileBody.simulated = originalBodySimulation;
+            projectileBody.velocity = Vector2.zero;
+            projectileBody.angularVelocity = 0f;
+        }
 
         if (attackParticles != null)
         {

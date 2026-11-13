@@ -143,7 +143,7 @@ public class DefensePlant : Plant
         LifeController lifeController = GetComponent<LifeController>();
         if (lifeController != null)
         {
-            lifeController.maxHealth *= 2f;
+            lifeController.maxHealth = 350f;
             lifeController.currentHealth = lifeController.maxHealth;
             lifeController.onHealthChanged?.Invoke(lifeController.currentHealth, lifeController.maxHealth);
         }

@@ -209,7 +209,7 @@ MonoBehaviour:
   firePoint: {fileID: 5461837167220732977}
   projectileSpeed: 10
   returnSpeed: 14
-  attackDamagePerSecond: 5
+  attackDamagePerSecond: 20
   attackDuration: 3
   attackCooldown: 1
   gripPointName: PlantGripPoint
