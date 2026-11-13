@@ -18,6 +18,7 @@ public class InventoryUIController : UIControllerBase
     [SerializeField] private InventoryAnimationController animationController;
     [SerializeField] private bool waitForAnimationToComplete = true;
 
+    private bool resumePauseWhenInventoryCloses;
     public bool IsInventoryOpen => UIManager.Instance?.Flow != null && UIManager.Instance.Flow.IsOpen(UIModal.Inventory);
 
     protected override void CacheReferences()
@@ -70,25 +71,39 @@ public class InventoryUIController : UIControllerBase
 
     private void HandleInventoryInput()
     {
-        if (pauseController != null && pauseController.IsPaused)
-            return;
-
-        if (Input.GetKeyDown(toggleInventoryKey) || Input.GetKeyDown(alternateToggleKey))
-        {
-            UIManager.Instance?.Tooltip?.ForceHide();
-            ToggleInventory();
-        }
-
-        if (closeInventoryOnEscape && Input.GetKeyDown(KeyCode.Escape) && IsInventoryOpen && !InputConsumptionManager.IsEscapeConsumed)
+        if (IsInventoryOpen)
         {
             if (animationController != null && animationController.IsAnimating)
+                return;
+
+            if (Input.GetKeyDown(toggleInventoryKey) ||
+                Input.GetKeyDown(alternateToggleKey))
             {
+                UIManager.Instance?.Tooltip?.ForceHide();
+                CloseInventory();
                 return;
             }
 
-            InputConsumptionManager.ConsumeEscape();
+            if (closeInventoryOnEscape &&
+                Input.GetKeyDown(KeyCode.Escape) &&
+                !InputConsumptionManager.IsEscapeConsumed)
+            {
+                InputConsumptionManager.ConsumeEscape();
+                UIManager.Instance?.Tooltip?.ForceHide();
+                CloseInventory();
+            }
+
+            return;
+        }
+
+        if (pauseController != null && pauseController.IsPaused)
+            return;
+
+        if (Input.GetKeyDown(toggleInventoryKey) ||
+            Input.GetKeyDown(alternateToggleKey))
+        {
             UIManager.Instance?.Tooltip?.ForceHide();
-            CloseInventory();
+            OpenInventory();
         }
     }
 
@@ -102,15 +117,16 @@ public class InventoryUIController : UIControllerBase
 
     public void OpenInventory()
     {
-        if (inventoryPanel == null) return;
+        if (inventoryPanel == null)
+            return;
 
         if (!CanOpenInventory())
             return;
 
         if (animationController != null && animationController.IsAnimating)
-        {
             return;
-        }
+
+        bool wasPaused = pauseController != null && pauseController.IsPaused;
 
         if (UIManager.Instance != null && UIManager.Instance.Flow != null)
         {
@@ -118,7 +134,10 @@ public class InventoryUIController : UIControllerBase
                 return;
         }
 
+        resumePauseWhenInventoryCloses = !wasPaused;
+
         inventoryPanel.SetActive(true);
+
         TutorialEvents.InvokeInventoryOpened();
         UIEvents.TriggerInventoryOpened();
     }
@@ -153,19 +172,28 @@ public class InventoryUIController : UIControllerBase
 
     private void PerformCloseInventory()
     {
-        if (inventoryPanel == null) return;
+        if (inventoryPanel == null)
+            return;
 
         if (inventoryUI != null)
             inventoryUI.ClearDescriptionPanel();
 
         inventoryPanel.SetActive(false);
-        
+
         UIManager.Instance?.Flow?.Close(UIModal.Inventory);
 
-        if (UIManager.Instance != null && UIManager.Instance.HUD != null) UIManager.Instance.HUD.SetActive(true);
+        if (UIManager.Instance != null && UIManager.Instance.HUD != null)
+            UIManager.Instance.HUD.SetActive(true);
 
-        // Always notify listeners that inventory has closed to avoid missed events
         UIEvents.TriggerInventoryClosed();
+
+        if (resumePauseWhenInventoryCloses)
+        {
+            resumePauseWhenInventoryCloses = false;
+
+            if (pauseController != null && pauseController.IsPaused)
+                pauseController.Resume();
+        }
     }
 
     private bool CanOpenInventory(bool isOptions = false)
@@ -204,15 +232,16 @@ public class InventoryUIController : UIControllerBase
 
     public void OpenInventoryWithPage(InventoryPage page)
     {
-        if (inventoryPanel == null) return;
+        if (inventoryPanel == null)
+            return;
 
         if (!CanOpenInventory(page == InventoryPage.Options))
             return;
 
         if (animationController != null && animationController.IsAnimating)
-        {
             return;
-        }
+
+        bool wasPaused = pauseController != null && pauseController.IsPaused;
 
         if (UIManager.Instance != null && UIManager.Instance.Flow != null)
         {
@@ -220,12 +249,12 @@ public class InventoryUIController : UIControllerBase
                 return;
         }
 
-        inventoryPanel.SetActive(true); 
-        
+        resumePauseWhenInventoryCloses = !wasPaused;
+
+        inventoryPanel.SetActive(true);
+
         if (animationController != null)
-        {
             animationController.OpenWithPage(page);
-        }
 
         UIEvents.TriggerInventoryOpened();
     }
