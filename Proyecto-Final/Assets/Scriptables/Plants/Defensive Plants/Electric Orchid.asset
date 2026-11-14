@@ -15,7 +15,7 @@ MonoBehaviour:
   upgradeLineId: 
   plantName: Electric Orchid
   plantPrefab: {fileID: 6736001113723686055, guid: be9f494d259d65d4aa9750c76596163d, type: 3}
-  plantIcon: {fileID: 668908640, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
+  plantIcon: {fileID: -1062694745, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
   fullyGrownSprite: {fileID: 370829271, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
   daysToGrow: 1
   description: '<u>Defensive plant</u>. Deals damage to enemies that attack it. <u>WARNING:

@@ -215,7 +215,7 @@ MonoBehaviour:
   idleSoundMinTime: 5
   idleSoundMaxTime: 15
   radius: 5.5
-  damagePerSecond: 2
+  damagePerSecond: 10
   areaCheckInterval: 0.4
   enemyLayer:
     serializedVersion: 2
