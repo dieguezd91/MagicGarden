@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 994721063522815017}
   - component: {fileID: -3057195719694939928}
   - component: {fileID: 6808996470455045839}
+  - component: {fileID: 3571993964666859570}
   m_Layer: 9
   m_Name: Electric Orchid
   m_TagString: Plant
@@ -162,7 +163,7 @@ BoxCollider2D:
   m_Offset: {x: -0.008358583, y: -0.13107395}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
+    pivot: {x: 0.5, y: 0.16666667}
     oldSize: {x: 1.875, y: 1.875}
     newSize: {x: 1, y: 2}
     adaptiveTilingThreshold: 0.5
@@ -219,6 +220,27 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   floatingDamagePrefab: {fileID: 8011744024934345175, guid: b18d5e020de9918429f62b516be2ef30, type: 3}
+--- !u!95 &3571993964666859570
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6736001113723686055}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 22100000, guid: ed3d467b2d213624ba8d091fbc26d74b, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &8587537363278543417
 GameObject:
   m_ObjectHideFlags: 0
