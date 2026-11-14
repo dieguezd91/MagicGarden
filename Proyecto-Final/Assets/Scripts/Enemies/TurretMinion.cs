@@ -13,6 +13,7 @@ public class TurretMinion : EnemyBase
 
     [Header("AIM SETTINGS")]
     [SerializeField] private float aimRotationOffset = -90f;
+    [SerializeField] private float aimRotationSpeed = 360f;
 
     private Transform playerTarget;
 
@@ -30,6 +31,22 @@ public class TurretMinion : EnemyBase
 
     public bool IsBursting =>
         burstCoroutine != null || isCurrentlyAttacking;
+
+    private void LateUpdate()
+    {
+        if (isDead || aimPivot == null)
+            return;
+
+        if (UpgradeRuntime.GameplayBlocked)
+            return;
+
+        Transform target = GetPlayerTarget();
+
+        if (target == null || !IsPlayerInAttackRange(target))
+            return;
+
+        UpdateAim(target.position);
+    }
 
     protected override EnemyDataSO GetEnemyData()
     {
@@ -241,23 +258,28 @@ public class TurretMinion : EnemyBase
         if (aimPivot == null)
             return;
 
-        Transform origin = firePoint != null
-            ? firePoint
-            : aimPivot;
-
         Vector2 direction = (
             (Vector2)targetPosition -
-            (Vector2)origin.position
+            (Vector2)aimPivot.position
         ).normalized;
+
+        if (direction.sqrMagnitude < 0.001f)
+            return;
 
         float angle =
             Mathf.Atan2(direction.y, direction.x) *
             Mathf.Rad2Deg + aimRotationOffset;
 
-        aimPivot.rotation = Quaternion.Euler(
+        Quaternion targetRotation = Quaternion.Euler(
             0f,
             0f,
             angle
+        );
+
+        aimPivot.rotation = Quaternion.RotateTowards(
+            aimPivot.rotation,
+            targetRotation,
+            aimRotationSpeed * Time.deltaTime
         );
     }
 
