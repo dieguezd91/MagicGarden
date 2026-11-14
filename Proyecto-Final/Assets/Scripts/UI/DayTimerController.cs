@@ -52,12 +52,15 @@ public class DayTimerController : MonoBehaviour
             GameFlowController.Instance.OnPhaseChanged -= HandleGameStateChanged;
     }
 
-    /// <summary>
-    /// Consume 1 acción del día.
-    /// Devuelve true si la acción pudo ser consumida.
-    /// </summary>
+    
     public bool ConsumeAction(DayActionType actionType)
     {
+        if (TutorialManager.Instance != null &&
+            TutorialManager.Instance.IsTutorialActive())
+        {
+            return false;
+        }
+
         if (!actionsActive)
             return false;
 
