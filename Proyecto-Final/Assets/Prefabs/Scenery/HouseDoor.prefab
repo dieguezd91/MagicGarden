@@ -95,7 +95,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -0.25159436}
+  m_Offset: {x: -0.017671347, y: -0.5932397}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -106,7 +106,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 2.53, y: 1.5031887}
+  m_Size: {x: 2.235478, y: 0.819898}
   m_EdgeRadius: 0
 --- !u!1 &5615279154293389964
 GameObject:
@@ -237,6 +237,7 @@ MonoBehaviour:
   cooldown: 0.5
   outsideCollider: {fileID: 1751500892440672662}
   insideCollider: {fileID: 50142797407054427}
+  colliderToDisable: {fileID: 0}
   outsideSpawn: {fileID: 0}
   insideSpawn: {fileID: 0}
   doorLockAnimator: {fileID: 0}
@@ -274,7 +275,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.09154773, y: -0.13551426}
+  m_Offset: {x: 0.09154773, y: -0.70752144}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -285,7 +286,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1.757585, y: 0.9284191}
+  m_Size: {x: 1.757585, y: 0.5011215}
   m_EdgeRadius: 0
 --- !u!1 &9200303291753838371
 GameObject:
