@@ -54,6 +54,10 @@ public class UIManager : MonoBehaviour
     public UIFlowController Flow => uiFlowController;
     public MagicGarden.LoadoutUI.DailyLoadoutPresenter DailyLoadout => dailyLoadout;
 
+    private bool isInsideHouse;
+
+    public bool IsInsideHouse => isInsideHouse;
+
     public void CloseDailyLoadout() => dailyLoadout?.Close();
     private void OnDisable() => CloseDailyLoadout();
     private void OnDestroy()
@@ -213,7 +217,7 @@ public class UIManager : MonoBehaviour
 
     public void ShowInteriorHUD()
     {
-        //if (HUD != null)
+        isInsideHouse = true;
 
         if (Health != null)
             Health.gameObject.SetActive(true);
@@ -229,11 +233,12 @@ public class UIManager : MonoBehaviour
 
         if (hudAbilities != null)
             hudAbilities.SetActive(false);
-
     }
 
     public void ShowExteriorHUD()
     {
+        isInsideHouse = false;
+
         if (HUD != null)
             HUD.SetActive(true);
 
@@ -249,11 +254,13 @@ public class UIManager : MonoBehaviour
         if (SpellSlots != null)
             SpellSlots.gameObject.SetActive(true);
 
-        if (GamePhase != null)
-        {
+        if (hudAbilities != null)
+            hudAbilities.SetActive(true);
+
+        if (GamePhase != null && GameFlowController.Instance != null)
             GamePhase.OnPhaseChanged(GameFlowController.Instance.CurrentPhase);
-        }
     }
+
 
     public IEnumerator AnimateContinuePanel()
     {
