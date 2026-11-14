@@ -231,6 +231,13 @@ public class BossNightManager : MonoBehaviour
         bossDefeated = true;
         currentBoss = null;
 
+        if (bossPrefabs != null && bossPrefabs.Count > 0)
+        {
+            currentBossIndex = (currentBossIndex + 1) % bossPrefabs.Count;
+
+            
+        }
+
         if (enemiesSpawner != null)
         {
             enemiesSpawner.AdvanceEnemyHorde();
