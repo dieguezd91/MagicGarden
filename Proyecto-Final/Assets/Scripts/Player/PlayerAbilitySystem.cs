@@ -840,19 +840,12 @@ public class PlayerAbilitySystem : MonoBehaviour
         if (pauseController != null && pauseController.IsPaused)
             return false;
 
-        if (UIManager.Instance != null && UIManager.Instance.IsInventoryOpen())
-            return false;
-
-        int houseLayer = LayerMask.NameToLayer("House");
-
-        if (houseLayer != -1)
+        if (UIManager.Instance != null)
         {
-            Collider2D houseHit = Physics2D.OverlapPoint(
-                transform.position,
-                1 << houseLayer
-            );
+            if (UIManager.Instance.IsInventoryOpen())
+                return false;
 
-            if (houseHit != null)
+            if (UIManager.Instance.IsInsideHouse)
                 return false;
         }
 
