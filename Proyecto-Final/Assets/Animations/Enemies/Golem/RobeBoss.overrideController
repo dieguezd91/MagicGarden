@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: RobeBoss
+  m_Controller: {fileID: 9100000, guid: f203914d7bb79c9488a42e5f79aaec2a, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: 7b4db98222c374c40a6350a8abf0a85f, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: c42af38a71d3cb44c832e0be64bad579, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: de7d798cb138e884aac8f7048b16f3c2, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 92b276cf9206a7c40b340e128b59a76f, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: f59b5e42e184e8442972e225afbe17e1, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: eebc4b293ef479b4e8bf1122d68f6246, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 2c6d7a19e8ce5d84d87504b81f9a5f0b, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 449eedb4857bf944995e45a25582f390, type: 2}

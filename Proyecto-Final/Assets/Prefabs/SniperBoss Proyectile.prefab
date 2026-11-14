@@ -5153,7 +5153,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 1, g: 0.3150943, b: 0.3150943, a: 1}
+      maxColor: {r: 0.76470596, g: 0.14117648, b: 0.32941177, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -9955,6 +9955,7 @@ GameObject:
   - component: {fileID: 2630281534700287372}
   - component: {fileID: 4330913303722794977}
   - component: {fileID: 5930067681696161048}
+  - component: {fileID: 1173499983766142987}
   m_Layer: 12
   m_Name: SniperBoss Proyectile
   m_TagString: Untagged
@@ -10022,8 +10023,8 @@ SpriteRenderer:
   m_SortingLayerID: 1972390401
   m_SortingLayer: 3
   m_SortingOrder: 5
-  m_Sprite: {fileID: 1957688738, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
-  m_Color: {r: 1, g: 0.1716981, b: 0.1716981, a: 1}
+  m_Sprite: {fileID: 639478598, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -10096,7 +10097,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.4375, y: 0.4375}
+    oldSize: {x: 0.8125, y: 0.625}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -10117,6 +10118,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2e324082e8eb92478e1bf00989a3390, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1173499983766142987
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8215708087478250761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7085ff6bda962bd40acaf357d0b7a60b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sprites:
+  - {fileID: 639478598, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
+  - {fileID: 1538196311, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
+  - {fileID: -1249492577, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
+  - {fileID: 2137890685, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
+  - {fileID: -596494337, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
+  frameDelay: 1
+  enableColliderToggle: 0
+  targetCollider: {fileID: 0}
 --- !u!1 &8701345492937397947
 GameObject:
   m_ObjectHideFlags: 0
