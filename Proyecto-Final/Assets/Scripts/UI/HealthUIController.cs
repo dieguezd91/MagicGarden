@@ -72,12 +72,15 @@ public class HealthUIController : UIControllerBase
 
     public void UpdatePlayerHealth(float currentHealth, float maxHealth)
     {
-        if (healthBar == null) return;
+        if (healthBar == null || maxHealth <= 0f) return;
+
+        healthBar.maxValue = maxHealth;
 
         float healthPercentage = Mathf.Clamp01(currentHealth / maxHealth);
         targetFill = healthPercentage;
 
         healthBar.value = currentHealth;
+
         UpdatePlayerFillColor(healthPercentage);
         UpdatePlayerHealthText(currentHealth, maxHealth);
 
@@ -85,7 +88,9 @@ public class HealthUIController : UIControllerBase
         {
             if (healthPercentage < lastHealth)
             {
-                if (whiteBarRoutine != null) StopCoroutine(whiteBarRoutine);
+                if (whiteBarRoutine != null)
+                    StopCoroutine(whiteBarRoutine);
+
                 whiteBarRoutine = StartCoroutine(BlinkWhiteBar(healthPercentage));
             }
             else
@@ -96,6 +101,8 @@ public class HealthUIController : UIControllerBase
 
         lastHealth = healthPercentage;
     }
+
+
     private IEnumerator BlinkWhiteBar(float targetNormalized)
     {
         const int blinks = 2;
