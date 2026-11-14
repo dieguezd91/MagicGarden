@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class MainMenuController : UIControllerBase
 {
@@ -18,6 +19,8 @@ public class MainMenuController : UIControllerBase
     [SerializeField] private UIControllerBase _optionsPanel;
     [SerializeField] private UIControllerBase _creditsPanel;
     [SerializeField] private UIControllerBase _controlsPanel;
+
+    private bool isOptionsOpen;
 
     private void Start()
     {
@@ -57,7 +60,7 @@ public class MainMenuController : UIControllerBase
 
         if (_exitButton != null)
         {
-            _exitButton.OnClick.AddListener(GameManager.Instance.QuitGame);
+            _exitButton.OnClick.AddListener(OnExitButtonClick);
             _exitButton.OnHover.AddListener(() => { });
         }
         
@@ -99,36 +102,64 @@ public class MainMenuController : UIControllerBase
 
     private void ShowOptions()
     {
-        if (_optionsPanel != null)
+        if (_optionsPanel == null || isOptionsOpen) return;
+
+        isOptionsOpen = true;
+
+        SetMainMenuButtonsInteractable(false);
+
+        _optionsBackButton.Interactable = true;
+
+        _optionsPanel.Show();
+
+        if (EventSystem.current != null && _optionsBackButton != null)
         {
-            _optionsPanel.Show();
+            EventSystem.current.SetSelectedGameObject(_optionsBackButton.gameObject);
         }
     }
 
     private void HideOptions()
     {
-        if (_optionsPanel != null)
+        if (_optionsPanel == null || !isOptionsOpen) return;
+
+        _optionsPanel.Hide();
+
+        isOptionsOpen = false;
+
+        SetMainMenuButtonsInteractable(true);
+
+        if (EventSystem.current != null && _optionsButton != null)
         {
-            _optionsPanel.Hide();
+            EventSystem.current.SetSelectedGameObject(_optionsButton.gameObject);
         }
     }
 
     private void ShowControls()
     {
+        if (isOptionsOpen) return;
         _controlsPanel?.Show();
+    }
+
+    private void ShowCredits()
+    {
+        if (isOptionsOpen) return;
+
+        if (_creditsPanel != null)
+        {
+            _creditsPanel.Show();
+        }
+    }
+
+    public void OnPlayButtonClick()
+    {
+        if (isOptionsOpen) return;
+
+        SceneLoaderManager.Instance.LoadGameScene();
     }
 
     private void HideControls()
     {
         _controlsPanel?.Hide();
-    }
-
-    private void ShowCredits()
-    {
-        if (_creditsPanel != null)
-        {
-            _creditsPanel.Show();
-        }
     }
 
     private void HideCredits()
@@ -139,8 +170,30 @@ public class MainMenuController : UIControllerBase
         }
     }
 
-    public void OnPlayButtonClick()
+    
+
+    private void SetMainMenuButtonsInteractable(bool interactable)
     {
-        SceneLoaderManager.Instance.LoadGameScene();
+        if (_playButton != null)
+            _playButton.Interactable = interactable;
+
+        if (_optionsButton != null)
+            _optionsButton.Interactable = interactable;
+
+        if (_controlsButton != null)
+            _controlsButton.Interactable = interactable;
+
+        if (_creditsButton != null)
+            _creditsButton.Interactable = interactable;
+
+        if (_exitButton != null)
+            _exitButton.Interactable = interactable;
+    }
+
+    private void OnExitButtonClick()
+    {
+        if (isOptionsOpen) return;
+
+        GameManager.Instance.QuitGame();
     }
 }
