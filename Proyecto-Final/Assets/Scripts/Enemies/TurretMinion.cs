@@ -42,7 +42,7 @@ public class TurretMinion : EnemyBase
 
         Transform target = GetPlayerTarget();
 
-        if (target == null || !IsPlayerInAttackRange(target))
+        if (target == null || !IsPlayerInDetectionRange(target))
             return;
 
         UpdateAim(target.position);
@@ -155,6 +155,7 @@ public class TurretMinion : EnemyBase
         if (isDead ||
             IsBursting ||
             target == null ||
+            !IsPlayerInAttackRange(target) ||
             turretData == null ||
             turretData.ProjectilePrefab == null)
         {
@@ -297,6 +298,17 @@ public class TurretMinion : EnemyBase
         isCurrentlyAttacking = false;
 
         MarkAsDead();
+    }
+
+    public bool IsPlayerInDetectionRange(Transform target)
+    {
+        if (target == null)
+            return false;
+
+        return Vector2.Distance(
+            transform.position,
+            target.position
+        ) <= detectionRange;
     }
 
     protected override void OnDrawGizmosSelected()

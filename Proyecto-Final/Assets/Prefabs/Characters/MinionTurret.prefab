@@ -207,7 +207,7 @@ MonoBehaviour:
   idleSoundMinTime: 5
   idleSoundMaxTime: 15
   turretData: {fileID: 11400000, guid: 23580caae76e0bc48a29d5f77747d9d7, type: 2}
-  aimPivot: {fileID: 0}
+  aimPivot: {fileID: 2698110552696632654}
   firePoint: {fileID: 7171890095304449723}
   aimRotationOffset: -90
   aimRotationSpeed: 360

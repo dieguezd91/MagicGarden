@@ -17,7 +17,7 @@ MonoBehaviour:
   description: 
   maxHealth: 50
   moveSpeed: 0
-  detectionRange: 50
+  detectionRange: 10
   playerPriority: 1
   plantPriority: 1.2
   homePriority: 1.5
