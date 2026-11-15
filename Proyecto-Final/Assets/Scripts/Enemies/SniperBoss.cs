@@ -90,9 +90,10 @@ public class SniperBoss : Boss
             elapsed += Time.deltaTime;
             yield return null;
         }
-
+        animator.SetTrigger("attack");
         if (!isDead && IsTargetValid(target))
         {
+            
             FireAtTarget(target.position);
         }
 
@@ -176,6 +177,7 @@ public class SniperBoss : Boss
             Destroy(projectileObject);
             return;
         }
+        
 
         projectile.Initialize(
             transform,
@@ -184,6 +186,8 @@ public class SniperBoss : Boss
             sniperData.ProjectileDamage,
             sniperData.ProjectileLifetime
         );
+
+        
     }
 
     public void CancelSniperAttack()
