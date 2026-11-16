@@ -228,6 +228,9 @@ public class UIManager : MonoBehaviour
         if (SeedSlots != null)
             SeedSlots.gameObject.SetActive(false);
 
+        if (Tooltip != null)
+            Tooltip.gameObject.SetActive(false);
+
         if (SpellSlots != null)
             SpellSlots.gameObject.SetActive(false);
 
