@@ -219,6 +219,7 @@ public class LifeController : MonoBehaviour
         {
             if (hasDeathAnimation && animator != null && animator.runtimeAnimatorController != null)
             {
+                Debug.Log("me mori");
                 animator.SetTrigger("Death");
             }
             else
