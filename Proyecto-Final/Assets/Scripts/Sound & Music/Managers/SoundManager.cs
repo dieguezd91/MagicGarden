@@ -137,12 +137,29 @@ public class SoundManager : MonoBehaviour
         ApplyFalloff(source);
     }
 
+    [Header("Re-trigger guard")]
+    [Tooltip("The same clip is not started again within this many seconds. Twenty pickups landing on the same frame used to restart one sound twenty times: louder, phasey and no clearer.")]
+    [SerializeField] private float minRetriggerSeconds = 0.05f;
+    private readonly Dictionary<AudioClip, float> lastStartTime = new();
+
+    private bool StartedJustNow(AudioClip clip)
+    {
+        if (clip == null) return false;
+        float now = Time.unscaledTime;
+        // now < last covers a stale entry after an editor play session without domain reload.
+        if (lastStartTime.TryGetValue(clip, out float last) && now >= last && now - last < minRetriggerSeconds)
+            return true;
+        lastStartTime[clip] = now;
+        return false;
+    }
+
     public void PlayOneShot(string name)
     {
         if (!soundLookup.TryGetValue(name, out Sound sound))
         {
             return;
         }
+        if (StartedJustNow(sound.clip)) return;
         var playingSources = audioSourcePool.Where(s => s.isPlaying && s.clip == sound.clip).ToList();
         if (playingSources.Count >= MaxSimultaneousSameSound)
         {
@@ -165,6 +182,7 @@ public class SoundManager : MonoBehaviour
         {
             return;
         }
+        if (StartedJustNow(sound.clip)) return;
         var playingSources = audioSourcePool.Where(s => s.isPlaying && s.clip == sound.clip).ToList();
         float spatialBlend = (sourceType == SoundSourceType.Global) ? 0f : localizedSpatialBlend;
         if (playingSources.Count >= MaxSimultaneousSameSound)
@@ -361,6 +379,7 @@ public class SoundManager : MonoBehaviour
         if (data == null) return null;
         var clip = data.GetClip();
         if (clip == null) return null;
+        if (!data.loop && StartedJustNow(clip)) return null;
         var playingSources = audioSourcePool.Where(s => s.isPlaying && s.clip == clip).ToList();
         float spatialBlend = (sourceType == SoundSourceType.Global) ? 0f : localizedSpatialBlend;
         if (playingSources.Count >= MaxSimultaneousSameSound)
@@ -419,6 +438,7 @@ public class SoundManager : MonoBehaviour
     public void PlayAudioClip(AudioClip clip, float volume = 0.5f, float pitch = 1f, bool loop = false)
     {
         if (clip == null) return;
+        if (!loop && StartedJustNow(clip)) return;
         var playingSources = audioSourcePool.Where(s => s.isPlaying && s.clip == clip).ToList();
         if (playingSources.Count >= MaxSimultaneousSameSound)
         {
