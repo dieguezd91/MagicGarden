@@ -133,8 +133,10 @@ public class MusicManager : MonoBehaviour
         if (GameFlowController.Instance == null)
             return MusicState.None;
 
-        GamePhase phase = GameFlowController.Instance.CurrentPhase;
-        if (phase != GamePhase.Night)
+        // WorldPhase, not CurrentPhase: the level-up popup reports "LevelUp" while the night goes on underneath.
+        // Reading that as "the night ended" forgot the boss was already dead and started the next boss's music.
+        GamePhase phase = GameFlowController.Instance.WorldPhase;
+        if (phase == GamePhase.Day)
             ResetNightTracking();
 
         switch (phase)
@@ -147,7 +149,7 @@ public class MusicManager : MonoBehaviour
                 gameOverLatch = true; // leave room for the game-over sting
                 return MusicState.Silence;
             default:
-                return MusicState.None; // ritual, level-up: keep what is playing
+                return MusicState.None; // ritual: keep what is playing
         }
     }
 

@@ -100,6 +100,11 @@ public class EnemySoundBase : MonoBehaviour
             return;
         }
 
+        // In a big fight the pool went past Unity's 32 voices and sounds were dropped at random. Steps and idles
+        // are the ones nobody misses, so they are the ones to go.
+        if ((soundType == EnemySoundType.Steps || soundType == EnemySoundType.Idle) && SoundManager.Instance.IsCrowded)
+            return;
+
         // Animation-driven footsteps (e.g. the boss) are few and must land on the frame, so they skip the shared budget.
         if (soundType == EnemySoundType.Steps && !skipStepBudget && !StepBudgetAllows(parent == null ? transform : parent))
             return;

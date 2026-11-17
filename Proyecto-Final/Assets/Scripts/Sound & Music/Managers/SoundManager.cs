@@ -341,6 +341,13 @@ public class SoundManager : MonoBehaviour
         return audioSourcePool.Count(source => source.isPlaying);
     }
 
+    [Header("Crowding")]
+    [Tooltip("With this many sounds already playing, enemy footsteps and idle sounds are skipped so hits, deaths and attacks keep their voices (Unity plays 32 at most).")]
+    [SerializeField] private int crowdedVoiceCount = 20;
+
+    /// <summary>True when so much is playing that filler sounds should stay out of the way.</summary>
+    public bool IsCrowded => GetActiveSourceCount() >= crowdedVoiceCount;
+
     public int GetTotalSourceCount()
     {
         return audioSourcePool.Count;

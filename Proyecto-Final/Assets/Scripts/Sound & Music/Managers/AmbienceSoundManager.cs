@@ -60,7 +60,7 @@ public class AmbienceSoundManager : MonoBehaviour
     public void TransitionAmbience(AmbienceType target, AmbienceWeather weather) {
         currentWeather = weather;
         hasWeather = true;
-        bool night = GameFlowController.Instance != null && GameFlowController.Instance.CurrentPhase == GamePhase.Night;
+        bool night = GameFlowController.Instance != null && GameFlowController.Instance.WorldPhase == GamePhase.Night;
         StartAmbience(night ? AmbienceType.Infernum : target, weather);
     }
 }
