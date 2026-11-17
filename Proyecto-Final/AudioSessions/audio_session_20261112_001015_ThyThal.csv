@@ -1,0 +1,41 @@
+type,time,scene,sound,source,volume,pitch,spatialBlend,loop,rolloff,minDist,maxDist,dist2D,dist3D,heardGain,activeVoices,poolSize,listenerX,listenerY,listenerZ,srcX,srcY,srcZ,mixerGroup
+snap,5.448,Menu,Magic garden (3),Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Music
+snap,7.039,Menu,Magic garden (3),Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Music
+snap,8.071,Menu,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1101.454,1101.499,1,0,20,0,0,-10,960,540,0,Effects
+snap,8.071,Menu,Magic garden (3),Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Music
+play,8.835,Menu,Button Hover,PooledAudioSource_0,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,Effects
+play,9.052,Menu,Menu Button Click Play,PooledAudioSource_1,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,2,20,0,0,-10,0,0,0,Effects
+snap,9.098,Menu,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1101.454,1101.499,1,2,20,0,0,-10,960,540,0,Effects
+snap,9.098,Menu,Menu Button Click Play,PooledAudioSource_1,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,2,20,0,0,-10,0,0,0,Effects
+snap,9.098,Menu,Button Hover,PooledAudioSource_0,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,2,20,0,0,-10,0,0,0,Effects
+snap,9.098,Menu,Magic garden (3),Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,2,20,0,0,-10,0,0,0,Music
+snap,10.124,Menu,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1101.454,1101.499,1,1,20,0,0,-10,960,540,0,Effects
+snap,10.124,Menu,Menu Button Click Play,PooledAudioSource_1,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,Effects
+snap,10.124,Menu,Magic garden (3),Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,Music
+snap,12.334,Game,Ambience_Day_Snow,Ambience Weather Day Snow,0.3,1,0,1,Logarithmic,1,500,0.288,10.004,0.3,1,20,-0.267,-0.109,-10,0,0,0,Effects
+snap,12.334,Game,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1101.739,1101.785,1,1,20,-0.267,-0.109,-10,960,540,0,Effects
+snap,12.334,Game,Menu Button Click Play,PooledAudioSource_1,0.4,1,0,0,Logarithmic,1,500,0.288,10.004,0.4,1,20,-0.267,-0.109,-10,0,0,0,Effects
+snap,12.334,Game,Magic garden (Remix),Music Manager,0.4,1,0,1,Logarithmic,1,500,0.288,10.004,0.4,1,20,-0.267,-0.109,-10,0,0,0,Music
+play,12.92,Game,key-press-2,PooledAudioSource_0,0.2,0.994,0,0,Linear,4,18,2.053,10.209,0.2,1,20,-0.349,2.023,-10,0,0,0,Effects
+play,13.003,Game,key-press-2,PooledAudioSource_1,0.2,1.083,0,0,Linear,4,18,1.877,10.175,0.2,2,20,-0.234,1.862,-10,0,0,0,Effects
+play,13.078,Game,key-press-2,PooledAudioSource_0,0.2,0.932,0,0,Linear,4,18,1.759,10.153,0.2,2,20,-0.155,1.752,-10,0,0,0,Effects
+play,13.143,Game,key-press-1,PooledAudioSource_1,0.2,1.069,0,0,Linear,4,18,1.68,10.14,0.2,2,20,-0.102,1.677,-10,0,0,0,Effects
+play,13.213,Game,key-press-2,PooledAudioSource_0,0.2,1.083,0,0,Linear,4,18,1.624,10.131,0.2,2,20,-0.063,1.622,-10,0,0,0,Effects
+play,13.301,Game,key-press-3,PooledAudioSource_1,0.2,1.037,0,0,Linear,4,18,1.57,10.122,0.2,2,20,-0.025,1.57,-10,0,0,0,Effects
+snap,13.339,Game,Ambience_Day_Snow,Ambience Weather Day Snow,0.3,1,0,1,Logarithmic,1,500,1.553,10.12,0.3,1,20,-0.014,1.553,-10,0,0,0,Effects
+snap,13.339,Game,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1100.705,1100.75,1,1,20,-0.014,1.553,-10,960,540,0,Effects
+snap,13.339,Game,key-press-3,PooledAudioSource_1,0.2,1.037,0,0,Linear,4,18,1.553,10.12,0.2,1,20,-0.014,1.553,-10,0,0,0,Effects
+snap,13.339,Game,Magic garden (Remix),Music Manager,0.4,1,0,1,Logarithmic,1,500,1.553,10.12,0.4,1,20,-0.014,1.553,-10,0,0,0,Music
+play,13.373,Game,key-press-2,PooledAudioSource_0,0.2,0.985,0,0,Linear,4,18,1.539,10.118,0.2,2,20,-0.004,1.539,-10,0,0,0,Effects
+play,13.46,Game,key-press-1,PooledAudioSource_1,0.2,0.943,0,0,Linear,4,18,1.512,10.114,0.2,2,20,0.016,1.512,-10,0,0,0,Effects
+play,13.525,Game,key-press-1,PooledAudioSource_0,0.2,1.048,0,0,Linear,4,18,1.498,10.112,0.2,2,20,0.026,1.498,-10,0,0,0,Effects
+play,13.586,Game,key-press-4,PooledAudioSource_2,0.2,0.909,0,0,Linear,4,18,1.487,10.11,0.2,3,20,0.034,1.487,-10,0,0,0,Effects
+play,13.654,Game,key-press-1,PooledAudioSource_0,0.2,1.059,0,0,Linear,4,18,1.479,10.109,0.2,2,20,0.04,1.478,-10,0,0,0,Effects
+play,13.736,Game,key-press-4,PooledAudioSource_1,0.2,0.949,0,0,Linear,4,18,1.471,10.108,0.2,3,20,0.046,1.47,-10,0,0,0,Effects
+play,13.839,Game,key-press-2,PooledAudioSource_0,0.2,1.011,0,0,Linear,4,18,1.464,10.107,0.2,2,20,0.051,1.463,-10,0,0,0,Effects
+play,13.929,Game,key-press-2,PooledAudioSource_1,0.2,1.026,0,0,Linear,4,18,1.46,10.106,0.2,2,20,0.053,1.459,-10,0,0,0,Effects
+play,13.975,Game,BookInventoryOpen,PooledAudioSource_2,0.45,1.081,0,0,Linear,4,18,1.459,10.106,0.45,3,20,0.055,1.458,-10,0,0,0,Effects
+snap,14.346,Game,Ambience_Day_Snow,Ambience Weather Day Snow,0.3,1,0,1,Logarithmic,1,500,1.459,10.106,0.3,1,20,0.055,1.458,-10,0,0,0,Effects
+snap,14.346,Game,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1100.692,1100.738,1,1,20,0.055,1.458,-10,960,540,0,Effects
+snap,14.346,Game,Magic garden (Remix),Music Manager,0.4,1,0,1,Logarithmic,1,500,1.459,10.106,0.4,1,20,0.055,1.458,-10,0,0,0,Music
+snap,14.346,Game,BookInventoryOpen,PooledAudioSource_2,0.45,1.081,0,0,Linear,4,18,1.459,10.106,0.45,1,20,0.055,1.458,-10,0,0,0,Effects

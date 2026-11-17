@@ -2,8 +2,9 @@
 
 Usage:
     python analyze_audio_session.py [session.csv ...]
-With no arguments it reads every CSV in the default Unity persistentDataPath/AudioSessions folder
-(Windows: %USERPROFILE%/AppData/LocalLow/<Company>/<Product>/AudioSessions) found under LocalLow.
+With no arguments it reads every CSV in the project's AudioSessions folder (where the editor records, and
+where the team's committed sessions live). If that folder has none, it falls back to the folder development
+builds write to (Windows: %USERPROFILE%/AppData/LocalLow/<Company>/<Product>/AudioSessions).
 
 Flags per sound:
   SPAM       played more than SPAM_PER_MIN times per minute
@@ -25,6 +26,10 @@ LOUD_GAIN = 0.8
 
 
 def default_files():
+    project = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    in_repo = sorted(glob.glob(os.path.join(project, "AudioSessions", "*.csv")))
+    if in_repo:
+        return in_repo
     base = os.path.join(os.path.expanduser("~"), "AppData", "LocalLow")
     return sorted(glob.glob(os.path.join(base, "*", "*", "AudioSessions", "*.csv")))
 
@@ -35,8 +40,11 @@ def load(paths):
         with open(p, newline="", encoding="utf-8") as f:
             for r in csv.DictReader(f):
                 r["_file"] = os.path.basename(p)
-                for k in ("time", "volume", "spatialBlend", "dist2D", "dist3D", "heardGain", "activeVoices", "poolSize", "listenerZ", "srcZ"):
-                    r[k] = float(r[k])
+                try:
+                    for k in ("time", "volume", "spatialBlend", "dist2D", "dist3D", "heardGain", "activeVoices", "poolSize", "listenerZ", "srcZ"):
+                        r[k] = float(r[k])
+                except (TypeError, ValueError):
+                    continue  # a row cut short when play mode stopped mid-write
                 rows.append(r)
     return rows
 

@@ -1,0 +1,373 @@
+type,time,scene,sound,source,volume,pitch,spatialBlend,loop,rolloff,minDist,maxDist,dist2D,dist3D,heardGain,activeVoices,poolSize,listenerX,listenerY,listenerZ,srcX,srcY,srcZ,mixerGroup
+snap,5.56,Menu,Magic garden (3),Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Music
+snap,7.062,Menu,Magic garden (3),Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Music
+snap,8.064,Menu,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1101.454,1101.499,1,0,20,0,0,-10,960,540,0,Effects
+snap,8.064,Menu,Magic garden (3),Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Music
+snap,32.817,Menu,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1101.454,1101.499,1,0,20,0,0,-10,960,540,0,Effects
+snap,32.817,Menu,Magic garden (3),Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Music
+play,33.528,Menu,Button Hover,PooledAudioSource_0,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,Effects
+play,33.637,Menu,Menu Button Click Play,PooledAudioSource_1,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,2,20,0,0,-10,0,0,0,Effects
+snap,33.82,Menu,Button Hover,PooledAudioSource_0,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,2,20,0,0,-10,0,0,0,Effects
+snap,33.82,Menu,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1101.454,1101.499,1,2,20,0,0,-10,960,540,0,Effects
+snap,33.82,Menu,Magic garden (3),Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,2,20,0,0,-10,0,0,0,Music
+snap,33.82,Menu,Menu Button Click Play,PooledAudioSource_1,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,2,20,0,0,-10,0,0,0,Effects
+snap,34.825,Menu,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1101.454,1101.499,1,1,20,0,0,-10,960,540,0,Effects
+snap,34.825,Menu,Magic garden (3),Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,Music
+snap,34.825,Menu,Menu Button Click Play,PooledAudioSource_1,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,Effects
+snap,36.834,Game,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1101.433,1101.478,1,1,20,0.002,0.039,-10,960,540,0,Effects
+snap,36.834,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,0.04,10,0.3,1,20,0.002,0.039,-10,0,0,0,Effects
+snap,36.834,Game,Magic garden (Remix),Music Manager,0.4,1,0,1,Logarithmic,1,500,0.04,10,0.4,1,20,0.002,0.039,-10,0,0,0,Music
+snap,36.834,Game,Menu Button Click Play,PooledAudioSource_1,0.4,1,0,0,Logarithmic,1,500,0.04,10,0.4,1,20,0.002,0.039,-10,0,0,0,Effects
+play,37.449,Game,key-press-3,PooledAudioSource_0,0.2,1.053,0,0,Linear,4,18,1.322,10.087,0.2,1,20,0.055,1.321,-10,0,0,0,Effects
+play,37.52,Game,key-press-3,PooledAudioSource_1,0.2,0.961,0,0,Linear,4,18,1.354,10.091,0.2,2,20,0.056,1.353,-10,0,0,0,Effects
+play,37.579,Game,key-press-2,PooledAudioSource_0,0.2,1.094,0,0,Linear,4,18,1.375,10.094,0.2,2,20,0.057,1.374,-10,0,0,0,Effects
+play,37.643,Game,key-press-4,PooledAudioSource_2,0.2,1.071,0,0,Linear,4,18,1.393,10.097,0.2,3,20,0.058,1.392,-10,0,0,0,Effects
+play,37.705,Game,key-press-2,PooledAudioSource_0,0.2,0.987,0,0,Linear,4,18,1.406,10.098,0.2,2,20,0.058,1.405,-10,0,0,0,Effects
+play,37.784,Game,key-press-4,PooledAudioSource_1,0.2,0.974,0,0,Linear,4,18,1.419,10.1,0.2,2,20,0.059,1.417,-10,0,0,0,Effects
+snap,37.835,Game,key-press-2,PooledAudioSource_0,0.2,0.987,0,0,Linear,4,18,1.424,10.101,0.2,2,20,0.059,1.423,-10,0,0,0,Effects
+snap,37.835,Game,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1100.705,1100.751,1,2,20,0.059,1.423,-10,960,540,0,Effects
+snap,37.835,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,1.424,10.101,0.3,2,20,0.059,1.423,-10,0,0,0,Effects
+snap,37.835,Game,Magic garden (Remix),Music Manager,0.4,1,0,1,Logarithmic,1,500,1.424,10.101,0.4,2,20,0.059,1.423,-10,0,0,0,Music
+snap,37.835,Game,key-press-4,PooledAudioSource_1,0.2,0.974,0,0,Linear,4,18,1.424,10.101,0.2,2,20,0.059,1.423,-10,0,0,0,Effects
+play,37.845,Game,key-press-2,PooledAudioSource_0,0.2,0.955,0,0,Linear,4,18,1.426,10.101,0.2,2,20,0.059,1.424,-10,0,0,0,Effects
+play,37.924,Game,key-press-1,PooledAudioSource_2,0.2,0.934,0,0,Linear,4,18,1.433,10.102,0.2,3,20,0.059,1.431,-10,0,0,0,Effects
+play,37.987,Game,key-press-3,PooledAudioSource_0,0.2,1.028,0,0,Linear,4,18,1.437,10.103,0.2,2,20,0.059,1.436,-10,0,0,0,Effects
+play,38.049,Game,key-press-4,PooledAudioSource_1,0.2,0.96,0,0,Linear,4,18,1.44,10.103,0.2,3,20,0.066,1.439,-10,0,0,0,Effects
+play,38.113,Game,key-press-1,PooledAudioSource_2,0.2,0.999,0,0,Linear,4,18,1.445,10.104,0.2,3,20,0.094,1.441,-10,0,0,0,Effects
+play,38.125,Game,Step_Land,PooledAudioSource_0,0.25,1,0.85,0,Linear,4,18,0.151,0.151,0.25,3,20,0.099,1.442,-10,0.251,1.45,-10,Effects
+play,38.196,Game,key-press-3,PooledAudioSource_1,0.2,1.049,0,0,Linear,4,18,1.451,10.105,0.2,3,20,0.146,1.444,-10,0,0,0,Effects
+play,38.306,Game,key-press-4,PooledAudioSource_2,0.2,0.993,0,0,Linear,4,18,1.461,10.106,0.2,3,20,0.211,1.446,-10,0,0,0,Effects
+play,38.406,Game,key-press-3,PooledAudioSource_1,0.2,0.934,0,0,Linear,4,18,1.47,10.108,0.2,3,20,0.259,1.447,-10,0,0,0,Effects
+play,38.485,Game,key-press-3,PooledAudioSource_2,0.2,1.044,0,0,Linear,4,18,1.476,10.108,0.2,3,20,0.288,1.448,-10,0,0,0,Effects
+play,38.563,Game,key-press-4,PooledAudioSource_1,0.2,1.087,0,0,Linear,4,18,1.481,10.109,0.2,3,20,0.309,1.449,-10,0,0,0,Effects
+play,38.68,Game,key-press-3,PooledAudioSource_2,0.2,1.025,0,0,Linear,4,18,1.487,10.11,0.2,3,20,0.332,1.449,-10,0,0,0,Effects
+play,38.751,Game,key-press-2,PooledAudioSource_0,0.2,0.991,0,0,Linear,4,18,1.489,10.11,0.2,2,20,0.342,1.449,-10,0,0,0,Effects
+snap,38.838,Game,key-press-2,PooledAudioSource_0,0.2,0.991,0,0,Linear,4,18,1.491,10.111,0.2,1,20,0.35,1.45,-10,0,0,0,Effects
+snap,38.838,Game,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1100.438,1100.484,1,1,20,0.35,1.45,-10,960,540,0,Effects
+snap,38.838,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,1.491,10.111,0.3,1,20,0.35,1.45,-10,0,0,0,Effects
+snap,38.838,Game,Magic garden (Remix),Music Manager,0.4,1,0,1,Logarithmic,1,500,1.491,10.111,0.4,1,20,0.35,1.45,-10,0,0,0,Music
+play,38.838,Game,key-press-4,PooledAudioSource_1,0.2,0.938,0,0,Linear,4,18,1.491,10.111,0.2,2,20,0.35,1.45,-10,0,0,0,Effects
+play,38.907,Game,key-press-4,PooledAudioSource_0,0.2,0.931,0,0,Linear,4,18,1.493,10.111,0.2,2,20,0.355,1.45,-10,0,0,0,Effects
+play,39.016,Game,key-press-4,PooledAudioSource_1,0.2,1.01,0,0,Linear,4,18,1.494,10.111,0.2,2,20,0.361,1.45,-10,0,0,0,Effects
+play,39.089,Game,key-press-4,PooledAudioSource_0,0.2,1.054,0,0,Linear,4,18,1.495,10.111,0.2,2,20,0.363,1.45,-10,0,0,0,Effects
+play,39.204,Game,key-press-1,PooledAudioSource_1,0.2,1.007,0,0,Linear,4,18,1.495,10.111,0.2,2,20,0.366,1.45,-10,0,0,0,Effects
+play,39.27,Game,key-press-2,PooledAudioSource_0,0.2,0.968,0,0,Linear,4,18,1.496,10.111,0.2,2,20,0.367,1.45,-10,0,0,0,Effects
+play,39.373,Game,key-press-3,PooledAudioSource_1,0.2,0.982,0,0,Linear,4,18,1.496,10.111,0.2,2,20,0.368,1.45,-10,0,0,0,Effects
+play,39.437,Game,key-press-4,PooledAudioSource_0,0.2,1.097,0,0,Linear,4,18,1.496,10.111,0.2,2,20,0.369,1.45,-10,0,0,0,Effects
+play,39.514,Game,key-press-4,PooledAudioSource_2,0.2,1.042,0,0,Linear,4,18,1.496,10.111,0.2,3,20,0.369,1.45,-10,0,0,0,Effects
+play,39.593,Game,key-press-4,PooledAudioSource_0,0.2,1.072,0,0,Linear,4,18,1.496,10.111,0.2,2,20,0.369,1.45,-10,0,0,0,Effects
+play,39.685,Game,key-press-4,PooledAudioSource_1,0.2,0.981,0,0,Linear,4,18,1.496,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+play,39.764,Game,key-press-4,PooledAudioSource_0,0.2,0.941,0,0,Linear,4,18,1.496,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+snap,39.849,Game,key-press-4,PooledAudioSource_0,0.2,0.941,0,0,Linear,4,18,1.496,10.111,0.2,1,20,0.37,1.45,-10,0,0,0,Effects
+snap,39.849,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,1.496,10.111,0.3,1,20,0.37,1.45,-10,0,0,0,Effects
+snap,39.849,Game,Magic garden (Remix),Music Manager,0.4,1,0,1,Logarithmic,1,500,1.496,10.111,0.4,1,20,0.37,1.45,-10,0,0,0,Music
+play,39.863,Game,key-press-2,PooledAudioSource_1,0.2,1.029,0,0,Linear,4,18,1.496,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+play,39.961,Game,key-press-2,PooledAudioSource_0,0.2,0.926,0,0,Linear,4,18,1.497,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+play,40.046,Game,key-press-1,PooledAudioSource_1,0.2,0.923,0,0,Linear,4,18,1.497,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+play,40.109,Game,key-press-1,PooledAudioSource_0,0.2,1.035,0,0,Linear,4,18,1.497,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+play,40.205,Game,key-press-3,PooledAudioSource_1,0.2,1.022,0,0,Linear,4,18,1.497,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+play,40.291,Game,key-press-2,PooledAudioSource_0,0.2,1.008,0,0,Linear,4,18,1.497,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+play,40.351,Game,key-press-3,PooledAudioSource_1,0.2,0.938,0,0,Linear,4,18,1.497,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+play,40.441,Game,key-press-4,PooledAudioSource_2,0.2,1.008,0,0,Linear,4,18,1.497,10.111,0.2,3,20,0.37,1.45,-10,0,0,0,Effects
+play,40.524,Game,key-press-2,PooledAudioSource_0,0.2,1.007,0,0,Linear,4,18,1.497,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+play,40.602,Game,key-press-3,PooledAudioSource_1,0.2,1.03,0,0,Linear,4,18,1.497,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+play,40.663,Game,key-press-1,PooledAudioSource_2,0.2,1.059,0,0,Linear,4,18,1.497,10.111,0.2,3,20,0.37,1.45,-10,0,0,0,Effects
+play,40.75,Game,key-press-2,PooledAudioSource_0,0.2,0.982,0,0,Linear,4,18,1.497,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+play,40.827,Game,key-press-4,PooledAudioSource_1,0.2,0.942,0,0,Linear,4,18,1.497,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+snap,40.856,Game,key-press-2,PooledAudioSource_0,0.2,0.982,0,0,Linear,4,18,1.497,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+snap,40.856,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,1.497,10.111,0.3,2,20,0.37,1.45,-10,0,0,0,Effects
+snap,40.856,Game,Magic garden (Remix),Music Manager,0.4,1,0,1,Logarithmic,1,500,1.497,10.111,0.4,2,20,0.37,1.45,-10,0,0,0,Music
+snap,40.856,Game,key-press-4,PooledAudioSource_1,0.2,0.942,0,0,Linear,4,18,1.497,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+snap,41.906,Game,key-press-2,PooledAudioSource_0,0.2,0.982,0,0,Linear,4,18,1.497,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+snap,41.906,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,1.497,10.111,0.3,2,20,0.37,1.45,-10,0,0,0,Effects
+snap,41.906,Game,Magic garden (Remix),Music Manager,0.4,1,0,1,Logarithmic,1,500,1.497,10.111,0.4,2,20,0.37,1.45,-10,0,0,0,Music
+snap,41.906,Game,key-press-4,PooledAudioSource_1,0.2,0.942,0,0,Linear,4,18,1.497,10.111,0.2,2,20,0.37,1.45,-10,0,0,0,Effects
+play,41.906,Game,key-press-1,PooledAudioSource_2,0.2,1.068,0,0,Linear,4,18,1.497,10.111,0.2,3,20,0.37,1.45,-10,0,0,0,Effects
+snap,42.916,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,1.497,10.111,0.3,0,20,0.37,1.45,-10,0,0,0,Effects
+snap,42.916,Game,Magic garden (Remix),Music Manager,0.4,1,0,1,Logarithmic,1,500,1.497,10.111,0.4,0,20,0.37,1.45,-10,0,0,0,Music
+play,43.044,Game,Step_Land,PooledAudioSource_0,0.25,1,0.85,0,Linear,4,18,0.2,0.2,0.25,1,20,0.409,1.45,-10,0.609,1.45,-10,Effects
+play,43.43,Game,Step_Land,PooledAudioSource_1,0.25,1,0.85,0,Linear,4,18,0.884,0.884,0.25,2,20,1.306,1.443,-10,2.188,1.379,-10,Effects
+play,43.494,Game,PickUp,PooledAudioSource_2,0.35,1,0,0,Linear,4,18,2.084,10.215,0.35,3,20,1.527,1.419,-10,0,0,0,Effects
+play,43.734,Game,PickUp,PooledAudioSource_0,0.35,1,0,0,Linear,4,18,1.841,1.841,0.35,2,20,2.416,1.098,-10,0.609,1.45,-10,Effects
+play,43.826,Game,Step_Land,PooledAudioSource_0,0.25,1,0.85,0,Linear,4,18,1.082,1.082,0.25,2,20,2.754,0.892,-10,3.653,0.291,-10,Effects
+snap,43.923,Game,Footsteps_Sand_Walk_11,PooledAudioSource_0,0.25,1,0.85,0,Linear,4,18,0.657,0.657,0.25,2,20,3.1,0.646,-10,3.653,0.291,-10,Effects
+snap,43.923,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,3.167,10.489,0.3,2,20,3.1,0.646,-10,0,0,0,Effects
+snap,43.923,Game,Magic garden (Remix),Music Manager,0.4,1,0,1,Logarithmic,1,500,3.167,10.489,0.4,2,20,3.1,0.646,-10,0,0,0,Music
+snap,43.923,Game,Footsteps_Sand_Walk_11,PooledAudioSource_1,0.25,1,0.85,0,Linear,4,18,1.17,1.17,0.25,2,20,3.1,0.646,-10,2.188,1.379,-10,Effects
+play,44.053,Game,PickUp,PooledAudioSource_1,0.35,1,0,0,Linear,4,18,1.737,1.737,0.35,2,20,3.57,0.326,-10,2.188,1.379,-10,Effects
+play,44.053,Game,PickUp,PooledAudioSource_2,0.35,1,0,0,Linear,4,18,3.584,10.623,0.35,3,20,3.57,0.326,-10,0,0,0,Effects
+play,44.215,Game,Step_Land,PooledAudioSource_1,0.25,1,0.85,0,Linear,4,18,0.74,0.74,0.25,2,20,4.164,0.058,-10,4.886,-0.104,-10,Effects
+play,44.246,Game,PickUp,PooledAudioSource_2,0.35,1,0,0,Linear,4,18,4.246,10.864,0.35,3,20,4.245,0.042,-10,0,0,0,Effects
+play,44.608,Game,Step_Land,PooledAudioSource_0,0.25,1,0.85,0,Linear,4,18,0.587,0.587,0.25,2,20,4.391,0.469,-10,4.066,0.958,-10,Effects
+play,44.704,Game,Night_Start,PooledAudioSource_2,0.65,1,0,0,Linear,4,18,4.314,10.891,0.65,3,20,4.265,0.642,-10,0,0,0,Effects
+play,44.704,Game,Horde_Start_1,PooledAudioSource_3,0.65,1,0,0,Linear,4,18,4.314,10.891,0.65,4,20,4.265,0.642,-10,0,0,0,Effects
+play,44.704,Game,Boss_Spawn,PooledAudioSource_4,0.7,1,0.85,0,Linear,4,18,11.447,11.447,0.384,5,20,4.265,0.642,-10,0,-9.98,-10,Effects
+snap,44.932,Game,Footsteps_Sand_Walk_11,PooledAudioSource_0,0.25,1,0.85,0,Linear,4,18,0.051,0.051,0.25,4,20,4.029,0.923,-10,4.066,0.958,-10,Effects
+snap,44.932,Game,Night_Start,PooledAudioSource_2,0.65,1,0,0,Linear,4,18,4.133,10.821,0.65,4,20,4.029,0.923,-10,0,0,0,Effects
+snap,44.932,Game,Boss_Spawn,PooledAudioSource_4,0.7,1,0.85,0,Linear,4,18,11.624,11.624,0.376,4,20,4.029,0.923,-10,0,-9.98,-10,Effects
+snap,44.932,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,4.133,10.821,0.3,4,20,4.029,0.923,-10,0,0,0,Effects
+snap,44.932,Game,Horde_Start_1,PooledAudioSource_3,0.65,1,0,0,Linear,4,18,4.133,10.821,0.65,4,20,4.029,0.923,-10,0,0,0,Effects
+snap,44.932,Game,Magic Garden Night,Music Manager,0.4,1,0,1,Logarithmic,1,500,4.133,10.821,0.4,4,20,4.029,0.923,-10,0,0,0,Music
+play,45.568,Game,Step_Land,PooledAudioSource_0,0.25,1,0.85,0,Linear,4,18,0.222,0.222,0.25,4,20,3.823,1.106,-10,3.602,1.121,-10,Effects
+play,45.592,Game,Boss_Step_1,PooledAudioSource_1,0.35,0.768,0.85,0,Linear,4,18,9.621,9.621,0.231,5,20,3.801,1.107,-10,0.685,-7.995,-10,Effects
+play,45.709,Game,Skeleton Spawn,PooledAudioSource_5,0.45,0.937,0.85,0,Linear,4,18,12.039,12.039,0.23,6,20,3.594,1.113,-10,10,-9.08,-10,Effects
+play,45.732,Game,Skeletons Step 7,PooledAudioSource_6,0.18,1.011,0.85,0,Linear,4,18,12.065,12.065,0.092,7,20,3.546,1.114,-10,10,-9.08,-10,Effects
+snap,45.932,Game,Footsteps_Sand_Walk_11,PooledAudioSource_0,0.25,1,0.85,0,Linear,4,18,0.625,0.625,0.25,7,20,2.977,1.105,-10,3.602,1.121,-10,Effects
+snap,45.932,Game,Skeletons Step 7,PooledAudioSource_6,0.18,1.011,0.85,0,Linear,4,18,12.371,12.371,0.089,7,20,2.977,1.105,-10,10,-9.08,-10,Effects
+snap,45.932,Game,Night_Start,PooledAudioSource_2,0.65,1,0,0,Linear,4,18,3.176,10.492,0.65,7,20,2.977,1.105,-10,0,0,0,Effects
+snap,45.932,Game,Skeleton Spawn,PooledAudioSource_5,0.45,0.937,0.85,0,Linear,4,18,12.371,12.371,0.221,7,20,2.977,1.105,-10,10,-9.08,-10,Effects
+snap,45.932,Game,Boss_Spawn,PooledAudioSource_4,0.7,1,0.85,0,Linear,4,18,11.477,11.477,0.382,7,20,2.977,1.105,-10,0,-9.98,-10,Effects
+snap,45.932,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,3.176,10.492,0.3,7,20,2.977,1.105,-10,0,0,0,Effects
+snap,45.932,Game,Horde_Start_1,PooledAudioSource_3,0.65,1,0,0,Linear,4,18,3.176,10.492,0.65,7,20,2.977,1.105,-10,0,0,0,Effects
+snap,45.932,Game,Magic Garden Night,Music Manager,0.4,1,0,1,Logarithmic,1,500,3.176,10.492,0.4,7,20,2.977,1.105,-10,0,0,0,Music
+snap,45.932,Game,Boss_Step_1,PooledAudioSource_1,0.35,0.768,0.85,0,Linear,4,18,9.384,9.384,0.236,7,20,2.977,1.105,-10,0.685,-7.995,-10,Effects
+play,45.956,Game,Step_Land,PooledAudioSource_7,0.25,1,0.85,0,Linear,4,18,0.873,0.873,0.25,8,20,2.902,1.096,-10,2.038,0.97,-10,Effects
+play,46.192,Game,Skeletons Step 5,PooledAudioSource_0,0.18,1.008,0.85,0,Linear,4,18,12.028,12.028,0.092,8,20,2.153,0.765,-10,9.653,-8.638,-10,Effects
+play,46.26,Game,Boss_Step_1,PooledAudioSource_8,0.35,0.83,0.85,0,Linear,4,18,7.04,7.04,0.285,9,20,2.001,0.591,-10,0.962,-6.373,-10,Effects
+play,46.348,Game,Step_Land,PooledAudioSource_9,0.25,1,0.85,0,Linear,4,18,0.932,0.932,0.25,10,20,1.844,0.323,-10,1.455,-0.524,-10,Effects
+play,46.652,Game,Skeletons Step 5,PooledAudioSource_6,0.18,0.971,0.85,0,Linear,4,18,10.813,10.813,0.106,9,20,1.544,-0.641,-10,9.241,-8.236,-10,Effects
+play,46.745,Game,Step_Land,PooledAudioSource_7,0.25,1,0.85,0,Linear,4,18,0.409,0.409,0.25,10,20,1.506,-0.805,-10,1.416,-1.204,-10,Effects
+snap,46.941,Game,Skeletons Step 5,PooledAudioSource_6,0.18,0.971,0.85,0,Linear,4,18,10.605,10.605,0.108,8,20,1.455,-1.036,-10,9.241,-8.236,-10,Effects
+snap,46.941,Game,Night_Start,PooledAudioSource_2,0.65,1,0,0,Linear,4,18,1.786,10.158,0.65,8,20,1.455,-1.036,-10,0,0,0,Effects
+snap,46.941,Game,Skeleton Spawn,PooledAudioSource_5,0.45,0.937,0.85,0,Linear,4,18,11.736,11.736,0.239,8,20,1.455,-1.036,-10,10,-9.08,-10,Effects
+snap,46.941,Game,Boss_Spawn,PooledAudioSource_4,0.7,1,0.85,0,Linear,4,18,9.062,9.062,0.485,8,20,1.455,-1.036,-10,0,-9.98,-10,Effects
+snap,46.941,Game,Footsteps_Sand_Walk_11,PooledAudioSource_7,0.25,1,0.85,0,Linear,4,18,0.173,0.173,0.25,8,20,1.455,-1.036,-10,1.416,-1.204,-10,Effects
+snap,46.941,Game,Boss_Step_1,PooledAudioSource_8,0.35,0.83,0.85,0,Linear,4,18,5.36,5.36,0.321,8,20,1.455,-1.036,-10,0.962,-6.373,-10,Effects
+snap,46.941,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,1.786,10.158,0.3,8,20,1.455,-1.036,-10,0,0,0,Effects
+snap,46.941,Game,Horde_Start_1,PooledAudioSource_3,0.65,1,0,0,Linear,4,18,1.786,10.158,0.65,8,20,1.455,-1.036,-10,0,0,0,Effects
+snap,46.941,Game,Magic Garden Night,Music Manager,0.4,1,0,1,Logarithmic,1,500,1.786,10.158,0.4,8,20,1.455,-1.036,-10,0,0,0,Music
+snap,46.941,Game,Boss_Step_1,PooledAudioSource_1,0.35,0.768,0.85,0,Linear,4,18,7.002,7.002,0.286,8,20,1.455,-1.036,-10,0.685,-7.995,-10,Effects
+play,47.112,Game,Skeletons Step 7,PooledAudioSource_0,0.18,0.954,0.85,0,Linear,4,18,9.972,9.972,0.115,9,20,1.434,-1.134,-10,8.808,-7.848,-10,Effects
+play,47.572,Game,Skeletons Step 7,PooledAudioSource_3,0.18,1.047,0.85,0,Linear,4,18,9.358,9.358,0.121,7,20,1.418,-1.21,-10,8.379,-7.463,-10,Effects
+play,47.606,Game,Boss_Step_1,PooledAudioSource_6,0.35,0.841,0.85,0,Linear,4,18,1.836,1.836,0.35,8,20,1.417,-1.206,-10,1.255,-3.035,-10,Effects
+play,47.679,Game,Step_Land,PooledAudioSource_7,0.25,1,0.85,0,Linear,4,18,0.2,0.2,0.25,9,20,1.417,-1.168,-10,1.415,-0.968,-10,Effects
+snap,47.952,Game,Boss_Step_1,PooledAudioSource_6,0.35,0.841,0.85,0,Linear,4,18,2.109,2.109,0.35,7,20,1.415,-0.933,-10,1.255,-3.035,-10,Effects
+snap,47.952,Game,Night_Start,PooledAudioSource_2,0.65,1,0,0,Linear,4,18,1.695,10.143,0.65,7,20,1.415,-0.933,-10,0,0,0,Effects
+snap,47.952,Game,Boss_Spawn,PooledAudioSource_4,0.7,1,0.85,0,Linear,4,18,9.157,9.157,0.481,7,20,1.415,-0.933,-10,0,-9.98,-10,Effects
+snap,47.952,Game,Footsteps_Sand_Walk_11,PooledAudioSource_7,0.25,1,0.85,0,Linear,4,18,0.035,0.035,0.25,7,20,1.415,-0.933,-10,1.415,-0.968,-10,Effects
+snap,47.952,Game,Boss_Step_1,PooledAudioSource_8,0.35,0.83,0.85,0,Linear,4,18,5.458,5.458,0.319,7,20,1.415,-0.933,-10,0.962,-6.373,-10,Effects
+snap,47.952,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,1.695,10.143,0.3,7,20,1.415,-0.933,-10,0,0,0,Effects
+snap,47.952,Game,Skeletons Step 7,PooledAudioSource_3,0.18,1.047,0.85,0,Linear,4,18,9.547,9.547,0.119,7,20,1.415,-0.933,-10,8.379,-7.463,-10,Effects
+snap,47.952,Game,Magic Garden Night,Music Manager,0.4,1,0,1,Logarithmic,1,500,1.695,10.143,0.4,7,20,1.415,-0.933,-10,0,0,0,Music
+snap,47.952,Game,Boss_Step_1,PooledAudioSource_1,0.35,0.768,0.85,0,Linear,4,18,7.1,7.1,0.284,7,20,1.415,-0.933,-10,0.685,-7.995,-10,Effects
+play,48.032,Game,Skeletons Step 7,PooledAudioSource_0,0.18,0.954,0.85,0,Linear,4,18,9.01,9.01,0.125,8,20,1.415,-0.882,-10,7.962,-7.071,-10,Effects
+play,48.15,Game,Boss_Attack_Melee,PooledAudioSource_5,0.55,1.014,0.85,0,Linear,4,18,1.406,1.406,0.55,9,20,1.415,-0.835,-10,1.314,-2.237,-10,Effects
+play,48.492,Game,Skeletons Step 7,PooledAudioSource_1,0.18,1.032,0.85,0,Linear,4,18,8.516,8.516,0.131,6,20,1.415,-0.769,-10,7.551,-6.674,-10,Effects
+play,48.716,Game,Skeleton Spawn,PooledAudioSource_0,0.45,0.931,0.85,0,Linear,4,18,11.958,11.958,0.233,5,20,1.415,-0.756,-10,10,-9.08,-10,Effects
+play,48.732,Game,Skeletons Step 7,PooledAudioSource_2,0.18,1.037,0.85,0,Linear,4,18,11.958,11.958,0.093,6,20,1.415,-0.756,-10,10,-9.08,-10,Effects
+play,48.817,Game,Player_Hurt_Voice_3,PooledAudioSource_3,0.5,1.06,0.85,0,Linear,4,18,0.006,0.006,0.5,6,20,1.415,-0.754,-10,1.415,-0.748,-10,Effects
+play,48.817,Game,PlayerHit,PooledAudioSource_4,0.55,1,0,0,Linear,4,18,1.603,10.128,0.55,7,20,1.415,-0.754,-10,0,0,0,Effects
+play,48.817,Game,Boss_Crystal_Impact,PooledAudioSource_7,0.65,0.968,0.85,0,Linear,4,18,0.216,0.216,0.65,8,20,1.464,-0.958,-10,1.415,-0.748,-10,Effects
+play,48.952,Game,Skeletons Step 5,PooledAudioSource_8,0.18,1.022,0.85,0,Linear,4,18,8.044,8.044,0.136,9,20,1.327,-0.721,-10,7.142,-6.279,-10,Effects
+snap,48.956,Game,Skeleton Spawn,PooledAudioSource_0,0.45,0.931,0.85,0,Linear,4,18,12.045,12.045,0.23,9,20,1.327,-0.721,-10,10,-9.08,-10,Effects
+snap,48.956,Game,Boss_Step_1,PooledAudioSource_6,0.35,0.841,0.85,0,Linear,4,18,2.315,2.315,0.35,9,20,1.327,-0.721,-10,1.255,-3.035,-10,Effects
+snap,48.956,Game,Skeletons Step 7,PooledAudioSource_2,0.18,1.037,0.85,0,Linear,4,18,12.045,12.045,0.092,9,20,1.327,-0.721,-10,10,-9.08,-10,Effects
+snap,48.956,Game,Boss_Attack_Melee,PooledAudioSource_5,0.55,1.014,0.85,0,Linear,4,18,1.516,1.516,0.55,9,20,1.327,-0.721,-10,1.314,-2.237,-10,Effects
+snap,48.956,Game,Player Hit SFX,PooledAudioSource_4,0.55,1,0,0,Linear,4,18,1.51,10.113,0.55,9,20,1.327,-0.721,-10,0,0,0,Effects
+snap,48.956,Game,Boss_Crystal_Impact,PooledAudioSource_7,0.65,0.968,0.85,0,Linear,4,18,0.091,0.091,0.65,9,20,1.327,-0.721,-10,1.415,-0.748,-10,Effects
+snap,48.956,Game,Skeletons Step 5,PooledAudioSource_8,0.18,1.022,0.85,0,Linear,4,18,8.044,8.044,0.136,9,20,1.327,-0.721,-10,7.142,-6.279,-10,Effects
+snap,48.956,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,1.51,10.113,0.3,9,20,1.327,-0.721,-10,0,0,0,Effects
+snap,48.956,Game,Player_Hurt_Voice_3,PooledAudioSource_3,0.5,1.06,0.85,0,Linear,4,18,0.091,0.091,0.5,9,20,1.327,-0.721,-10,1.415,-0.748,-10,Effects
+snap,48.956,Game,Magic Garden Night,Music Manager,0.4,1,0,1,Logarithmic,1,500,1.51,10.113,0.4,9,20,1.327,-0.721,-10,0,0,0,Music
+snap,48.956,Game,Skeletons Step 7,PooledAudioSource_1,0.18,1.032,0.85,0,Linear,4,18,8.613,8.613,0.13,9,20,1.327,-0.721,-10,7.551,-6.674,-10,Effects
+play,49.192,Game,Skeletons Step 7,PooledAudioSource_1,0.18,1.011,0.85,0,Linear,4,18,11.389,11.389,0.099,8,20,1.415,-0.749,-10,9.588,-8.68,-10,Effects
+play,49.225,Game,Boss_Attack_Melee,PooledAudioSource_4,0.55,1.047,0.85,0,Linear,4,18,1.492,1.492,0.55,9,20,1.415,-0.749,-10,1.314,-2.237,-10,Effects
+play,49.389,Game,Step_Land,PooledAudioSource_2,0.25,1,0.85,0,Linear,4,18,0.261,0.261,0.25,8,20,1.361,-0.748,-10,1.1,-0.748,-10,Effects
+play,49.412,Game,Skeletons Step 7,PooledAudioSource_3,0.18,0.967,0.85,0,Linear,4,18,7.424,7.424,0.143,9,20,1.34,-0.748,-10,6.715,-5.87,-10,Effects
+play,49.652,Game,Skeletons Step 7,PooledAudioSource_8,0.18,1.046,0.85,0,Linear,4,18,11.286,11.286,0.1,9,20,0.784,-0.748,-10,9.172,-8.298,-10,Effects
+play,49.77,Game,Step_Land,PooledAudioSource_9,0.25,1,0.85,0,Linear,4,18,0.923,0.923,0.25,10,20,0.398,-0.748,-10,-0.526,-0.748,-10,Effects
+play,49.872,Game,Skeletons Step 7,PooledAudioSource_1,0.18,1.008,0.85,0,Linear,4,18,7.881,7.881,0.138,10,20,0.012,-0.748,-10,6.278,-5.528,-10,Effects
+play,49.887,Game,Player_Hurt_Voice_1,PooledAudioSource_10,0.5,1.004,0.85,0,Linear,4,18,1.033,1.033,0.5,11,20,-0.056,-0.748,-10,-1.089,-0.748,-10,Effects
+play,49.887,Game,PlayerHit,PooledAudioSource_11,0.55,1,0,0,Linear,4,18,0.75,10.028,0.55,12,20,-0.056,-0.748,-10,0,0,0,Effects
+play,49.887,Game,Boss_Crystal_Impact,PooledAudioSource_12,0.65,1.006,0.85,0,Linear,4,18,0.74,0.74,0.65,13,20,-0.349,-0.726,-10,-1.089,-0.748,-10,Effects
+snap,49.962,Game,Skeleton Spawn,PooledAudioSource_0,0.45,0.931,0.85,0,Linear,4,18,13.28,13.28,0.196,12,20,-0.37,-0.784,-10,10,-9.08,-10,Effects
+snap,49.962,Game,Boss_Step_1,PooledAudioSource_6,0.35,0.841,0.85,0,Linear,4,18,2.776,2.776,0.35,12,20,-0.37,-0.784,-10,1.255,-3.035,-10,Effects
+snap,49.962,Game,Player_Hurt_Voice_1,PooledAudioSource_10,0.5,1.004,0.85,0,Linear,4,18,0.72,0.72,0.5,12,20,-0.37,-0.784,-10,-1.089,-0.748,-10,Effects
+snap,49.962,Game,Player Hit SFX,PooledAudioSource_11,0.55,1,0,0,Linear,4,18,0.867,10.037,0.55,12,20,-0.37,-0.784,-10,0,0,0,Effects
+snap,49.962,Game,Boss_Attack_Melee,PooledAudioSource_5,0.55,1.014,0.85,0,Linear,4,18,2.224,2.224,0.55,12,20,-0.37,-0.784,-10,1.314,-2.237,-10,Effects
+snap,49.962,Game,Boss_Attack_Melee,PooledAudioSource_4,0.55,1.047,0.85,0,Linear,4,18,2.224,2.224,0.55,12,20,-0.37,-0.784,-10,1.314,-2.237,-10,Effects
+snap,49.962,Game,Boss_Crystal_Impact,PooledAudioSource_7,0.65,0.968,0.85,0,Linear,4,18,1.784,1.784,0.65,12,20,-0.37,-0.784,-10,1.415,-0.748,-10,Effects
+snap,49.962,Game,Skeletons Step 7,PooledAudioSource_8,0.18,1.046,0.85,0,Linear,4,18,12.145,12.145,0.091,12,20,-0.37,-0.784,-10,9.172,-8.298,-10,Effects
+snap,49.962,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,0.867,10.037,0.3,12,20,-0.37,-0.784,-10,0,0,0,Effects
+snap,49.962,Game,Skeletons Step 7,PooledAudioSource_3,0.18,0.967,0.85,0,Linear,4,18,8.721,8.721,0.128,12,20,-0.37,-0.784,-10,6.715,-5.87,-10,Effects
+snap,49.962,Game,Boss_Crystal_Impact,PooledAudioSource_12,0.65,1.006,0.85,0,Linear,4,18,0.72,0.72,0.65,12,20,-0.37,-0.784,-10,-1.089,-0.748,-10,Effects
+snap,49.962,Game,Footsteps_Sand_Walk_11,PooledAudioSource_9,0.25,1,0.85,0,Linear,4,18,0.16,0.16,0.25,12,20,-0.37,-0.784,-10,-0.526,-0.748,-10,Effects
+snap,49.962,Game,Magic Garden Night,Music Manager,0.4,1,0,1,Logarithmic,1,500,0.867,10.037,0.4,12,20,-0.37,-0.784,-10,0,0,0,Music
+snap,49.962,Game,Skeletons Step 7,PooledAudioSource_1,0.18,1.008,0.85,0,Linear,4,18,8.167,8.167,0.134,12,20,-0.37,-0.784,-10,6.278,-5.528,-10,Effects
+play,50.112,Game,Skeletons Step 5,PooledAudioSource_2,0.18,0.978,0.85,0,Linear,4,18,12.099,12.099,0.091,12,20,-0.998,-0.743,-10,8.716,-7.956,-10,Effects
+play,50.163,Game,Step_Land,PooledAudioSource_3,0.25,1,0.85,0,Linear,4,18,1.153,1.153,0.25,12,20,-1.268,-0.75,-10,-2.421,-0.748,-10,Effects
+play,50.332,Game,Skeletons Step 5,PooledAudioSource_5,0.18,0.959,0.85,0,Linear,4,18,8.971,8.971,0.126,8,20,-2,-0.748,-10,5.77,-5.232,-10,Effects
+play,50.554,Game,Step_Land,PooledAudioSource_1,0.25,1,0.85,0,Linear,4,18,0.381,0.381,0.25,8,20,-2.495,-0.748,-10,-2.876,-0.748,-10,Effects
+play,50.572,Game,Skeletons Step 5,PooledAudioSource_6,0.18,1.015,0.85,0,Linear,4,18,12.78,12.78,0.084,9,20,-2.542,-0.748,-10,8.219,-7.642,-10,Effects
+play,50.792,Game,Skeletons Step 2,PooledAudioSource_2,0.18,0.989,0.85,0,Linear,4,18,9.056,9.056,0.125,7,20,-2.741,-0.748,-10,5.27,-4.972,-10,Effects
+snap,50.972,Game,Skeleton Spawn,PooledAudioSource_0,0.45,0.931,0.85,0,Linear,4,18,15.288,15.288,0.142,7,20,-2.818,-0.748,-10,10,-9.08,-10,Effects
+snap,50.972,Game,Skeletons Step 5,PooledAudioSource_6,0.18,1.015,0.85,0,Linear,4,18,13.014,13.014,0.081,7,20,-2.818,-0.748,-10,8.219,-7.642,-10,Effects
+snap,50.972,Game,Skeletons Step 2,PooledAudioSource_2,0.18,0.989,0.85,0,Linear,4,18,9.125,9.125,0.124,7,20,-2.818,-0.748,-10,5.27,-4.972,-10,Effects
+snap,50.972,Game,Skeletons Step 5,PooledAudioSource_5,0.18,0.959,0.85,0,Linear,4,18,9.689,9.689,0.118,7,20,-2.818,-0.748,-10,5.77,-5.232,-10,Effects
+snap,50.972,Game,Boss_Attack_Melee,PooledAudioSource_4,0.55,1.047,0.85,0,Linear,4,18,4.392,4.392,0.537,7,20,-2.818,-0.748,-10,1.314,-2.237,-10,Effects
+snap,50.972,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,2.916,10.416,0.3,7,20,-2.818,-0.748,-10,0,0,0,Effects
+snap,50.972,Game,Boss_Crystal_Impact,PooledAudioSource_12,0.65,1.006,0.85,0,Linear,4,18,1.729,1.729,0.65,7,20,-2.818,-0.748,-10,-1.089,-0.748,-10,Effects
+snap,50.972,Game,Magic Garden Night,Music Manager,0.4,1,0,1,Logarithmic,1,500,2.916,10.416,0.4,7,20,-2.818,-0.748,-10,0,0,0,Music
+snap,50.972,Game,Footsteps_Sand_Walk_11,PooledAudioSource_1,0.25,1,0.85,0,Linear,4,18,0.058,0.058,0.25,7,20,-2.818,-0.748,-10,-2.876,-0.748,-10,Effects
+play,51.032,Game,Boss_Step_3,PooledAudioSource_0,0.35,0.752,0.85,0,Linear,4,18,1.959,1.959,0.35,6,20,-2.835,-0.748,-10,-0.989,-1.403,-10,Effects
+play,51.032,Game,Skeletons Step 2,PooledAudioSource_3,0.18,1.029,0.85,0,Linear,4,18,12.454,12.454,0.088,7,20,-2.838,-0.748,-10,7.729,-7.337,-10,Effects
+play,51.252,Game,Skeletons Step 2,PooledAudioSource_1,0.18,1.031,0.85,0,Linear,4,18,8.583,8.583,0.13,5,20,-2.87,-0.748,-10,4.748,-4.702,-10,Effects
+play,51.478,Game,Boss_Attack_Melee,PooledAudioSource_2,0.55,0.974,0.85,0,Linear,4,18,1.454,1.454,0.55,5,20,-2.882,-0.748,-10,-1.509,-1.224,-10,Effects
+play,51.492,Game,Skeletons Step 5,PooledAudioSource_4,0.18,1.044,0.85,0,Linear,4,18,11.934,11.934,0.093,6,20,-2.883,-0.748,-10,7.255,-7.043,-10,Effects
+play,51.712,Game,Skeletons Step 2,PooledAudioSource_3,0.18,1.014,0.85,0,Linear,4,18,8.029,8.029,0.136,6,20,-2.888,-0.748,-10,4.242,-4.44,-10,Effects
+play,51.719,Game,Skeleton Spawn,PooledAudioSource_5,0.45,0.97,0.85,0,Linear,4,18,10.286,10.286,0.278,7,20,-2.888,-0.748,-10,-8.92,-9.08,-10,Effects
+play,51.952,Game,Skeletons Step 2,PooledAudioSource_1,0.18,0.963,0.85,0,Linear,4,18,11.349,11.349,0.1,6,20,-2.89,-0.748,-10,6.753,-6.732,-10,Effects
+snap,51.979,Game,Boss_Step_3,PooledAudioSource_0,0.35,0.752,0.85,0,Linear,4,18,2.011,2.011,0.35,6,20,-2.89,-0.748,-10,-0.989,-1.403,-10,Effects
+snap,51.979,Game,Boss_Attack_Melee,PooledAudioSource_2,0.55,0.974,0.85,0,Linear,4,18,1.461,1.461,0.55,6,20,-2.89,-0.748,-10,-1.509,-1.224,-10,Effects
+snap,51.979,Game,Skeleton Spawn,PooledAudioSource_5,0.45,0.97,0.85,0,Linear,4,18,10.285,10.285,0.278,6,20,-2.89,-0.748,-10,-8.92,-9.08,-10,Effects
+snap,51.979,Game,Skeletons Step 5,PooledAudioSource_4,0.18,1.044,0.85,0,Linear,4,18,11.94,11.94,0.093,6,20,-2.89,-0.748,-10,7.255,-7.043,-10,Effects
+snap,51.979,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,2.986,10.436,0.3,6,20,-2.89,-0.748,-10,0,0,0,Effects
+snap,51.979,Game,Skeletons Step 2,PooledAudioSource_3,0.18,1.014,0.85,0,Linear,4,18,8.031,8.031,0.136,6,20,-2.89,-0.748,-10,4.242,-4.44,-10,Effects
+snap,51.979,Game,Magic Garden Night,Music Manager,0.4,1,0,1,Logarithmic,1,500,2.986,10.436,0.4,6,20,-2.89,-0.748,-10,0,0,0,Music
+snap,51.979,Game,Skeletons Step 2,PooledAudioSource_1,0.18,0.963,0.85,0,Linear,4,18,11.349,11.349,0.1,6,20,-2.89,-0.748,-10,6.753,-6.732,-10,Effects
+play,52.144,Game,Player_Hurt_Voice_2,PooledAudioSource_4,0.5,0.981,0.85,0,Linear,4,18,0.001,0.001,0.5,6,20,-2.891,-0.748,-10,-2.892,-0.748,-10,Effects
+play,52.144,Game,PlayerHit,PooledAudioSource_6,0.55,1,0,0,Linear,4,18,2.986,10.436,0.55,7,20,-2.891,-0.748,-10,0,0,0,Effects
+play,52.144,Game,Player_Low_Health_Heartbeat_Loop,PooledAudioSource_7,0.5,1,0,1,Linear,4,18,4.306,4.306,0.5,8,20,-2.891,-0.748,-10,1.415,-0.748,-10,Effects
+play,52.144,Game,Boss_Crystal_Impact,PooledAudioSource_8,0.65,1.001,0.85,0,Linear,4,18,0.235,0.235,0.65,9,20,-2.781,-0.955,-10,-2.892,-0.748,-10,Effects
+play,52.172,Game,Skeletons Step 2,PooledAudioSource_9,0.18,1.031,0.85,0,Linear,4,18,7.217,7.217,0.145,10,20,-2.673,-0.835,-10,3.726,-4.173,-10,Effects
+play,52.412,Game,Skeletons Step 2,PooledAudioSource_3,0.18,1.007,0.85,0,Linear,4,18,10.789,10.789,0.106,10,20,-2.901,-0.752,-10,6.272,-6.433,-10,Effects
+play,52.545,Game,Boss_Attack_Melee,PooledAudioSource_6,0.55,0.96,0.85,0,Linear,4,18,1.462,1.462,0.55,10,20,-2.891,-0.748,-10,-1.509,-1.224,-10,Effects
+play,52.632,Game,Skeletons Step 2,PooledAudioSource_1,0.18,0.956,0.85,0,Linear,4,18,6.896,6.896,0.148,9,20,-2.903,-0.748,-10,3.224,-3.913,-10,Effects
+play,52.699,Game,Step_Land,PooledAudioSource_4,0.25,1,0.85,0,Linear,4,18,0.234,0.234,0.25,10,20,-2.941,-0.748,-10,-3.175,-0.748,-10,Effects
+play,52.872,Game,Skeletons Step 2,PooledAudioSource_9,0.18,1.011,0.85,0,Linear,4,18,10.512,10.512,0.109,10,20,-3.257,-0.748,-10,5.772,-6.131,-10,Effects
+snap,52.983,Game,Boss_Step_3,PooledAudioSource_0,0.35,0.752,0.85,0,Linear,4,18,2.624,2.624,0.35,10,20,-3.531,-0.753,-10,-0.989,-1.403,-10,Effects
+snap,52.983,Game,Boss_Attack_Melee,PooledAudioSource_6,0.55,0.96,0.85,0,Linear,4,18,2.076,2.076,0.55,10,20,-3.531,-0.753,-10,-1.509,-1.224,-10,Effects
+snap,52.983,Game,Boss_Attack_Melee,PooledAudioSource_2,0.55,0.974,0.85,0,Linear,4,18,2.076,2.076,0.55,10,20,-3.531,-0.753,-10,-1.509,-1.224,-10,Effects
+snap,52.983,Game,Skeleton Spawn,PooledAudioSource_5,0.45,0.97,0.85,0,Linear,4,18,9.919,9.919,0.288,10,20,-3.531,-0.753,-10,-8.92,-9.08,-10,Effects
+snap,52.983,Game,Footsteps_Sand_Walk_11,PooledAudioSource_4,0.25,1,0.85,0,Linear,4,18,0.356,0.356,0.25,10,20,-3.531,-0.753,-10,-3.175,-0.748,-10,Effects
+snap,52.983,Game,Player_Low_Health_Heartbeat_Loop,PooledAudioSource_7,0.5,1,0,1,Linear,4,18,4.946,4.946,0.5,10,20,-3.531,-0.753,-10,1.415,-0.748,-10,Effects
+snap,52.983,Game,Boss_Crystal_Impact,PooledAudioSource_8,0.65,1.001,0.85,0,Linear,4,18,0.64,0.64,0.65,10,20,-3.531,-0.753,-10,-2.892,-0.748,-10,Effects
+snap,52.983,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,3.61,10.632,0.3,10,20,-3.531,-0.753,-10,0,0,0,Effects
+snap,52.983,Game,Skeletons Step 2,PooledAudioSource_3,0.18,1.007,0.85,0,Linear,4,18,11.33,11.33,0.1,10,20,-3.531,-0.753,-10,6.272,-6.433,-10,Effects
+snap,52.983,Game,Skeletons Step 2,PooledAudioSource_9,0.18,1.011,0.85,0,Linear,4,18,10.746,10.746,0.106,10,20,-3.531,-0.753,-10,5.772,-6.131,-10,Effects
+snap,52.983,Game,Magic Garden Night,Music Manager,0.4,1,0,1,Logarithmic,1,500,3.61,10.632,0.4,10,20,-3.531,-0.753,-10,0,0,0,Music
+snap,52.983,Game,Skeletons Step 2,PooledAudioSource_1,0.18,0.956,0.85,0,Linear,4,18,7.458,7.458,0.142,10,20,-3.531,-0.753,-10,3.224,-3.913,-10,Effects
+play,53.085,Game,Step_Land,PooledAudioSource_3,0.25,1,0.85,0,Linear,4,18,0.703,0.703,0.25,10,20,-3.842,-0.807,-10,-4.507,-1.035,-10,Effects
+play,53.092,Game,Skeletons Step 7,PooledAudioSource_10,0.18,0.973,0.85,0,Linear,4,18,7.166,7.166,0.145,11,20,-3.877,-0.819,-10,2.696,-3.674,-10,Effects
+play,53.218,Game,PlayerHit,PooledAudioSource_11,0.55,1,0,0,Linear,4,18,4.213,10.851,0.55,12,20,-4.101,-0.964,-10,0,0,0,Effects
+play,53.218,Game,PlayerDie,PooledAudioSource_7,0.6,0.99,0.85,0,Linear,4,18,0.416,0.416,0.6,12,20,-4.101,-0.964,-10,-4.348,-1.299,-10,Effects
+play,53.218,Game,Player_Death_Voice,PooledAudioSource_12,0.6,1.013,0.85,0,Linear,4,18,0.416,0.416,0.6,13,20,-4.101,-0.964,-10,-4.348,-1.299,-10,Effects
+play,53.218,Game,Boss_Crystal_Impact,PooledAudioSource_13,0.65,0.958,0.85,0,Linear,4,18,0.313,0.313,0.65,14,20,-4.064,-1.167,-10,-4.348,-1.299,-10,Effects
+play,53.332,Game,Skeletons Step 5,PooledAudioSource_1,0.18,0.954,0.85,0,Linear,4,18,10.656,10.656,0.107,13,20,-4.165,-0.969,-10,5.322,-5.821,-10,Effects
+play,53.552,Game,Skeletons Step 7,PooledAudioSource_4,0.18,0.967,0.85,0,Linear,4,18,7,7,0.147,13,20,-4.261,-1.231,-10,2.444,-3.242,-10,Effects
+play,53.792,Game,Skeletons Step 7,PooledAudioSource_0,0.18,0.956,0.85,0,Linear,4,18,10.272,10.272,0.111,9,20,-4.292,-1.283,-10,5.169,-5.282,-10,Effects
+snap,54.002,Game,Skeletons Step 7,PooledAudioSource_0,0.18,0.956,0.85,0,Linear,4,18,10.275,10.275,0.111,8,20,-4.303,-1.302,-10,5.169,-5.282,-10,Effects
+snap,54.002,Game,Boss_Attack_Melee,PooledAudioSource_6,0.55,0.96,0.85,0,Linear,4,18,2.795,2.795,0.55,8,20,-4.303,-1.302,-10,-1.509,-1.224,-10,Effects
+snap,54.002,Game,Boss_Crystal_Impact,PooledAudioSource_13,0.65,0.958,0.85,0,Linear,4,18,0.045,0.045,0.65,8,20,-4.303,-1.302,-10,-4.348,-1.299,-10,Effects
+snap,54.002,Game,Skeletons Step 7,PooledAudioSource_4,0.18,0.967,0.85,0,Linear,4,18,7.02,7.02,0.147,8,20,-4.303,-1.302,-10,2.444,-3.242,-10,Effects
+snap,54.002,Game,PlayerDie,PooledAudioSource_7,0.6,0.99,0.85,0,Linear,4,18,0.045,0.045,0.6,8,20,-4.303,-1.302,-10,-4.348,-1.299,-10,Effects
+snap,54.002,Game,Boss_Crystal_Impact,PooledAudioSource_8,0.65,1.001,0.85,0,Linear,4,18,1.517,1.517,0.65,8,20,-4.303,-1.302,-10,-2.892,-0.748,-10,Effects
+snap,54.002,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,4.496,10.964,0.3,8,20,-4.303,-1.302,-10,0,0,0,Effects
+snap,54.002,Game,Player_Death_Voice,PooledAudioSource_12,0.6,1.013,0.85,0,Linear,4,18,0.045,0.045,0.6,8,20,-4.303,-1.302,-10,-4.348,-1.299,-10,Effects
+snap,54.002,Game,Magic Garden Night,Music Manager,0.4,1,0,1,Logarithmic,1,500,4.496,10.964,0.4,8,20,-4.303,-1.302,-10,0,0,0,Music
+snap,54.002,Game,Skeletons Step 5,PooledAudioSource_1,0.18,0.954,0.85,0,Linear,4,18,10.633,10.633,0.108,8,20,-4.303,-1.302,-10,5.322,-5.821,-10,Effects
+play,54.012,Game,Skeletons Step 5,PooledAudioSource_2,0.18,1.04,0.85,0,Linear,4,18,6.803,6.803,0.149,9,20,-4.304,-1.303,-10,2.359,-2.678,-10,Effects
+play,54.081,Game,PlayerGhost,PooledAudioSource_1,0.55,1,0.85,0,Linear,4,18,0.012,0.012,0.55,8,20,-4.306,-1.307,-10,-4.311,-1.316,-10,Effects
+play,54.219,Game,Boss_Idle_2,PooledAudioSource_3,0.4,1.04,0.85,0,Linear,4,18,3.722,3.722,0.4,9,20,-4.308,-1.311,-10,-1.287,0.864,-10,Effects
+play,54.252,Game,Skeletons Step 7,PooledAudioSource_4,0.18,1.022,0.85,0,Linear,4,18,9.922,9.922,0.115,9,20,-4.309,-1.312,-10,5.01,-4.719,-10,Effects
+play,54.377,Game,Boss_Step_2,PooledAudioSource_5,0.35,0.811,0.85,0,Linear,4,18,4.003,4.003,0.35,8,20,-4.31,-1.314,-10,-1.245,1.262,-10,Effects
+play,54.472,Game,Skeletons Step 7,PooledAudioSource_0,0.18,0.977,0.85,0,Linear,4,18,6.629,6.629,0.151,8,20,-4.31,-1.315,-10,2.272,-2.1,-10,Effects
+play,54.659,Game,Skeleton Idle 1,PooledAudioSource_2,0.35,0.985,0.85,0,Linear,4,18,6.571,6.571,0.295,8,20,-4.311,-1.316,-10,2.237,-1.867,-10,Effects
+play,54.712,Game,Skeletons Step 7,PooledAudioSource_7,0.18,0.952,0.85,0,Linear,4,18,9.603,9.603,0.119,9,20,-4.311,-1.316,-10,4.856,-4.174,-10,Effects
+play,54.733,Game,Skeleton Spawn,PooledAudioSource_6,0.45,0.947,0.85,0,Linear,4,18,9.029,9.029,0.313,9,20,-4.311,-1.316,-10,-8.92,-9.08,-10,Effects
+play,54.932,Game,Skeletons Step 2,PooledAudioSource_4,0.18,0.989,0.85,0,Linear,4,18,6.505,6.505,0.153,9,20,-4.311,-1.316,-10,2.189,-1.551,-10,Effects
+snap,55.011,Game,Skeletons Step 7,PooledAudioSource_0,0.18,0.977,0.85,0,Linear,4,18,6.63,6.63,0.151,9,20,-4.311,-1.316,-10,2.272,-2.1,-10,Effects
+snap,55.011,Game,Skeleton Spawn,PooledAudioSource_6,0.45,0.947,0.85,0,Linear,4,18,9.029,9.029,0.313,9,20,-4.311,-1.316,-10,-8.92,-9.08,-10,Effects
+snap,55.011,Game,Skeleton Idle 1,PooledAudioSource_2,0.35,0.985,0.85,0,Linear,4,18,6.571,6.571,0.295,9,20,-4.311,-1.316,-10,2.237,-1.867,-10,Effects
+snap,55.011,Game,Boss_Crystal_Impact,PooledAudioSource_13,0.65,0.958,0.85,0,Linear,4,18,0.04,0.04,0.65,9,20,-4.311,-1.316,-10,-4.348,-1.299,-10,Effects
+snap,55.011,Game,Boss_Step_2,PooledAudioSource_5,0.35,0.811,0.85,0,Linear,4,18,4.006,4.006,0.35,9,20,-4.311,-1.316,-10,-1.245,1.262,-10,Effects
+snap,55.011,Game,Skeletons Step 2,PooledAudioSource_4,0.18,0.989,0.85,0,Linear,4,18,6.505,6.505,0.153,9,20,-4.311,-1.316,-10,2.189,-1.551,-10,Effects
+snap,55.011,Game,Skeletons Step 7,PooledAudioSource_7,0.18,0.952,0.85,0,Linear,4,18,9.603,9.603,0.119,9,20,-4.311,-1.316,-10,4.856,-4.174,-10,Effects
+snap,55.011,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,4.508,10.969,0.3,9,20,-4.311,-1.316,-10,0,0,0,Effects
+snap,55.011,Game,Boss_Idle_2,PooledAudioSource_3,0.4,1.04,0.85,0,Linear,4,18,3.728,3.728,0.4,9,20,-4.311,-1.316,-10,-1.287,0.864,-10,Effects
+snap,55.011,Game,Magic Garden Night,Music Manager,0.4,1,0,1,Logarithmic,1,500,4.508,10.969,0.4,9,20,-4.311,-1.316,-10,0,0,0,Music
+snap,55.011,Game,PlayerGhost,PooledAudioSource_1,0.55,1,0.85,0,Linear,4,18,0,0,0.55,9,20,-4.311,-1.316,-10,-4.311,-1.316,-10,Effects
+play,55.172,Game,Skeletons Step 2,PooledAudioSource_0,0.18,1.029,0.85,0,Linear,4,18,9.297,9.297,0.122,9,20,-4.311,-1.316,-10,4.697,-3.612,-10,Effects
+play,55.205,Game,Player_Dead_Slime_Move_4,PooledAudioSource_8,0.35,1.098,0.85,0,Linear,4,18,0.008,0.008,0.35,9,20,-4.311,-1.316,-10,-4.304,-1.316,-10,Effects
+play,55.243,Game,Boss_Attack_Invoke,PooledAudioSource_2,0.55,0.948,0.85,0,Linear,4,18,5.149,5.149,0.512,9,20,-4.309,-1.316,-10,-1.092,2.704,-10,Effects
+play,55.392,Game,Skeletons Step 2,PooledAudioSource_9,0.18,1.03,0.85,0,Linear,4,18,6.32,6.32,0.155,10,20,-4.207,-1.316,-10,2.104,-0.984,-10,Effects
+play,55.563,Game,Player_Dead_Slime_Move_4,PooledAudioSource_7,0.35,0.956,0.85,0,Linear,4,18,0.479,0.479,0.35,10,20,-3.905,-1.316,-10,-3.425,-1.316,-10,Effects
+play,55.632,Game,Skeletons Step 2,PooledAudioSource_4,0.18,1.022,0.85,0,Linear,4,18,8.486,8.486,0.131,9,20,-3.768,-1.313,-10,4.539,-3.051,-10,Effects
+play,55.738,Game,Boss_Slam_Impact,PooledAudioSource_8,0.5,0.971,0.85,0,Linear,4,18,4.732,4.732,0.478,10,20,-3.65,-1.277,-10,-1.092,2.704,-10,Effects
+play,55.852,Game,Skeletons Step 2,PooledAudioSource_0,0.18,1.009,0.85,0,Linear,4,18,5.545,5.545,0.163,9,20,-3.488,-1.074,-10,2.015,-0.391,-10,Effects
+play,55.938,Game,Player_Dead_Slime_Move_1,PooledAudioSource_3,0.35,0.908,0.85,0,Linear,4,18,0.712,0.712,0.35,10,20,-3.423,-0.869,-10,-3.264,-0.175,-10,Effects
+snap,56.013,Game,Skeletons Step 2,PooledAudioSource_0,0.18,1.009,0.85,0,Linear,4,18,5.403,5.403,0.165,9,20,-3.381,-0.663,-10,2.015,-0.391,-10,Effects
+snap,56.013,Game,Skeleton Spawn,PooledAudioSource_6,0.45,0.947,0.85,0,Linear,4,18,10.076,10.076,0.284,9,20,-3.381,-0.663,-10,-8.92,-9.08,-10,Effects
+snap,56.013,Game,Boss_Attack_Invoke,PooledAudioSource_2,0.55,0.948,0.85,0,Linear,4,18,4.071,4.071,0.548,9,20,-3.381,-0.663,-10,-1.092,2.704,-10,Effects
+snap,56.013,Game,Boss_Step_2,PooledAudioSource_5,0.35,0.811,0.85,0,Linear,4,18,2.875,2.875,0.35,9,20,-3.381,-0.663,-10,-1.245,1.262,-10,Effects
+snap,56.013,Game,Skeletons Step 2,PooledAudioSource_4,0.18,1.022,0.85,0,Linear,4,18,8.272,8.272,0.133,9,20,-3.381,-0.663,-10,4.539,-3.051,-10,Effects
+snap,56.013,Game,Boss_Slam_Impact,PooledAudioSource_8,0.5,0.971,0.85,0,Linear,4,18,4.071,4.071,0.498,9,20,-3.381,-0.663,-10,-1.092,2.704,-10,Effects
+snap,56.013,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,3.446,10.577,0.3,9,20,-3.381,-0.663,-10,0,0,0,Effects
+snap,56.013,Game,Player_Dead_Slime_Move_1,PooledAudioSource_3,0.35,0.908,0.85,0,Linear,4,18,0.502,0.502,0.35,9,20,-3.381,-0.663,-10,-3.264,-0.175,-10,Effects
+snap,56.013,Game,Skeletons Step 2,PooledAudioSource_9,0.18,1.03,0.85,0,Linear,4,18,5.495,5.495,0.164,9,20,-3.381,-0.663,-10,2.104,-0.984,-10,Effects
+snap,56.013,Game,Magic Garden Night,Music Manager,0.4,1,0,1,Logarithmic,1,500,3.446,10.577,0.4,9,20,-3.381,-0.663,-10,0,0,0,Music
+snap,56.013,Game,PlayerGhost,PooledAudioSource_1,0.55,1,0.85,0,Linear,4,18,1.137,1.137,0.55,9,20,-3.381,-0.663,-10,-4.311,-1.316,-10,Effects
+play,56.092,Game,Skeletons Step 5,PooledAudioSource_7,0.18,0.975,0.85,0,Linear,4,18,8.009,8.009,0.136,9,20,-3.32,-0.317,-10,4.384,-2.506,-10,Effects
+play,56.157,Game,Minion_Spawn,PooledAudioSource_9,0.45,1.056,0.85,0,Linear,4,18,2.637,2.637,0.45,10,20,-3.252,-0.063,-10,-4.902,1.994,-10,Effects
+play,56.157,Game,Minion_Spawn,PooledAudioSource_10,0.45,0.981,0.85,0,Linear,4,18,1.084,1.084,0.45,11,20,-3.252,-0.063,-10,-3.212,-1.146,-10,Effects
+play,56.157,Game,Minion_Spawn,PooledAudioSource_11,0.45,0.947,0.85,0,Linear,4,18,5.401,5.401,0.412,12,20,-3.252,-0.063,-10,2.138,-0.396,-10,Effects
+play,56.157,Game,Minion_Spawn,PooledAudioSource_9,0.45,1.006,0.85,0,Linear,4,18,6.394,6.394,0.385,12,20,-3.252,-0.063,-10,0.998,4.714,-10,Effects
+play,56.157,Game,Minion_Spawn,PooledAudioSource_9,0.45,1.038,0.85,0,Linear,4,18,5,5,0.423,12,20,-3.252,-0.063,-10,-1.912,4.754,-10,Effects
+play,56.157,Game,Minion_Spawn,PooledAudioSource_9,0.45,1.045,0.85,0,Linear,4,18,2.146,2.146,0.45,12,20,-3.252,-0.063,-10,-1.122,0.194,-10,Effects
+play,56.212,Game,Minion_Step_1,PooledAudioSource_12,0.25,1.005,0.85,0,Linear,4,18,2.564,2.564,0.25,13,20,-3.206,0.072,-10,-4.902,1.994,-10,Effects
+play,56.31,Game,Player_Dead_Slime_Move_1,PooledAudioSource_4,0.35,0.924,0.85,0,Linear,4,18,1.028,1.028,0.35,13,20,-3.063,0.4,-10,-2.591,1.313,-10,Effects
+play,56.312,Game,Skeletons Step 2,PooledAudioSource_13,0.18,1.047,0.85,0,Linear,4,18,4.951,4.951,0.17,14,20,-3.01,0.503,-10,1.93,0.174,-10,Effects
+play,56.552,Game,Skeletons Step 2,PooledAudioSource_0,0.18,1.018,0.85,0,Linear,4,18,7.316,7.316,0.144,13,20,-2.368,1.223,-10,4.226,-1.947,-10,Effects
+play,56.662,Game,Player_Dead_Slime_Move_4,PooledAudioSource_3,0.35,0.978,0.85,0,Linear,4,18,1.021,1.021,0.35,13,20,-2.053,1.395,-10,-1.114,1.795,-10,Effects
+play,56.672,Game,Minion_Step_1,PooledAudioSource_12,0.25,0.905,0.85,0,Linear,4,18,2.91,2.91,0.25,14,20,-1.97,1.43,-10,-4.674,2.507,-10,Effects
+play,56.772,Game,Skeletons Step 7,PooledAudioSource_14,0.18,0.995,0.85,0,Linear,4,18,3.507,3.507,0.18,15,20,-1.562,1.563,-10,1.846,0.735,-10,Effects
+play,57.012,Game,Skeletons Step 7,PooledAudioSource_4,0.18,1.04,0.85,0,Linear,4,18,5.542,5.542,0.163,10,20,-0.496,1.739,-10,4.072,-1.4,-10,Effects
+snap,57.027,Game,Skeletons Step 2,PooledAudioSource_0,0.18,1.018,0.85,0,Linear,4,18,5.99,5.99,0.158,10,20,-0.496,1.739,-10,4.226,-1.947,-10,Effects
+snap,57.027,Game,Minion_Spawn,PooledAudioSource_10,0.45,0.981,0.85,0,Linear,4,18,3.963,3.963,0.45,10,20,-0.496,1.739,-10,-3.212,-1.146,-10,Effects
+snap,57.027,Game,Skeletons Step 7,PooledAudioSource_14,0.18,0.995,0.85,0,Linear,4,18,2.548,2.548,0.18,10,20,-0.496,1.739,-10,1.846,0.735,-10,Effects
+snap,57.027,Game,Minion_Spawn,PooledAudioSource_11,0.45,0.947,0.85,0,Linear,4,18,3.391,3.391,0.45,10,20,-0.496,1.739,-10,2.138,-0.396,-10,Effects
+snap,57.027,Game,Boss_Attack_Invoke,PooledAudioSource_2,0.55,0.948,0.85,0,Linear,4,18,1.134,1.134,0.55,10,20,-0.496,1.739,-10,-1.092,2.704,-10,Effects
+snap,57.027,Game,Skeletons Step 7,PooledAudioSource_4,0.18,1.04,0.85,0,Linear,4,18,5.542,5.542,0.163,10,20,-0.496,1.739,-10,4.072,-1.4,-10,Effects
+snap,57.027,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,1.809,10.162,0.3,10,20,-0.496,1.739,-10,0,0,0,Effects
+snap,57.027,Game,Player_Dead_Slime_Move_4,PooledAudioSource_3,0.35,0.978,0.85,0,Linear,4,18,0.621,0.621,0.35,10,20,-0.496,1.739,-10,-1.114,1.795,-10,Effects
+snap,57.027,Game,Minion_Step_1,PooledAudioSource_12,0.25,0.905,0.85,0,Linear,4,18,4.248,4.248,0.246,10,20,-0.496,1.739,-10,-4.674,2.507,-10,Effects
+snap,57.027,Game,Minion_Spawn,PooledAudioSource_9,0.45,1.045,0.85,0,Linear,4,18,1.668,1.668,0.45,10,20,-0.496,1.739,-10,-1.122,0.194,-10,Effects
+snap,57.027,Game,Magic Garden Night,Music Manager,0.4,1,0,1,Logarithmic,1,500,1.809,10.162,0.4,10,20,-0.496,1.739,-10,0,0,0,Music
+snap,57.027,Game,PlayerGhost,PooledAudioSource_1,0.55,1,0.85,0,Linear,4,18,4.889,4.889,0.52,10,20,-0.496,1.739,-10,-4.311,-1.316,-10,Effects
+play,57.027,Game,Player_Dead_Slime_Move_2,PooledAudioSource_5,0.35,1.068,0.85,0,Linear,4,18,1.148,1.148,0.35,11,20,-0.496,1.739,-10,0.647,1.846,-10,Effects
+play,57.132,Game,Minion_Step_1,PooledAudioSource_3,0.25,1.082,0.85,0,Linear,4,18,4.699,4.699,0.239,10,20,0.092,1.784,-10,-4.435,3.044,-10,Effects
+play,57.232,Game,Skeletons Step 5,PooledAudioSource_0,0.18,0.965,0.85,0,Linear,4,18,1.297,1.297,0.18,9,20,0.56,1.807,-10,1.759,1.312,-10,Effects
+play,57.382,Game,Player_Dead_Slime_Move_3,PooledAudioSource_1,0.35,1.068,0.85,0,Linear,4,18,1.044,1.044,0.35,7,20,1.15,1.88,-10,2.157,2.154,-10,Effects
+play,57.472,Game,Skeletons Step 2,PooledAudioSource_5,0.18,0.995,0.85,0,Linear,4,18,3.734,3.734,0.18,6,20,1.536,2.033,-10,3.915,-0.846,-10,Effects
+play,57.592,Game,Minion_Step_1,PooledAudioSource_3,0.25,1.074,0.85,0,Linear,4,18,6.182,6.182,0.217,6,20,1.842,2.284,-10,-4.208,3.552,-10,Effects
+play,57.692,Game,Skeletons Step 7,PooledAudioSource_2,0.18,0.957,0.85,0,Linear,4,18,0.736,0.736,0.18,5,20,2.04,2.507,-10,1.675,1.868,-10,Effects
+play,57.727,Game,Boss_Step_3,PooledAudioSource_4,0.35,0.815,0.85,0,Linear,4,18,3.865,3.865,0.35,6,20,2.073,2.549,-10,-0.839,5.09,-10,Effects
+play,57.748,Game,Player_Dead_Slime_Move_1,PooledAudioSource_6,0.35,1.03,0.85,0,Linear,4,18,0.525,0.525,0.35,7,20,2.108,2.594,-10,2.428,3.011,-10,Effects
+play,57.748,Game,Skeleton Spawn,PooledAudioSource_7,0.45,1,0.85,0,Linear,4,18,17.336,17.336,0.086,8,20,2.135,2.629,-10,-15,0,-10,Effects
+play,57.932,Game,Skeletons Step 7,PooledAudioSource_0,0.18,1.029,0.85,0,Linear,4,18,3.47,3.47,0.18,7,20,2.287,2.838,-10,3.761,-0.303,-10,Effects
+snap,58.038,Game,Skeletons Step 7,PooledAudioSource_0,0.18,1.029,0.85,0,Linear,4,18,3.516,3.516,0.18,6,20,2.339,2.913,-10,3.761,-0.303,-10,Effects
+snap,58.038,Game,Player_Dead_Slime_Move_1,PooledAudioSource_6,0.35,1.03,0.85,0,Linear,4,18,0.132,0.132,0.35,6,20,2.339,2.913,-10,2.428,3.011,-10,Effects
+snap,58.038,Game,Skeletons Step 7,PooledAudioSource_2,0.18,0.957,0.85,0,Linear,4,18,1.238,1.238,0.18,6,20,2.339,2.913,-10,1.675,1.868,-10,Effects
+snap,58.038,Game,Skeletons Step 2,PooledAudioSource_5,0.18,0.995,0.85,0,Linear,4,18,4.076,4.076,0.179,6,20,2.339,2.913,-10,3.915,-0.846,-10,Effects
+snap,58.038,Game,Boss_Step_3,PooledAudioSource_4,0.35,0.815,0.85,0,Linear,4,18,3.852,3.852,0.35,6,20,2.339,2.913,-10,-0.839,5.09,-10,Effects
+snap,58.038,Game,Skeleton Spawn,PooledAudioSource_7,0.45,1,0.85,0,Linear,4,18,17.582,17.582,0.079,6,20,2.339,2.913,-10,-15,0,-10,Effects
+snap,58.038,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,3.736,10.675,0.3,6,20,2.339,2.913,-10,0,0,0,Effects
+snap,58.038,Game,Magic Garden Night,Music Manager,0.4,1,0,1,Logarithmic,1,500,3.736,10.675,0.4,6,20,2.339,2.913,-10,0,0,0,Music
+play,58.052,Game,Minion_Step_1,PooledAudioSource_1,0.25,0.923,0.85,0,Linear,4,18,6.426,6.426,0.213,7,20,2.348,2.926,-10,-3.974,4.078,-10,Effects
+play,58.152,Game,Skeletons Step 7,PooledAudioSource_3,0.18,1.023,0.85,0,Linear,4,18,0.955,0.955,0.18,8,20,2.38,2.974,-10,1.589,2.439,-10,Effects
+play,58.378,Game,Boss_Step_2,PooledAudioSource_2,0.35,0.811,0.85,0,Linear,4,18,4.817,4.817,0.333,6,20,2.416,3.028,-10,-0.665,6.731,-10,Effects
+play,58.392,Game,Skeletons Step 2,PooledAudioSource_5,0.18,1.012,0.85,0,Linear,4,18,3.022,3.022,0.18,7,20,2.418,3.031,-10,3.605,0.252,-10,Effects
+play,58.512,Game,Minion_Step_2,PooledAudioSource_1,0.25,0.909,0.85,0,Linear,4,18,6.361,6.361,0.214,7,20,2.427,3.045,-10,-3.74,4.604,-10,Effects
+play,58.612,Game,Skeletons Step 2,PooledAudioSource_0,0.18,1.044,0.85,0,Linear,4,18,0.93,0.93,0.18,7,20,2.432,3.052,-10,1.503,3.011,-10,Effects
+play,58.852,Game,Skeletons Step 5,PooledAudioSource_3,0.18,1.022,0.85,0,Linear,4,18,2.469,2.469,0.18,7,20,2.438,3.061,-10,3.447,0.808,-10,Effects
+play,58.972,Game,Minion_Step_1,PooledAudioSource_1,0.25,0.999,0.85,0,Linear,4,18,6.293,6.293,0.215,7,20,2.439,3.063,-10,-3.505,5.132,-10,Effects
+snap,59.058,Game,Skeletons Step 2,PooledAudioSource_0,0.18,1.044,0.85,0,Linear,4,18,0.938,0.938,0.18,6,20,2.44,3.064,-10,1.503,3.011,-10,Effects
+snap,59.058,Game,Boss_Step_2,PooledAudioSource_2,0.35,0.811,0.85,0,Linear,4,18,4.805,4.805,0.333,6,20,2.44,3.064,-10,-0.665,6.731,-10,Effects
+snap,59.058,Game,Boss_Step_3,PooledAudioSource_4,0.35,0.815,0.85,0,Linear,4,18,3.855,3.855,0.35,6,20,2.44,3.064,-10,-0.839,5.09,-10,Effects
+snap,59.058,Game,Skeleton Spawn,PooledAudioSource_7,0.45,1,0.85,0,Linear,4,18,17.707,17.707,0.076,6,20,2.44,3.064,-10,-15,0,-10,Effects
+snap,59.058,Game,Ambience_Day_Forest,Ambience Weather Day Clear,0.3,1,0,1,Logarithmic,1,500,3.916,10.74,0.3,6,20,2.44,3.064,-10,0,0,0,Effects
+snap,59.058,Game,Skeletons Step 5,PooledAudioSource_3,0.18,1.022,0.85,0,Linear,4,18,2.471,2.471,0.18,6,20,2.44,3.064,-10,3.447,0.808,-10,Effects
+snap,59.058,Game,Magic Garden Night,Music Manager,0.4,1,0,1,Logarithmic,1,500,3.916,10.74,0.4,6,20,2.44,3.064,-10,0,0,0,Music
+snap,59.058,Game,Minion_Step_1,PooledAudioSource_1,0.25,0.999,0.85,0,Linear,4,18,6.294,6.294,0.215,6,20,2.44,3.064,-10,-3.505,5.132,-10,Effects
+play,59.072,Game,Skeletons Step 2,PooledAudioSource_5,0.18,0.969,0.85,0,Linear,4,18,1.14,1.14,0.18,7,20,2.44,3.064,-10,1.419,3.572,-10,Effects
+play,59.245,Game,BookInventoryOpen,PooledAudioSource_6,0.45,1.001,0,0,Linear,4,18,3.918,10.74,0.45,8,20,2.44,3.065,-10,0,0,0,Effects
