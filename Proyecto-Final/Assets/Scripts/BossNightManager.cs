@@ -36,6 +36,8 @@ public class BossNightManager : MonoBehaviour
     public bool IsBossNight => isBossNight;
     public bool IsBossActive => currentBoss != null;
     public GameObject CurrentBoss => currentBoss;
+    /// <summary>The boss the next boss night will spawn (used to start its music before it appears).</summary>
+    public GameObject UpcomingBossPrefab => SelectBoss();
 
     private void Start()
     {
@@ -85,26 +87,39 @@ public class BossNightManager : MonoBehaviour
         return prefab.name;
     }
 
+    private bool forceBossNextNight;
     private int forcedBossNightDay = -1;
 
     /// <summary>
-    /// Cheat: makes today a boss night whatever the day number. The boss night itself starts the normal way,
-    /// when night falls (EnemiesSpawner asks IsBossNightDay), so call this during the day.
+    /// Cheat: makes the coming night a boss night whatever the day number. The boss night itself starts the
+    /// normal way, when night falls (EnemiesSpawner asks IsBossNightDay), so call this during the day.
     /// </summary>
     public bool ForceBossNight()
     {
-        int currentDay = DayCycleController.Instance.CurrentDay;
-        if (currentDay == forcedBossNightDay || bossPrefabs.Count == 0) return false;
+        if (forceBossNextNight || bossPrefabs.Count == 0) return false;
 
-        forcedBossNightDay = currentDay;
-        isBossNight = true;
+        forceBossNextNight = true;
         bossHasSpawnedThisNight = false;
-        lastBossNightDay = currentDay;
         return true;
+    }
+
+    // The day number goes up when the night starts (DayCycleController.StartNight), so the forced day can only
+    // be pinned once it is night. Pinning the number at the moment of the cheat always missed by one.
+    private void ResolveForcedBossNight()
+    {
+        if (!forceBossNextNight || DayCycleController.Instance == null) return;
+        if (GameFlowController.Instance == null || GameFlowController.Instance.CurrentPhase != GamePhase.Night) return;
+
+        forceBossNextNight = false;
+        forcedBossNightDay = DayCycleController.Instance.CurrentDay;
+        lastBossNightDay = forcedBossNightDay;
+        isBossNight = true;
     }
 
     private void OnNewDay(int dayCount)
     {
+        forcedBossNightDay = -1; // a forced boss night is for one night only, not that weekday every week
+
         bool shouldBeBossNight = IsBossNightDay(dayCount);
 
         if (shouldBeBossNight && dayCount != lastBossNightDay)
@@ -121,6 +136,7 @@ public class BossNightManager : MonoBehaviour
 
     public bool IsBossNightDay(int dayCount)
     {
+        ResolveForcedBossNight();
         return dayCount > 0 && (dayCount % bossNightInterval == 0 || dayCount == forcedBossNightDay);
     }
 

@@ -228,6 +228,47 @@ public class SoundManager : MonoBehaviour
         LogPlay(name, audioSource, sound.volume);
     }
 
+    // Loops that belong to one object and follow it (e.g. a boss's hover hum). They are not pooled: the source is
+    // a child of the owner and goes away with it.
+    private readonly List<AudioSource> attachedLoops = new();
+
+    /// <summary>
+    /// Starts a positioned loop that follows <paramref name="owner"/>. The caller owns the returned source
+    /// (volume, pitch, stopping); it is destroyed together with the owner.
+    /// </summary>
+    public AudioSource PlayAttachedLoop(SoundClipData data, Transform owner)
+    {
+        if (data == null || owner == null) return null;
+        AudioClip clip = data.GetClip();
+        if (clip == null) return null;
+
+        GameObject holder = audioSourcePrefab != null ? Instantiate(audioSourcePrefab, owner) : new GameObject();
+        holder.name = $"Loop_{clip.name}";
+        holder.transform.SetParent(owner, false);
+        // Same depth trick as the pooled sources; as a child it keeps that depth while it follows the owner.
+        holder.transform.position = OnListenerPlane(owner.position);
+
+        AudioSource source = holder.GetComponent<AudioSource>();
+        if (source == null) source = holder.AddComponent<AudioSource>();
+        if (source.outputAudioMixerGroup == null && audioSourcePool.Count > 0 && audioSourcePool[0] != null)
+            source.outputAudioMixerGroup = audioSourcePool[0].outputAudioMixerGroup;
+
+        source.playOnAwake = false;
+        source.clip = clip;
+        source.volume = data.volume;
+        source.pitch = data.pitch;
+        source.mute = false;
+        source.loop = true;
+        source.spatialBlend = localizedSpatialBlend;
+        ApplyFalloff(source);
+        source.Play();
+
+        attachedLoops.RemoveAll(s => s == null);
+        attachedLoops.Add(source);
+        LogPlay(clip.name, source, data.volume);
+        return source;
+    }
+
     public void Stop(string name)
     {
         if (!soundLookup.TryGetValue(name, out Sound sound))
@@ -252,6 +293,11 @@ public class SoundManager : MonoBehaviour
             if (source.isPlaying)
                 source.Stop();
         }
+        foreach (var source in attachedLoops)
+        {
+            if (source != null && source.isPlaying)
+                source.Stop();
+        }
     }
 
     public void PauseAll()
@@ -261,6 +307,11 @@ public class SoundManager : MonoBehaviour
             if (source.isPlaying)
                 source.Pause();
         }
+        foreach (var source in attachedLoops)
+        {
+            if (source != null && source.isPlaying)
+                source.Pause();
+        }
     }
 
     public void ResumeAll()
@@ -268,6 +319,11 @@ public class SoundManager : MonoBehaviour
         foreach (var source in audioSourcePool)
         {
             if (source.clip != null && !source.isPlaying)
+                source.UnPause();
+        }
+        foreach (var source in attachedLoops)
+        {
+            if (source != null && source.clip != null && !source.isPlaying)
                 source.UnPause();
         }
     }

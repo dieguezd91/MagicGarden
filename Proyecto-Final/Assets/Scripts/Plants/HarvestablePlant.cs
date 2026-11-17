@@ -240,7 +240,8 @@ public class HarvestablePlant : MonoBehaviour
             );
         }
 
-        PlaySound(data.HarvestingSound, "Harvest");
+        harvestingSource = PlaySound(data.HarvestingSound, "Harvest");
+        harvestingClip = harvestingSource != null ? harvestingSource.clip : null;
 
         onHarvestStarted?.Invoke();
     }
@@ -253,6 +254,7 @@ public class HarvestablePlant : MonoBehaviour
         isBeingHarvested = false;
 
         DestroyHarvestingParticles();
+        StopHarvestingSound();
 
         UpdateVisualState();
     }
@@ -269,6 +271,7 @@ public class HarvestablePlant : MonoBehaviour
         isBeingHarvested = false;
 
         DestroyHarvestingParticles();
+        StopHarvestingSound();
 
         usesRemaining = Mathf.Max(0, usesRemaining - 1);
 
@@ -404,26 +407,59 @@ public class HarvestablePlant : MonoBehaviour
         harvestingParticlesInstance = null;
     }
 
-    private void PlaySound(
+    private AudioSource PlaySound(
         SoundClipData sound,
         string fallbackSoundName = null
     )
     {
         if (SoundManager.Instance == null)
-            return;
+            return null;
 
         if (sound != null && sound.clips != null && sound.clips.Length > 0)
         {
-            SoundManager.Instance.PlayClip(
+            return SoundManager.Instance.PlayClip(
                 sound,
                 SoundSourceType.Localized,
                 transform
             );
         }
-        else if (!string.IsNullOrEmpty(fallbackSoundName))
-        {
+
+        if (!string.IsNullOrEmpty(fallbackSoundName))
             SoundManager.Instance.Play(fallbackSoundName);
+
+        return null;
+    }
+
+    // The channel sound is longer than the channel, so it is faded out when the harvest ends or is cancelled.
+    private const float HarvestingSoundFadeSeconds = 0.12f;
+    private AudioSource harvestingSource;
+    private AudioClip harvestingClip;
+
+    private void StopHarvestingSound()
+    {
+        AudioSource source = harvestingSource;
+        AudioClip clip = harvestingClip;
+        harvestingSource = null;
+        harvestingClip = null;
+
+        // The source is pooled: only touch it while it is still playing our clip.
+        if (source == null || clip == null || !source.isPlaying || source.clip != clip)
+            return;
+
+        if (isActiveAndEnabled) StartCoroutine(FadeOutHarvestingSound(source, clip));
+        else source.Stop();
+    }
+
+    private System.Collections.IEnumerator FadeOutHarvestingSound(AudioSource source, AudioClip clip)
+    {
+        float from = source.volume;
+        for (float t = 0f; t < HarvestingSoundFadeSeconds; t += Time.unscaledDeltaTime)
+        {
+            if (source == null || source.clip != clip) yield break; // reused by another sound meanwhile
+            source.volume = from * (1f - t / HarvestingSoundFadeSeconds);
+            yield return null;
         }
+        if (source != null && source.clip == clip) source.Stop();
     }
 
     // Hover feedback only applies with the Harvest tool, during the day,

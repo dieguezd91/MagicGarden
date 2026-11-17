@@ -186,7 +186,7 @@ public class CheatManager : MonoBehaviour
             SpawnBossNow();
             return;
         }
-        if (!bosses.ForceBossNight()) Debug.Log("[Cheats] Today is already a forced boss night (or there are no boss prefabs).");
+        if (!bosses.ForceBossNight()) Debug.Log("[Cheats] A boss night is already queued (or there are no boss prefabs).");
         StartNightNow();
     }
 

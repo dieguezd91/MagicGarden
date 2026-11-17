@@ -398,7 +398,7 @@ MonoBehaviour:
   idle:
     clips:
     - {fileID: 8300000, guid: 0d7fd3e4df1c8b84ab4763df4e2a8302, type: 3}
-    volume: 0.3
+    volume: 0.15
     pitch: 1
     pitchVariation: 0.04
     loop: 0

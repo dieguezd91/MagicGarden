@@ -413,8 +413,8 @@ MonoBehaviour:
   isCurrentlyAttacking: 0
   nextAttackTime: 0
   attackCooldown: 0
-  idleSoundMinTime: 5
-  idleSoundMaxTime: 15
+  idleSoundMinTime: 4
+  idleSoundMaxTime: 9
   bossData: {fileID: 11400000, guid: fdb5c1556f19b6047868d0db239e9383, type: 2}
   attackPoint: {fileID: 0}
   minionSpawnPoints:
@@ -445,6 +445,15 @@ MonoBehaviour:
     volume: 0.65
     pitch: 1
     pitchVariation: 0.04
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  hoverLoop:
+    clips:
+    - {fileID: 8300000, guid: 8a3b264e4b3c46719be3cfe4707aac0c, type: 3}
+    volume: 0.3
+    pitch: 1
+    pitchVariation: 0.0
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
@@ -482,13 +491,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   steps:
-    clips:
-    - {fileID: 8300000, guid: 57a5f7d59084486ab8820266d4022750, type: 3}
-    - {fileID: 8300000, guid: a79bcda99b634bb98b1873f63b0993f3, type: 3}
-    - {fileID: 8300000, guid: 94f0770d794b4a07bd34207506e3ba08, type: 3}
+    clips: []
     volume: 0.2
     pitch: 1
-    pitchVariation: 0.04
+    pitchVariation: 0.0
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
@@ -524,16 +530,20 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 5bd38277edc947f38ad071c3dc68ebc6, type: 3}
     - {fileID: 8300000, guid: 4928018505c1450f8e9e7c7d42277b75, type: 3}
-    volume: 0.35
+    - {fileID: 8300000, guid: 1822fe1a10c74ae895715898aa8eb3d8, type: 3}
+    - {fileID: 8300000, guid: f8432f80c57a4f7e8186bcdab02e719c, type: 3}
+    - {fileID: 8300000, guid: bb37f6d8092146329e6cd5fbac08cb99, type: 3}
+    - {fileID: 8300000, guid: b06c70a6aaf246cea3b104cf62601514, type: 3}
+    volume: 0.3
     pitch: 1
-    pitchVariation: 0.05
+    pitchVariation: 0.06
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
   attack:
     clips:
     - {fileID: 8300000, guid: 85e5c61a48db48848b95b1969cbfc83c, type: 3}
-    volume: 0.55
+    volume: 0.4
     pitch: 1
     pitchVariation: 0
     loop: 0

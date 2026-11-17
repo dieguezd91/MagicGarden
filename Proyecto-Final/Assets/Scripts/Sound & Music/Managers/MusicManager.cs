@@ -1,10 +1,10 @@
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 // Plays one intro + loop pair per game state. The loop is scheduled on the audio clock to start on the
-// exact sample the intro ends, so the join is gapless. Changing state crossfades whatever is playing
-// into the intro of a randomly chosen variation of the new state's music.
+// exact sample the intro ends, so the join is gapless. Changing state fades the new music in while every
+// track that is still audible keeps fading out from wherever it was, so a quick second change never cuts one off.
 public class MusicManager : MonoBehaviour
 {
     [System.Serializable]
@@ -14,7 +14,7 @@ public class MusicManager : MonoBehaviour
         public AudioClip loop;
     }
 
-    private enum MusicState { None, Menu, Day, Night, Boss, SniperBoss }
+    private enum MusicState { None, Menu, Day, Night, Boss, SniperBoss, Silence }
 
     public static MusicManager Instance;
 
@@ -33,15 +33,31 @@ public class MusicManager : MonoBehaviour
     {
         public AudioSource intro;
         public AudioSource loop;
+        public float gain;   // 0..1 position in the fade, not the volume itself
+        public float target; // 1 = fading in / playing, 0 = fading out
+        public bool Playing => intro.clip != null || loop.clip != null;
         public void SetVolume(float v) { intro.volume = v; loop.volume = v; }
-        public void Stop() { intro.Stop(); loop.Stop(); intro.clip = null; loop.clip = null; }
+
+        public void Stop()
+        {
+            intro.Stop();
+            loop.Stop();
+            intro.clip = null;
+            loop.clip = null;
+            gain = 0f;
+            target = 0f;
+            SetVolume(0f);
+        }
     }
 
-    private Deck current, fading;
-    private Coroutine crossfade;
+    private readonly List<Deck> decks = new List<Deck>();
+    private Deck current;
     private MusicState state = MusicState.None;
     private MusicTrack lastTrack;
     private BossNightManager bossNight;
+    private bool bossSeenThisNight;
+    private MusicState upcomingBossState = MusicState.None;
+    private bool gameOverLatch;
 
     private void Awake()
     {
@@ -60,9 +76,6 @@ public class MusicManager : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
         audioSource.Stop();
-
-        current = CreateDeck();
-        fading = CreateDeck();
 
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
@@ -84,12 +97,15 @@ public class MusicManager : MonoBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         bossNight = null;
+        gameOverLatch = false;
+        ResetNightTracking();
         UpdateMusic();
     }
 
     private void Update()
     {
         UpdateMusic();
+        UpdateFades();
     }
 
     private void UpdateMusic()
@@ -109,28 +125,84 @@ public class MusicManager : MonoBehaviour
         if (!IsGameplayScene(sceneName))
             return MusicState.None;
 
-        if (GameFlowController.Instance == null)
-            return MusicState.Day;
+        // Both game-over exits set the phase back to Day just before they load a scene. Without this the day
+        // music started for a second and was replaced at once; stay quiet until the new scene decides.
+        if (gameOverLatch)
+            return MusicState.Silence;
 
-        switch (GameFlowController.Instance.CurrentPhase)
+        if (GameFlowController.Instance == null)
+            return MusicState.None;
+
+        GamePhase phase = GameFlowController.Instance.CurrentPhase;
+        if (phase != GamePhase.Night)
+            ResetNightTracking();
+
+        switch (phase)
         {
             case GamePhase.Day:
                 return MusicState.Day;
             case GamePhase.Night:
-                if (bossNight == null)
-                    bossNight = FindFirstObjectByType<BossNightManager>();
-                if (bossNight != null && bossNight.IsBossActive)
-                    return bossNight.CurrentBoss.GetComponent<SniperBoss>() != null ? MusicState.SniperBoss : MusicState.Boss;
-                return MusicState.Night;
+                return NightState();
+            case GamePhase.GameOver:
+                gameOverLatch = true; // leave room for the game-over sting
+                return MusicState.Silence;
             default:
-                return MusicState.None; // ritual, level-up, game over: keep what is playing
+                return MusicState.None; // ritual, level-up: keep what is playing
         }
+    }
+
+    private MusicState NightState()
+    {
+        if (bossNight == null)
+            bossNight = FindFirstObjectByType<BossNightManager>();
+        if (bossNight == null)
+            return MusicState.Night;
+
+        if (bossNight.IsBossActive)
+        {
+            bossSeenThisNight = true;
+            return StateForBoss(bossNight.CurrentBoss);
+        }
+
+        // The boss is gone: let its death and the victory sting ring out instead of restarting the calm night music.
+        if (bossSeenThisNight)
+            return MusicState.Silence;
+
+        // Boss night, boss still to come: go straight to its music. Starting the calm track first meant two
+        // changes a couple of seconds apart. Decided once per night, so a random boss pick cannot flip it.
+        bool bossDay = DayCycleController.Instance != null && bossNight.IsBossNightDay(DayCycleController.Instance.CurrentDay);
+        if (!bossDay)
+            return MusicState.Night;
+        if (upcomingBossState == MusicState.None)
+        {
+            GameObject upcoming = bossNight.UpcomingBossPrefab;
+            upcomingBossState = upcoming != null ? StateForBoss(upcoming) : MusicState.Night;
+        }
+        return upcomingBossState;
+    }
+
+    private void ResetNightTracking()
+    {
+        bossSeenThisNight = false;
+        upcomingBossState = MusicState.None;
+    }
+
+    private static MusicState StateForBoss(GameObject boss)
+    {
+        return boss != null && boss.GetComponent<SniperBoss>() != null ? MusicState.SniperBoss : MusicState.Boss;
     }
 
     private void Play(MusicState next)
     {
-        MusicTrack track = PickVariation(TracksFor(next));
         state = next;
+
+        if (current != null) current.target = 0f; // keeps fading out from its present level
+        current = null;
+
+        if (next == MusicState.Silence)
+            return;
+
+        MusicTrack track = PickVariation(TracksFor(next));
         if (track == null || track.loop == null)
         {
             Debug.LogWarning($"[MusicManager] No music assigned for {next}.");
@@ -138,10 +210,11 @@ public class MusicManager : MonoBehaviour
         }
         lastTrack = track;
 
-        (current, fading) = (fading, current);
-        current.Stop();
+        current = FreeDeck();
         current.intro.clip = track.intro;
         current.loop.clip = track.loop;
+        current.gain = 0f;
+        current.target = 1f;
         current.SetVolume(0f);
 
         double start = AudioSettings.dspTime + 0.1; // small lead so both sources are ready
@@ -151,9 +224,33 @@ public class MusicManager : MonoBehaviour
             start += (double)track.intro.samples / track.intro.frequency;
         }
         current.loop.PlayScheduled(start);
+    }
 
-        if (crossfade != null) StopCoroutine(crossfade);
-        crossfade = StartCoroutine(Crossfade(fading, current));
+    private void UpdateFades()
+    {
+        // unscaled: pause and level-up set timeScale to 0
+        float step = crossfadeSeconds > 0f ? Time.unscaledDeltaTime / crossfadeSeconds : 1f;
+        foreach (Deck deck in decks)
+        {
+            if (!deck.Playing) continue;
+            deck.gain = Mathf.MoveTowards(deck.gain, deck.target, step);
+            if (deck.gain <= 0f && deck.target <= 0f)
+            {
+                deck.Stop();
+                continue;
+            }
+            // Sine curve: equal power across the overlap (no dip in the middle) and no sudden start or end.
+            deck.SetVolume(musicVolume * Mathf.Sin(deck.gain * Mathf.PI * 0.5f));
+        }
+    }
+
+    private Deck FreeDeck()
+    {
+        foreach (Deck deck in decks)
+            if (!deck.Playing) return deck;
+        var created = new Deck { intro = CreateSource(false), loop = CreateSource(true) };
+        decks.Add(created);
+        return created;
     }
 
     private MusicTrack[] TracksFor(MusicState s)
@@ -176,30 +273,6 @@ public class MusicManager : MonoBehaviour
         MusicTrack pick;
         do pick = tracks[Random.Range(0, tracks.Length)]; while (pick == lastTrack);
         return pick;
-    }
-
-    private IEnumerator Crossfade(Deck from, Deck to)
-    {
-        float fromStart = from.intro.volume;
-
-        // unscaled: pause and level-up set timeScale to 0
-        for (float t = 0f; t < crossfadeSeconds; t += Time.unscaledDeltaTime)
-        {
-            float k = t / crossfadeSeconds;
-            to.SetVolume(musicVolume * Mathf.Sqrt(k)); // equal-power, no dip in the middle
-            from.SetVolume(fromStart * Mathf.Sqrt(1f - k));
-            yield return null;
-        }
-
-        to.SetVolume(musicVolume);
-        from.Stop();
-        from.SetVolume(0f);
-        crossfade = null;
-    }
-
-    private Deck CreateDeck()
-    {
-        return new Deck { intro = CreateSource(false), loop = CreateSource(true) };
     }
 
     private AudioSource CreateSource(bool loop)

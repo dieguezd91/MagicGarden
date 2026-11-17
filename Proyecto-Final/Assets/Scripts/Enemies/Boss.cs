@@ -267,6 +267,8 @@ public class Boss : EnemyBase
     private Transform pendingImpactAt;
 
     protected override bool UsesAnimationFootsteps => true; // "Golem Walk" marks both footfalls
+    // A boss arrives far off-screen (about 10-20 units away); positioned, its entrance was nearly or fully inaudible.
+    protected override SoundSourceType SpawnSoundSource => SoundSourceType.Global;
     protected override float HurtSoundInterval => 0.9f;     // Boss_Hurt is a 2 s clip; faster re-triggers piled up
 
     // "Golem Spawn Minion" events. The Special clip (Boss_Attack_Invoke) is authored as a swell that peaks on the

@@ -311,9 +311,12 @@ public abstract class EnemyBase : MonoBehaviour, IEnemy
             animator.SetBool("IsMoving", isMoving);
     }
 
+    /// <summary>Where the spawn sound is heard from. Enemies spawn off-screen, so a positioned one is faint by design.</summary>
+    protected virtual SoundSourceType SpawnSoundSource => SoundSourceType.Localized;
+
     protected void PlaySpawnSound()
     {
-        PlayEnemySound(EnemySoundType.Spawning, SoundSourceType.Localized);
+        PlayEnemySound(EnemySoundType.Spawning, SpawnSoundSource);
     }
 
     /// <summary>True when the walk animation has footstep events, so the movement timer must stay silent.</summary>

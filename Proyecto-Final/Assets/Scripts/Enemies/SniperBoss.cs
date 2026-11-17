@@ -15,6 +15,13 @@ public class SniperBoss : Boss
     [Header("SNIPER SOUND")]
     [Tooltip("The bolt leaving the eye. The Attack sound is the lock-on charge that leads up to it.")]
     [SerializeField] private SoundClipData shotSound;
+    [Tooltip("The field it floats on. Loops for as long as the boss is alive; a little stronger while it moves.")]
+    [SerializeField] private SoundClipData hoverLoop;
+    [SerializeField, Range(0f, 1f)] private float hoverStillVolume = 0.7f; // share of the loop's volume when not moving
+    [SerializeField] private float hoverFadeOutSeconds = 0.6f;
+
+    private AudioSource hoverSource;
+    private float hoverVolume;
 
     private SniperBossDataSO sniperData;
     private Coroutine sniperAttackCoroutine;
@@ -26,6 +33,39 @@ public class SniperBoss : Boss
         sniperData != null ? sniperData.ShotInterval : 3.5f;
 
     protected override bool UseTimedMinionWaves => true;
+
+    protected override void Update()
+    {
+        base.Update();
+        UpdateHover();
+    }
+
+    // It floats, so it has no footsteps: the hum is there the whole time and only swells when it travels.
+    private void UpdateHover()
+    {
+        if (hoverSource == null)
+        {
+            if (isDead || hoverLoop == null || SoundManager.Instance == null) return;
+            hoverSource = SoundManager.Instance.PlayAttachedLoop(hoverLoop, transform);
+            if (hoverSource == null) return;
+            hoverVolume = hoverSource.volume;
+            hoverSource.volume = 0f; // fades in instead of popping on
+        }
+
+        // Time.deltaTime: stays put while the game is paused or a level-up is open.
+        if (isDead)
+        {
+            float fade = hoverFadeOutSeconds > 0f ? hoverVolume * Time.deltaTime / hoverFadeOutSeconds : hoverVolume;
+            hoverSource.volume = Mathf.MoveTowards(hoverSource.volume, 0f, fade);
+            if (hoverSource.volume <= 0f && hoverSource.isPlaying) hoverSource.Stop();
+            return;
+        }
+
+        bool moving = rb != null && rb.velocity.sqrMagnitude > 0.01f;
+        float targetVolume = hoverVolume * (moving ? 1f : hoverStillVolume);
+        hoverSource.volume = Mathf.MoveTowards(hoverSource.volume, targetVolume, hoverVolume * Time.deltaTime / 0.35f);
+        hoverSource.pitch = Mathf.MoveTowards(hoverSource.pitch, moving ? 1.04f : 0.97f, Time.deltaTime * 0.25f);
+    }
 
     protected override void LoadEnemyData()
     {
