@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: HellShaw Minion
+  m_Controller: {fileID: 9100000, guid: 26dcd47ff80d89740a12925b9132d061, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: 8693def90a37c0943a7ad4dcd206782b, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 23591112279447e683083497c39fa893, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 4258c5de3dba52142a8ea8be8bf64917, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 23b4e68842f14a159245c9fa45f40c85, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 0dbc939620749584eb2443700f5ebe71, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 503c57360705405090bce494e7f372db, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 4ad686ecba7167c4090846eba95265f9, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: d13632af10984e16bbe6b05897988795, type: 2}

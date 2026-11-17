@@ -148,7 +148,7 @@ public class AttackPlant : Plant
         }
     }
 
-    public void OnShootAnimationEvent()
+    public override void OnShootAnimationEvent()
     {
         if (UpgradeRuntime.GameplayBlocked || projectile == null || queuedTarget == null || !queuedTarget.gameObject.activeInHierarchy) return;
         PlaySound(PlantSoundType.Attack);
@@ -177,7 +177,7 @@ public class AttackPlant : Plant
             description.Bases.ContainsKey(MagicGarden.Stat.Quantity));
     }
 
-    public void OnAttackAnimationEnd()
+    public override void OnAttackAnimationEnd()
     {
         isPerformingAttack = false;
         queuedTarget = null;

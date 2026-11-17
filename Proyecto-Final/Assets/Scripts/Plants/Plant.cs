@@ -46,6 +46,12 @@ public class Plant : MonoBehaviour
     private Collider2D plantCollider;
 
     public PlantSoundBase SoundBase => _soundBase;
+    // Animation events on the shared "Special" clips (e.g. SpecialFrostThorn is used by both Frost Thorn and
+    // Ice Thorn). Only plants that shoot act on them; aura plants play the same clip and must still receive
+    // the event, or Unity logs "has no receiver" every time it fires.
+    public virtual void OnShootAnimationEvent() { }
+    public virtual void OnAttackAnimationEnd() { }
+
     protected void PlaySound(PlantSoundType type)
     {
         if (_soundBase != null) _soundBase.PlaySound(type, SoundSourceType.Localized, transform);
