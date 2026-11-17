@@ -44,7 +44,7 @@ public class InputReader : MonoBehaviour
     private void Update()
     {
         ReadContinuousState();
-        if (UpgradeRuntime.GameplayBlocked)
+        if (UpgradeRuntime.GameplayBlocked || SceneTransitionController.InputBlocked)
         {
             MoveInput = Vector2.zero;
             if (Input.GetKeyDown(KeyCode.Escape)) InputConsumptionManager.ConsumeEscape();

@@ -21,6 +21,7 @@ public sealed class LevelUpCardView : MonoBehaviour
         index = slot; selected = callback;
         selectButton.onClick.RemoveListener(Select);
         selectButton.onClick.AddListener(Select);
+        UpgradeUiSounds.AddHover(selectButton);
         icon.sprite = data.Icon; icon.enabled = data.Icon != null;
         targetLabel.text = data.Target; nameLabel.text = data.Name;
         statLabel.text = data.Stat; bonusLabel.text = data.Bonus;

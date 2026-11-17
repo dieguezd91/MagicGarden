@@ -582,7 +582,7 @@ public class TutorialUI : MonoBehaviour
     private void Update()
     {
         // Enter/Return behaviour: while typing -> fast-forward; when not typing -> act like continue button
-        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+        if (!SceneTransitionController.InputBlocked && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
         {
             if (typewriterCoroutine != null)
             {

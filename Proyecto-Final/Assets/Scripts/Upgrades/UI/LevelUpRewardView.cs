@@ -42,6 +42,7 @@ public sealed class LevelUpRewardView : MonoBehaviour
         if (!IsConfigured || reward == null) return false;
         continueButton.onClick.RemoveListener(Continue);
         continueButton.onClick.AddListener(Continue);
+        UpgradeUiSounds.AddHover(continueButton);
         headingLabel.text = $"LEVEL {reward.Level} — New unlocks";
         Fill(seedSlot, seedIcon, seedLabel, "Seed", Names(reward.Plants, p => p != null ? p.plantName : null),
             reward.Plants.Count > 0 && reward.Plants[0] != null ? reward.Plants[0].plantIcon : null);
@@ -88,6 +89,7 @@ public sealed class LevelUpRewardView : MonoBehaviour
     private void Continue()
     {
         if (!IsVisible || tween.IsClosing) return;
+        UpgradeUiSounds.Click();
         afterClose = RaiseContinued;
         Close();
     }

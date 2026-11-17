@@ -108,6 +108,50 @@ PrefabInstance:
       propertyPath: m_text
       value: Mute All
       objectReference: {fileID: 0}
+    - target: {fileID: 5467993233487855235, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_VerticalAlignment
+      value: 512
+      objectReference: {fileID: 0}
+    - target: {fileID: 5467993233487855235, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_HorizontalAlignment
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1029450753615087186, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1029450753615087186, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.1852
+      objectReference: {fileID: 0}
+    - target: {fileID: 1029450753615087186, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0.2857
+      objectReference: {fileID: 0}
+    - target: {fileID: 1029450753615087186, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0.9286
+      objectReference: {fileID: 0}
+    - target: {fileID: 5467993233487855235, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_margin.x
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 5467993233487855235, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_margin.z
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 5467993233487855235, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_fontSizeMax
+      value: 75
+      objectReference: {fileID: 0}
+    - target: {fileID: 5467993233487855235, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5467993233487855235, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_enableWordWrapping
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7654868973609511931, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
       propertyPath: m_Name
       value: Button Menu Options Mute

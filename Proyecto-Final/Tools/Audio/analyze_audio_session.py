@@ -9,7 +9,7 @@ Flags per sound:
   SPAM       played more than SPAM_PER_MIN times per minute
   QUIET      average heard gain below QUIET_GAIN (likely inaudible in the mix)
   LOUD       average heard gain above LOUD_GAIN
-  OFFSCREEN  more than half of its plays were farther than HALF_SCREEN units from the listener
+  OFFSCREEN  more than half of its plays were positioned sounds farther than HALF_SCREEN units from the listener
 """
 import csv
 import glob
@@ -67,7 +67,8 @@ def report(rows):
     for name, rs in groups.items():
         per_min = len(rs) / minutes
         heard = statistics.mean(r["heardGain"] for r in rs)
-        off = sum(r["dist2D"] > HALF_SCREEN for r in rs) / len(rs)
+        # Only positioned sounds can be off-screen; global (blend 0) ones are heard the same anywhere.
+        off = sum(r["spatialBlend"] > 0 and r["dist2D"] > HALF_SCREEN for r in rs) / len(rs)
         flags = []
         if per_min > SPAM_PER_MIN: flags.append("SPAM")
         if heard < QUIET_GAIN: flags.append("QUIET")

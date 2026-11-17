@@ -45,9 +45,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cec4db66b13230a4fa1f4c6f930914da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  menuMusic: {fileID: 8300000, guid: 28bd6ce914c8b5349a8b9a8047fc4143, type: 3}
-  dayMusic: {fileID: 8300000, guid: 4194b9f8db1ef9f4ba40ac8d69366c2a, type: 3}
-  nightMusic: {fileID: 8300000, guid: 598d12270c964b54189df80cd11221fc, type: 3}
+  menuMusic:
+  - intro: {fileID: 8300000, guid: fdfca85f662c43e4896ee6cf6903d4f5, type: 3}
+    loop: {fileID: 8300000, guid: 0fb6e07469e05a94789a6b0e351dd530, type: 3}
+  dayMusic:
+  - intro: {fileID: 8300000, guid: 2dccbdb2de187cc4c8dc18184d4f4d90, type: 3}
+    loop: {fileID: 8300000, guid: 4792504d0f1aa554eb103c86b05a0b6b, type: 3}
+  - intro: {fileID: 8300000, guid: 85d22ab4739e02d439a153cdf3ad7c06, type: 3}
+    loop: {fileID: 8300000, guid: 623b48233b0fba9439cb7e471ca15f0e, type: 3}
+  nightMusic:
+  - intro: {fileID: 8300000, guid: 02472f59bedee294dbca36560b3fd7ee, type: 3}
+    loop: {fileID: 8300000, guid: 3b487a569c7d72a4e91e1db3ac35df91, type: 3}
+  - intro: {fileID: 8300000, guid: cf253b7560dde9745b3848459eefb435, type: 3}
+    loop: {fileID: 8300000, guid: b8984af24b66aa14dadb8687867e4048, type: 3}
+  bossMusic:
+  - intro: {fileID: 8300000, guid: 8759a38794d18384494d5b1a907f7d84, type: 3}
+    loop: {fileID: 8300000, guid: a4c80a3dbf429ae428f6c9ed3bf0537e, type: 3}
+  - intro: {fileID: 8300000, guid: a5ef403b44065344f894ed938eda346d, type: 3}
+    loop: {fileID: 8300000, guid: ddd10ca93eafcee4ea5b938caa4b9e4d, type: 3}
+  sniperBossMusic:
+  - intro: {fileID: 8300000, guid: b04d100b6befeda43a8f07191b6be041, type: 3}
+    loop: {fileID: 8300000, guid: e241fb6512f61c047926967153d87ea3, type: 3}
+  - intro: {fileID: 8300000, guid: 54554a0ed1bc2aa469f951fa027f0130, type: 3}
+    loop: {fileID: 8300000, guid: cb7740c8c1aa6bb4580eb9bcd9aeac6e, type: 3}
   audioSource: {fileID: 8879386392245039242}
 --- !u!82 &8879386392245039242
 AudioSource:

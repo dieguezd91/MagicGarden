@@ -155,7 +155,7 @@ namespace MagicGarden.LoadoutUI
         private void Update()
         {
             if (!IsOpen) return;
-            if (Input.GetKeyDown(KeyCode.Escape) && TryCloseFromEscape()) return;
+            if (!SceneTransitionController.InputBlocked && Input.GetKeyDown(KeyCode.Escape) && TryCloseFromEscape()) return;
             Refresh();
         }
 

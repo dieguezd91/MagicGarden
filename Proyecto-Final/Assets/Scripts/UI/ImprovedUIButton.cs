@@ -106,7 +106,9 @@ public class ImprovedUIButton : MonoBehaviour, IPointerEnterHandler, IPointerExi
     public void OnPointerEnter(PointerEventData eventData)
     {
         isHovering = true;
-        
+        // Mouse takes over: drop a keyboard/code selection so two buttons never look active at once.
+        ClearSelection(onlyIfThis: false);
+
         if (currentState == ButtonState.Disabled)
         {
             HandleDisabledHover();
@@ -121,7 +123,17 @@ public class ImprovedUIButton : MonoBehaviour, IPointerEnterHandler, IPointerExi
     {
         if (!isHovering) return;
         isHovering = false;
-        // No UnityEvent for exit, but you can add custom logic here if needed
+        // A clicked button stays "selected" (and keeps its selected sprite) until something else is; release it.
+        ClearSelection(onlyIfThis: true);
+    }
+
+    private void ClearSelection(bool onlyIfThis)
+    {
+        EventSystem events = EventSystem.current;
+        if (events == null || events.alreadySelecting) return;
+        GameObject selected = events.currentSelectedGameObject;
+        if (selected == null || (onlyIfThis && selected != gameObject)) return;
+        events.SetSelectedGameObject(null);
     }
     #endregion
 

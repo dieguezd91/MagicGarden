@@ -52,7 +52,12 @@ public sealed class LevelUpIndicator : MonoBehaviour
         Stop();
     }
 
-    private void HandleLevelUp(int level) => Play();
+    // One jingle per burst: several levels gained at once restart the icon but do not stack the sound.
+    private void HandleLevelUp(int level)
+    {
+        if (!IsPlaying) SoundManager.Instance?.PlayOneShot("Level_Up");
+        Play();
+    }
 
     // Restarts when already playing so a burst of levels shows a single indicator.
     public void Play()

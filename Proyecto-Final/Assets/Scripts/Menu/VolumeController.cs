@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Audio;
+using TMPro;
 
 public class VolumeController : MonoBehaviour
 {
@@ -19,6 +20,12 @@ public class VolumeController : MonoBehaviour
     [SerializeField] private AudioMixerGroup sliderTickMixerGroup;
     [SerializeField, Range(0f, 1f)] private float sliderTickVolume = 0.35f;
     private AudioSource tickSource;
+
+    [Header("Mute")]
+    [SerializeField, Range(0f, 1f)] private float mutedSliderAlpha = 0.4f;
+    [SerializeField] private string unmuteLabel = "Unmute All";
+    private TMP_Text muteLabel;
+    private string muteLabelText;
 
     private float _savedMasterVolume;
     private float _savedMusicVolume;
@@ -57,6 +64,8 @@ public class VolumeController : MonoBehaviour
 
         if (muteButton != null)
             muteButton.onClick.AddListener(ToggleMute);
+
+        ApplyMuteVisuals();
     }
 
     public void SetMasterVolume(float volume)
@@ -101,51 +110,29 @@ public class VolumeController : MonoBehaviour
 
     private void ToggleMute()
     {
-        bool hasAnyVolume =
-            _savedMasterVolume > 0f ||
-            _savedMusicVolume > 0f ||
-            _savedSFXVolume > 0f;
+        var settings = GameManager.Instance.SettingsManager;
+        settings.SetMuted(!settings.IsMuted());
+        ApplyMuteVisuals();
+    }
 
-        if (hasAnyVolume)
+    // Sliders keep their values while muted; they are just locked and faded out.
+    private void ApplyMuteVisuals()
+    {
+        bool muted = GameManager.Instance.SettingsManager.IsMuted();
+        if (muteButton != null && muteLabel == null)
         {
-            if (_savedMasterVolume > 0f)
-            {
-                SetMasterVolume(0f);
-
-                if (volumeSlider != null)
-                    volumeSlider.SetValueWithoutNotify(0f);
-            }
-
-            if (_savedMusicVolume > 0f)
-            {
-                SetMusicVolume(0f);
-
-                if (musicSlider != null)
-                    musicSlider.SetValueWithoutNotify(0f);
-            }
-
-            if (_savedSFXVolume > 0f)
-            {
-                SetSFXVolume(0f);
-
-                if (sfxSlider != null)
-                    sfxSlider.SetValueWithoutNotify(0f);
-            }
+            muteLabel = muteButton.GetComponentInChildren<TMP_Text>(true);
+            if (muteLabel != null) muteLabelText = muteLabel.text; // the prefab's label, e.g. "Mute All"
         }
-        else
+        if (muteLabel != null)
+            muteLabel.text = muted ? unmuteLabel : muteLabelText;
+        foreach (Slider slider in new[] { volumeSlider, musicSlider, sfxSlider })
         {
-            SetMasterVolume(1f);
-            SetMusicVolume(1f);
-            SetSFXVolume(1f);
-
-            if (volumeSlider != null)
-                volumeSlider.SetValueWithoutNotify(1f);
-
-            if (musicSlider != null)
-                musicSlider.SetValueWithoutNotify(1f);
-
-            if (sfxSlider != null)
-                sfxSlider.SetValueWithoutNotify(1f);
+            if (slider == null) continue;
+            slider.interactable = !muted;
+            CanvasGroup group = slider.GetComponent<CanvasGroup>();
+            if (group == null) group = slider.gameObject.AddComponent<CanvasGroup>();
+            group.alpha = muted ? mutedSliderAlpha : 1f;
         }
     }
 

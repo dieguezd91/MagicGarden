@@ -331,7 +331,7 @@ MonoBehaviour:
   OnHover:
     m_PersistentCalls:
       m_Calls: []
-  _volume: 1
+  _volume: 0.4
   _enableHoverSound: 1
   _onHoverSound: {fileID: 8300000, guid: 5d17f8d8078e2b54ab62ba6755295363, type: 3}
   _enableValueChangedSound: 1

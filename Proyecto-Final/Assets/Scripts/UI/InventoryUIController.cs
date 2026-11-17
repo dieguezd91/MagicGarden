@@ -71,6 +71,8 @@ public class InventoryUIController : UIControllerBase
 
     private void HandleInventoryInput()
     {
+        if (SceneTransitionController.InputBlocked) return;
+
         if (IsInventoryOpen)
         {
             if (animationController != null && animationController.IsAnimating)

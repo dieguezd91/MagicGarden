@@ -53,7 +53,11 @@ public sealed class UpgradePanel : MonoBehaviour
     {
         if (rewardView != null && (rewardView.IsVisible || rewardView.IsAnimating)) return;
         if (levelUpView != null && levelUpView.IsAnimating) return;
-        runtime?.Choose(index);
+        if (runtime == null) return;
+        // A picked blessing gets its own sound; the Continue of an exhausted pool (-1) is a plain click.
+        if (index >= 0) SoundManager.Instance?.PlayOneShot("Upgrade_Select");
+        else UpgradeUiSounds.Click();
+        runtime.Choose(index);
     }
     private void RewardContinued() => runtime?.RewardContinued();
     public void RequestShopRefresh() { if (IsShopOpen) shopRefresh = true; }

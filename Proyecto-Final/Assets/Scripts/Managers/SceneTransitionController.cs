@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
@@ -45,6 +46,10 @@ public class SceneTransitionController : MonoBehaviour
     [SerializeField] private float startupRevealDelay = 0.6f;
 
     private bool isTransitioning = false;
+    private EventSystem blockedEventSystem;
+
+    /// <summary>True while a transition covers the screen: UI and gameplay input must be ignored (the mouse still moves).</summary>
+    public static bool InputBlocked => Instance != null && Instance.isTransitioning;
     private Canvas transitionCanvas;
     private Coroutine currentTransitionCoroutine;
 
@@ -80,8 +85,40 @@ public class SceneTransitionController : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        if (Instance == this) SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    // Catches the new scene's EventSystem before its first Update.
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => SyncInputBlock();
+
+    private void LateUpdate() => SyncInputBlock();
+
+    // Disabling the EventSystem stops clicks, hover, keyboard and gamepad navigation at once.
+    private void SyncInputBlock()
+    {
+        if (isTransitioning)
+        {
+            // EventSystem.current is null once disabled, so a non-null one is a freshly loaded scene's.
+            EventSystem active = EventSystem.current;
+            if (active != null)
+            {
+                active.enabled = false;
+                blockedEventSystem = active;
+            }
+        }
+        else if (blockedEventSystem != null)
+        {
+            blockedEventSystem.enabled = true;
+            blockedEventSystem = null;
+        }
+    }
+
     private void Initialize()
     {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+
         if (transitionCanvas != null)
         {
             transitionCanvas.sortingOrder = 9999;
@@ -124,6 +161,7 @@ public class SceneTransitionController : MonoBehaviour
                 transitionAnimator.Play(fadeOutAnimationName, 0, 1f);
                 transitionAnimator.Update(0f); // apply the covered pose before the first frame renders
             }
+            isTransitioning = true; // no input (or second transition) until the reveal ends
             StartCoroutine(StartupReveal());
         }
     }
@@ -135,6 +173,7 @@ public class SceneTransitionController : MonoBehaviour
         yield return null;
         yield return new WaitForSecondsRealtime(startupRevealDelay);
         yield return StartCoroutine(FadeIn());
+        isTransitioning = false;
     }
 
     #region Public API

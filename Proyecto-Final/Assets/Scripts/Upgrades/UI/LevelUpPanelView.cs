@@ -47,6 +47,7 @@ public sealed class LevelUpPanelView : MonoBehaviour
         headingLabel.text = $"LEVEL UP — Choose a blessing ({pending} pending)";
         continueButton.onClick.RemoveListener(Continue);
         continueButton.onClick.AddListener(Continue);
+        UpgradeUiSounds.AddHover(continueButton);
         bool empty = offers.Count == 0;
         emptyLabel.gameObject.SetActive(empty); continueButton.gameObject.SetActive(empty);
         for (int i = 0; i < cards.Length; i++)

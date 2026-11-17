@@ -62,7 +62,7 @@ public class InteractionTrigger : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(interactionKey)) TryInteract();
+        if (!SceneTransitionController.InputBlocked && Input.GetKeyDown(interactionKey)) TryInteract();
         UpdatePromptVisibility();
     }
 
