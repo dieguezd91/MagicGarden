@@ -439,6 +439,15 @@ MonoBehaviour:
     loop: 0
     randomizeClip: 1
     cooldownTime: 0.0
+  shotSound:
+    clips:
+    - {fileID: 8300000, guid: 2d4f0bee93ae4e43af8958f946487234, type: 3}
+    volume: 0.65
+    pitch: 1
+    pitchVariation: 0.04
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
 --- !u!95 &8102336949729422656
 Animator:
   serializedVersion: 5
@@ -474,47 +483,48 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   steps:
     clips:
-    - {fileID: 8300000, guid: f822e50e9d1b9e945875c9a94eac7876, type: 3}
-    - {fileID: 8300000, guid: 823d9bf6673b1de49a49383e575ffa4e, type: 3}
-    - {fileID: 8300000, guid: 39dd00b031b978a42a126512242e7e67, type: 3}
-    volume: 0.35
-    pitch: 0.8
-    pitchVariation: 0.05
+    - {fileID: 8300000, guid: 57a5f7d59084486ab8820266d4022750, type: 3}
+    - {fileID: 8300000, guid: a79bcda99b634bb98b1873f63b0993f3, type: 3}
+    - {fileID: 8300000, guid: 94f0770d794b4a07bd34207506e3ba08, type: 3}
+    volume: 0.2
+    pitch: 1
+    pitchVariation: 0.04
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
   spawning:
     clips:
-    - {fileID: 8300000, guid: 1122d5de4a766e945b40a895050f9fae, type: 3}
+    - {fileID: 8300000, guid: 3d2555504cf64ae197b272107eb8ecd6, type: 3}
     volume: 0.7
     pitch: 1
     pitchVariation: 0
     loop: 0
-    randomizeClip: 0
+    randomizeClip: 1
     cooldownTime: 0
   die:
     clips:
-    - {fileID: 8300000, guid: ce021b29e26b68a47bd521ddd964a98b, type: 3}
+    - {fileID: 8300000, guid: 3209cf86c3d64709b7a6fa0bd2625629, type: 3}
     volume: 0.7
     pitch: 1
     pitchVariation: 0
     loop: 0
-    randomizeClip: 0
+    randomizeClip: 1
     cooldownTime: 0
   hurt:
     clips:
-    - {fileID: 8300000, guid: 0f9157d11f0fc8d408c32bb56591106c, type: 3}
+    - {fileID: 8300000, guid: 989005a8d0c440c1a390610e4ad7b4f1, type: 3}
+    - {fileID: 8300000, guid: e24e47177d8249f194d0f7a452798f9a, type: 3}
     volume: 0.45
-    pitch: 0.9
-    pitchVariation: 0.1
+    pitch: 1
+    pitchVariation: 0.08
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
   idle:
     clips:
-    - {fileID: 8300000, guid: f364ab70b07910c4fb34bfd03d8327e6, type: 3}
-    - {fileID: 8300000, guid: aaa090133b3f3404da028e621924dd8a, type: 3}
-    volume: 0.4
+    - {fileID: 8300000, guid: 5bd38277edc947f38ad071c3dc68ebc6, type: 3}
+    - {fileID: 8300000, guid: 4928018505c1450f8e9e7c7d42277b75, type: 3}
+    volume: 0.35
     pitch: 1
     pitchVariation: 0.05
     loop: 0
@@ -522,19 +532,19 @@ MonoBehaviour:
     cooldownTime: 0
   attack:
     clips:
-    - {fileID: 8300000, guid: e9758970408b29241ad79e9c76f521aa, type: 3}
+    - {fileID: 8300000, guid: 85e5c61a48db48848b95b1969cbfc83c, type: 3}
     volume: 0.55
-    pitch: 0.8
-    pitchVariation: 0.1
+    pitch: 1
+    pitchVariation: 0
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
   special:
     clips:
-    - {fileID: 8300000, guid: e9758970408b29241ad79e9c76f521aa, type: 3}
+    - {fileID: 8300000, guid: f3d333bd72d14046a5bdfcdbf2515dac, type: 3}
     volume: 0.55
     pitch: 1
-    pitchVariation: 0.1
+    pitchVariation: 0
     loop: 0
     randomizeClip: 1
     cooldownTime: 0

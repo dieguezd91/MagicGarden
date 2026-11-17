@@ -540,11 +540,12 @@ public class EnemiesSpawner : MonoBehaviour
 
 
     // Cheat: kills every living enemy; spawning continues. Bosses are skipped because killing one ends the night.
-    public void KillAllAlive()
+    // Bosses are spared by default: the spawn-and-kill-horde cheat must not end a boss fight as a side effect.
+    public void KillAllAlive(bool includeBosses = false)
     {
         foreach (EnemyBase enemy in FindObjectsOfType<EnemyBase>())
         {
-            if (enemy is Boss) continue;
+            if (!includeBosses && enemy is Boss) continue;
 
             LifeController life = enemy.GetComponent<LifeController>();
             if (life != null && life.IsAlive())

@@ -10118,6 +10118,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2e324082e8eb92478e1bf00989a3390, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  impactSound:
+    clips:
+    - {fileID: 8300000, guid: e6a5be885b14411e928352b25ea22a7b, type: 3}
+    volume: 0.65
+    pitch: 1
+    pitchVariation: 0.05
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
 --- !u!114 &1173499983766142987
 MonoBehaviour:
   m_ObjectHideFlags: 0

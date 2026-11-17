@@ -12,6 +12,10 @@ public class SniperBoss : Boss
     [Tooltip("Offset for sprites that do not face upward by default.")]
     [SerializeField] private float aimRotationOffset = -90f;
 
+    [Header("SNIPER SOUND")]
+    [Tooltip("The bolt leaving the eye. The Attack sound is the lock-on charge that leads up to it.")]
+    [SerializeField] private SoundClipData shotSound;
+
     private SniperBossDataSO sniperData;
     private Coroutine sniperAttackCoroutine;
 
@@ -78,8 +82,8 @@ public class SniperBoss : Boss
         isCurrentlyAttacking = true;
         StopMovement();
 
-        // The Attack clip (Boss_Attack_Invoke) swells to its peak ~0.6 s in; start it so the peak lands on the shot.
-        const float AttackClipPeak = 0.6f;
+        // The Attack clip (Robe_Aim_Charge) is a 1.2 s lock-on that ends on the shot; start it so the end lands on the shot.
+        const float AttackClipPeak = 1.2f;
         bool attackSoundPlayed = false;
 
         float elapsed = 0f;
@@ -164,6 +168,8 @@ public class SniperBoss : Boss
         Transform origin = firePoint != null
             ? firePoint
             : transform;
+
+        SoundManager.Instance?.PlayClip(shotSound, SoundSourceType.Localized, origin);
 
         Vector2 direction =
             (targetPosition - origin.position).normalized;

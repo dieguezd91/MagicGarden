@@ -85,15 +85,22 @@ public class BossNightManager : MonoBehaviour
         return prefab.name;
     }
 
-    public void ForceBossNight()
+    private int forcedBossNightDay = -1;
+
+    /// <summary>
+    /// Cheat: makes today a boss night whatever the day number. The boss night itself starts the normal way,
+    /// when night falls (EnemiesSpawner asks IsBossNightDay), so call this during the day.
+    /// </summary>
+    public bool ForceBossNight()
     {
         int currentDay = DayCycleController.Instance.CurrentDay;
-        if (currentDay == lastBossNightDay) return;
+        if (currentDay == forcedBossNightDay || bossPrefabs.Count == 0) return false;
 
+        forcedBossNightDay = currentDay;
         isBossNight = true;
         bossHasSpawnedThisNight = false;
         lastBossNightDay = currentDay;
-        StartBossNight();
+        return true;
     }
 
     private void OnNewDay(int dayCount)
@@ -114,7 +121,7 @@ public class BossNightManager : MonoBehaviour
 
     public bool IsBossNightDay(int dayCount)
     {
-        return dayCount > 0 && dayCount % bossNightInterval == 0;
+        return dayCount > 0 && (dayCount % bossNightInterval == 0 || dayCount == forcedBossNightDay);
     }
 
     public void StartBossNight()

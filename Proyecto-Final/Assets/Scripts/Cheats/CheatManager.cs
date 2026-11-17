@@ -46,11 +46,11 @@ public class CheatManager : MonoBehaviour
         hotkeysEnabled = PlayerPrefs.GetInt(PrefsPrefix + "Hotkeys", 1) == 1;
 
         // Enemies / nights
-        Add("Kill alive enemies", KeyCode.K, KillAliveEnemies);
+        Add("Kill alive enemies (bosses too)", KeyCode.K, KillAliveEnemies);
         Add("Spawn & kill whole horde (loot)", KeyCode.N, SpawnAndKillAll);
         Add("Start night now", KeyCode.V, StartNightNow);
         Add("End night (no loot)", KeyCode.None, () => LevelManager.Instance?.ForceEndNight());
-        Add("Start boss night", KeyCode.B, () => FindObjectOfType<BossNightManager>()?.ForceBossNight());
+        Add("Start boss night", KeyCode.B, StartBossNight);
         Add("Spawn boss now (cycles bosses)", KeyCode.Z, SpawnBossNow);
         Add("End boss night", KeyCode.J, () => FindObjectOfType<BossNightManager>()?.ForceEndBossNight());
         Add("Next moon phase", KeyCode.M, () => FindObjectOfType<LunarCycleManager>()?.ForceNextPhase());
@@ -175,6 +175,21 @@ public class CheatManager : MonoBehaviour
         Debug.Log(spawned != null ? $"[Cheats] Spawned boss: {spawned}" : "[Cheats] Could not spawn a boss (no prefabs or spawn point).");
     }
 
+    // By day: turns today into a boss night and starts the night, so the whole boss-night flow runs (announcement, no horde).
+    // At night it is too late for that flow (the horde is already running), so the boss is simply spawned.
+    private static void StartBossNight()
+    {
+        var bosses = FindObjectOfType<BossNightManager>();
+        if (bosses == null) return;
+        if (GameFlowController.Instance != null && GameFlowController.Instance.CurrentPhase == GamePhase.Night)
+        {
+            SpawnBossNow();
+            return;
+        }
+        if (!bosses.ForceBossNight()) Debug.Log("[Cheats] Today is already a forced boss night (or there are no boss prefabs).");
+        StartNightNow();
+    }
+
     private static void StartNightNow()
     {
         if (GameFlowController.Instance != null && GameFlowController.Instance.CurrentPhase == GamePhase.Night) return;
@@ -202,7 +217,7 @@ public class CheatManager : MonoBehaviour
 
     private static void KillAliveEnemies()
     {
-        FindObjectOfType<EnemiesSpawner>()?.KillAllAlive();
+        FindObjectOfType<EnemiesSpawner>()?.KillAllAlive(includeBosses: true);
     }
 
     private static void SpawnAndKillAll()
