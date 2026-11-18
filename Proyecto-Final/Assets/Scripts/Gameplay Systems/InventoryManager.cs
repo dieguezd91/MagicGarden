@@ -33,7 +33,16 @@ public class InventoryManager : MonoBehaviour
         if (!MagicGarden.CostPlanner.Aggregate(costs, out var totals)) return false;
         foreach (var pair in totals)
             if (!Enum.IsDefined(typeof(MaterialType), pair.Key)) return false;
-        return MagicGarden.CostPlanner.Affordable(totals, key => GetMaterialAmount((MaterialType)key));
+        return MagicGarden.CostPlanner.Affordable(totals, key => GetResourceAmount((MaterialType)key));
+    }
+
+    // Costs may name MaterialType.Gold: it is paid from the gold balance, never from the materials list.
+    public int GetResourceAmount(MaterialType type) => type == MaterialType.Gold ? goldAmount : GetMaterialAmount(type);
+
+    private void ChangeResource(MaterialType type, int delta)
+    {
+        if (type == MaterialType.Gold) goldAmount += delta;
+        else materials.Find(m => m.type == type).amount += delta;
     }
 
     public bool TrySpendCosts(IList<MagicGarden.Cost> costs, Func<bool> commit = null)
@@ -45,17 +54,21 @@ public class InventoryManager : MonoBehaviour
         {
             // Validate all aggregate costs before a single resource changes.
             foreach (var pair in totals)
-                materials.Find(m => m.type == (MaterialType)pair.Key).amount -= pair.Value;
+                ChangeResource((MaterialType)pair.Key, -pair.Value);
             if (commit != null && !commit())
             {
                 foreach (var pair in totals)
-                    materials.Find(m => m.type == (MaterialType)pair.Key).amount += pair.Value;
+                    ChangeResource((MaterialType)pair.Key, pair.Value);
                 return false;
             }
             materials.RemoveAll(m => m.amount <= 0);
             // Notify only after every debit and the composed upgrade are committed.
             foreach (var pair in totals)
-                onMaterialChanged?.Invoke((MaterialType)pair.Key, GetMaterialAmount((MaterialType)pair.Key));
+            {
+                var type = (MaterialType)pair.Key;
+                if (type == MaterialType.Gold) onGoldChanged?.Invoke(goldAmount);
+                else onMaterialChanged?.Invoke(type, GetMaterialAmount(type));
+            }
             return true;
         }
         finally { materialTransaction = false; }

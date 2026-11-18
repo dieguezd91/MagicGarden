@@ -15,6 +15,19 @@ public class UpgradeUIArtTests
     internal static object Field(object o, string name) => o.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).GetValue(o);
     internal static object Property(object o, string name) => o.GetType().GetProperty(name).GetValue(o);
     internal static object Call(object o, string name, params object[] args) => o.GetType().GetMethod(name).Invoke(o, args);
+    // Cost resources: MaterialType.Gold (15) is the gold balance, every other id is a material.
+    internal const int GoldId = 15;
+    internal static int Amount(object inventory, int resource) => (int)Call(inventory, "GetResourceAmount", Enum.ToObject(TypeOf("MaterialType"), resource));
+    internal static void Grant(object inventory, int resource, int amount)
+    {
+        if (resource == GoldId) Call(inventory, "AddGold", amount);
+        else Call(inventory, "AddMaterial", Enum.ToObject(TypeOf("MaterialType"), resource), amount);
+    }
+    internal static void Drain(object inventory, int resource)
+    {
+        if (resource == GoldId) Call(inventory, "SetGold", 0);
+        else Call(inventory, "UseMaterial", Enum.ToObject(TypeOf("MaterialType"), resource), Amount(inventory, resource));
+    }
     internal static Component[] Components(GameObject root, string name) => root.GetComponentsInChildren<Component>(true).Where(c => c != null && c.GetType().FullName == name).ToArray();
     internal static Sprite Sprite(string name) => AssetDatabase.LoadAllAssetsAtPath(Sheet).OfType<Sprite>().Single(s => s.name == name);
     private static void Identity(UnityEngine.Object asset, string guid, long id)

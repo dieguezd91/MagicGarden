@@ -77,7 +77,7 @@ public sealed class UpgradeRuntime : MonoBehaviour
             return;
         }
         inventory = InventoryManager.Instance;
-        if (inventory != null) inventory.onMaterialChanged += MaterialsChanged;
+        if (inventory != null) { inventory.onMaterialChanged += MaterialsChanged; inventory.onGoldChanged += GoldChanged; }
         UIEvents.OnCraftingUIToggleRequested += ToggleShop;
         experience.OnProgressionReset += ResetRun;
         GameFlowController.Instance.OnPhaseChanged += PhaseChanged;
@@ -191,7 +191,7 @@ public sealed class UpgradeRuntime : MonoBehaviour
     private void OnDestroy()
     {
         UIEvents.OnCraftingUIToggleRequested -= ToggleShop;
-        if (inventory != null) inventory.onMaterialChanged -= MaterialsChanged;
+        if (inventory != null) { inventory.onMaterialChanged -= MaterialsChanged; inventory.onGoldChanged -= GoldChanged; }
         if (experience != null) experience.OnProgressionReset -= ResetRun;
         if (GameFlowController.Instance != null) GameFlowController.Instance.OnPhaseChanged -= PhaseChanged;
         panel?.Unbind(this); // The authored Canvas/presenter belong to the scene, not this runtime.
@@ -292,6 +292,7 @@ public sealed class UpgradeRuntime : MonoBehaviour
     }
     public static float EffectValue(string id, EffectKind kind) => Current != null ? Current.State.Effect(id, kind) : 0;
     private void MaterialsChanged(MaterialType type, int amount) => panel?.RequestShopRefresh();
+    private void GoldChanged(int amount) => panel?.RequestShopRefresh();
     public void ToggleShop()
     {
         if (!isActiveAndEnabled || panel == null || !panel.IsReady || choosing) return;

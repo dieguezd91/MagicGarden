@@ -75,6 +75,46 @@ public class UpgradeIntegrationTests
         Assert.That(Call(inventory, "HasCosts", (object)new[] { new Cost { material = 999, amount = 1 } }), Is.EqualTo(false));
         Assert.That(Call(inventory, "HasCosts", (object)new[] { new Cost { material = 1, amount = 0 } }), Is.EqualTo(false));
     }
+    [Test] public void GoldCostIsPaidFromGoldBalanceAndNotifiesOnceAfterCommit()
+    {
+        var inventory = Component("InventoryManager"); Call(inventory, "SetGold", 250);
+        var gold = new[] { new Cost { material = GoldId, amount = 200 } };
+        var goldEvents = new List<int>();
+        inventory.GetType().GetField("onGoldChanged").SetValue(inventory, (Action<int>)(amount =>
+        {
+            goldEvents.Add(amount);
+            Assert.That(Call(inventory, "TrySpendCosts", gold, null), Is.EqualTo(false), "Reentrant spend is rejected");
+        }));
+        var field = inventory.GetType().GetField("onMaterialChanged");
+        field.SetValue(inventory, Delegate.CreateDelegate(field.FieldType, this, GetType()
+            .GetMethod(nameof(CountMaterialEvent), BindingFlags.NonPublic | BindingFlags.Instance).MakeGenericMethod(Production("MaterialType"))));
+        materialEventCount = 0;
+        Assert.That(Call(inventory, "HasCosts", (object)gold), Is.EqualTo(true));
+        Assert.That(Call(inventory, "TrySpendCosts", gold, (Func<bool>)(() => true)), Is.EqualTo(true));
+        Assert.That(Call(inventory, "GetGold"), Is.EqualTo(50));
+        Assert.That(Call(inventory, "GetResourceAmount", Material(GoldId)), Is.EqualTo(50));
+        Assert.That(Call(inventory, "GetMaterialAmount", Material(GoldId)), Is.EqualTo(0), "Gold never enters the materials list");
+        Assert.That(goldEvents, Is.EqualTo(new[] { 50 }));
+        Assert.That(materialEventCount, Is.EqualTo(0));
+    }
+    private int materialEventCount;
+    private void CountMaterialEvent<T>(T material, int amount) => materialEventCount++;
+    [Test] public void GoldCostInsufficientOrRejectedNeverSpendsAnyResource()
+    {
+        var inventory = Component("InventoryManager"); Call(inventory, "SetGold", 199); Call(inventory, "AddMaterial", Material(1), 5);
+        var gold = new[] { new Cost { material = GoldId, amount = 200 } };
+        Assert.That(Call(inventory, "HasCosts", (object)gold), Is.EqualTo(false));
+        Assert.That(Call(inventory, "TrySpendCosts", gold, null), Is.EqualTo(false));
+        Assert.That(Call(inventory, "GetGold"), Is.EqualTo(199));
+        Call(inventory, "SetGold", 200);
+        Assert.That(Call(inventory, "TrySpendCosts", gold, (Func<bool>)(() => false)), Is.EqualTo(false));
+        Assert.That(Call(inventory, "GetGold"), Is.EqualTo(200));
+        var mixed = new[] { new Cost { material = GoldId, amount = 200 }, new Cost { material = 1, amount = 6 } };
+        Assert.That(Call(inventory, "TrySpendCosts", mixed, null), Is.EqualTo(false));
+        Assert.That(Call(inventory, "GetGold"), Is.EqualTo(200));
+        Assert.That(Call(inventory, "GetMaterialAmount", Material(1)), Is.EqualTo(5));
+    }
+    private const int GoldId = 15;
     [Test] public void PlayerExperienceKeepsCumulativeTotalAndQueuesMultipleChoices()
     {
         var experience = Component("PlayerExperienceSystem");
@@ -135,5 +175,17 @@ public class UpgradeIntegrationTests
         }
         Assert.That(found.Count, Is.EqualTo(5));
         Assert.That(balance.stats[(int)Stat.Quantity].weight, Is.LessThan(0.05f));
+    }
+    [Test] public void DefaultBalanceSpecialsCostOnlyTwoNormalNightsOfGold()
+    {
+        // A normal night pays at most 30 + 50 + 20 = 100 gold (RewardsSystem defaults).
+        var balance = JsonUtility.FromJson<Balance>(Resources.Load<TextAsset>("MagicGardenBalance").text);
+        Assert.That(balance.specials.Length, Is.EqualTo(5));
+        foreach (var special in balance.specials)
+        {
+            Assert.That(special.costs.Length, Is.EqualTo(1), special.id);
+            Assert.That(special.costs[0].material, Is.EqualTo(GoldId), special.id);
+            Assert.That(special.costs[0].amount, Is.EqualTo(200), special.id);
+        }
     }
 }

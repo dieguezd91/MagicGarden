@@ -5,6 +5,7 @@ using UnityEngine;
 // Scene-owned presenter. Views own authored visuals and UI events; runtime owns rules and flow.
 public sealed class UpgradePanel : MonoBehaviour
 {
+    internal const string GoldIconTag = "<sprite name=\"GoldIcon\">";
     [SerializeField] private LevelUpPanelView levelUpView;
     [SerializeField] private SpecialUpgradePanelView shopView;
     [Tooltip("Optional: shows the seeds/spells unlocked by the level, alone, before its upgrade choice.")]
@@ -123,8 +124,10 @@ public sealed class UpgradePanel : MonoBehaviour
                 {
                     var inventory = InventoryManager.Instance;
                     string name = inventory != null ? inventory.GetMaterialName((MaterialType)cost.material) : ((MaterialType)cost.material).ToString();
-                    int owned = inventory != null ? inventory.GetMaterialAmount((MaterialType)cost.material) : 0;
-                    costs += $"{name} {owned}/{cost.amount}  ";
+                    int owned = inventory != null ? inventory.GetResourceAmount((MaterialType)cost.material) : 0;
+                    // Gold uses the GoldIcon sprite of the label's UtilitySprites TMP sprite asset.
+                    string resource = (MaterialType)cost.material == MaterialType.Gold ? GoldIconTag : name;
+                    costs += $"{resource} {owned}/{cost.amount}  ";
                 }
                 items.Add(new SpecialUpgradeItemData
                 {

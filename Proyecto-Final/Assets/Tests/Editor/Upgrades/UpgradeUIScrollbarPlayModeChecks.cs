@@ -87,14 +87,10 @@ public class UpgradeUIScrollbarPlayModeChecks
         var state = (RunState)Property(runtime, "State"); var definitions = (IList)Field(presenter, "shopDefinitions");
         var targetIds = (IList)Field(presenter, "shopTargets"); string target = (string)targetIds[3]; var purchase = (SpecialDefinition)definitions[3];
         Assert.That(CostPlanner.Aggregate(purchase.costs, out var costs), Is.True);
-        foreach (var cost in costs)
-        {
-            var material = Enum.ToObject(TypeOf("MaterialType"), cost.Key);
-            Call(inventory, "UseMaterial", material, (int)Call(inventory, "GetMaterialAmount", material));
-        }
+        foreach (var cost in costs) Drain(inventory, cost.Key);
         yield return Frames();
         Click((Component)Field(rows[3], "purchaseButton")); Assert.That(state.SpecialStacks(purchase.id, target), Is.Zero);
-        foreach (var cost in costs) Call(inventory, "AddMaterial", Enum.ToObject(TypeOf("MaterialType"), cost.Key), cost.Value * 10);
+        foreach (var cost in costs) Grant(inventory, cost.Key, cost.Value * 10);
         yield return Frames(); Assert.That(Property(Field(rows[3], "purchaseButton"), "interactable"), Is.True);
         Assert.That(Property(Field(rows[7], "purchaseButton"), "interactable"), Is.False);
         var wheel = Pointer(RectTransformUtility.WorldToScreenPoint(null, scroll.transform.position)); Set(wheel, "scrollDelta", new Vector2(0, -4));
@@ -119,16 +115,16 @@ public class UpgradeUIScrollbarPlayModeChecks
         Move(close, "Up"); Assert.That(Selected, Is.SameAs(((Component)rows[6]).gameObject), "Navigation skips disabled bottom row");
         yield return Frames(); ValidHandle(scroll);
         Offset(scroll, 600.25f); Select((Component)Field(rows[3], "purchaseButton")); yield return Frames();
-        float purchaseOffset = Offset(scroll); var resources = costs.ToDictionary(c => c.Key, c => (int)Call(inventory, "GetMaterialAmount", Enum.ToObject(TypeOf("MaterialType"), c.Key)));
+        float purchaseOffset = Offset(scroll); var resources = costs.ToDictionary(c => c.Key, c => Amount(inventory, c.Key));
         Set(scroll, "velocity", new Vector2(0, 800)); Click((Component)Field(rows[3], "purchaseButton"));
         Assert.That(state.SpecialStacks(purchase.id, target), Is.EqualTo(1)); Assert.That(Offset(scroll), Is.EqualTo(purchaseOffset).Within(.01));
-        foreach (var cost in costs) Assert.That(Call(inventory, "GetMaterialAmount", Enum.ToObject(TypeOf("MaterialType"), cost.Key)), Is.EqualTo(resources[cost.Key] - cost.Value));
+        foreach (var cost in costs) Assert.That(Amount(inventory, cost.Key), Is.EqualTo(resources[cost.Key] - cost.Value));
         yield return Frames(6); Assert.That(Offset(scroll), Is.EqualTo(purchaseOffset).Within(.05)); Assert.That(Property(scroll, "velocity"), Is.EqualTo(Vector2.zero));
         Assert.That(Property(Field(rows[3], "stacksLabel"), "text"), Is.EqualTo("1/3"));
-        var firstCost = costs.First(); var resourceType = Enum.ToObject(TypeOf("MaterialType"), firstCost.Key);
+        var resource = costs.First().Key;
         // Multiple real notifications queue one presenter refresh; labels update after its normal Update.
         string oldCosts = (string)Property(Field(rows[3], "costsLabel"), "text");
-        Call(inventory, "AddMaterial", resourceType, 1); Call(inventory, "AddMaterial", resourceType, 1);
+        Grant(inventory, resource, 1); Grant(inventory, resource, 1);
         Assert.That(Field(presenter, "shopRefresh"), Is.True);
         yield return Frames(6); Assert.That(Field(presenter, "shopRefresh"), Is.False);
         Assert.That(Property(Field(rows[3], "costsLabel"), "text"), Is.Not.EqualTo(oldCosts));
@@ -138,14 +134,14 @@ public class UpgradeUIScrollbarPlayModeChecks
         foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720) })
             yield return UpgradeUIArtPlayModeChecks.Capture(canvas, shop.gameObject, "scrollbar-overflow-scrolled", size.x, size.y);
         // Content resize uses refresh, not open: preserve valid pixels, clamp only when necessary.
-        balance.specials = fixture.Take(2).ToArray(); Call(inventory, "AddMaterial", resourceType, 1); yield return Frames(6);
+        balance.specials = fixture.Take(2).ToArray(); Grant(inventory, resource, 1); yield return Frames(6);
         Assert.That(Offset(scroll), Is.Zero.Within(.05)); Assert.That(bar.gameObject.activeSelf, Is.False);
         Assert.That(Selected, Is.SameAs(close.gameObject), "Auto-hidden scrollbar focus returns to Close");
         foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720) })
             yield return UpgradeUIArtPlayModeChecks.Capture(canvas, shop.gameObject, "scrollbar-short-autohidden", size.x, size.y);
-        balance.specials = new SpecialDefinition[0]; Call(inventory, "AddMaterial", resourceType, 1); yield return Frames();
+        balance.specials = new SpecialDefinition[0]; Grant(inventory, resource, 1); yield return Frames();
         Assert.That(bar.gameObject.activeSelf, Is.False); Assert.That(((Component)Field(shop, "emptyLabel")).gameObject.activeSelf, Is.True);
-        balance.specials = fixture; Call(inventory, "AddMaterial", resourceType, 1); yield return Frames(); ValidHandle(scroll);
+        balance.specials = fixture; Grant(inventory, resource, 1); yield return Frames(); ValidHandle(scroll);
         Offset(scroll, 333); Set(scroll, "velocity", new Vector2(0, 100)); Click(close); yield return Frames();
         Assert.That(Property(presenter, "IsShopOpen"), Is.False); Call(runtime, "ToggleShop"); yield return Frames(6);
         Assert.That(Offset(scroll), Is.Zero.Within(.05)); Assert.That(Property(scroll, "velocity"), Is.EqualTo(Vector2.zero));

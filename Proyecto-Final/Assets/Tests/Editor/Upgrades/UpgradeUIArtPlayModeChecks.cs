@@ -817,16 +817,17 @@ public class UpgradeUIArtPlayModeChecks
         var inventory = Find("InventoryManager");
         // Ensure the fixture proves disabled pointer clicks before granting exactly the production costs.
         var costs = CostPlanner.Aggregate(definition.costs, out var aggregated) ? aggregated : throw new InvalidOperationException("Invalid costs");
-        foreach (var cost in costs) Call(inventory, "UseMaterial", Enum.ToObject(TypeOf("MaterialType"), cost.Key), (int)Call(inventory, "GetMaterialAmount", Enum.ToObject(TypeOf("MaterialType"), cost.Key)));
+        foreach (var cost in costs) Drain(inventory, cost.Key);
         Call(presenter, "ShowShop"); yield return null;
         Click((Component)Field(rows[0], "purchaseButton")); Assert.That(state.SpecialStacks(definition.id, target), Is.EqualTo(stacks));
-        foreach (var cost in costs) Call(inventory, "AddMaterial", Enum.ToObject(TypeOf("MaterialType"), cost.Key), cost.Value);
+        foreach (var cost in costs) Grant(inventory, cost.Key, cost.Value);
         Call(presenter, "ShowShop"); yield return null;
         Assert.That(Property(Field(rows[0], "purchaseButton"), "interactable"), Is.True);
+        Assert.That(((string)Property(Field(rows[0], "costsLabel"), "text")).Trim(), Is.EqualTo("<sprite name=\"GoldIcon\"> 200/200"), "Cauldron upgrades cost only gold, shown with the gold icon");
         foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720), new Vector2Int(1280, 1024) }) yield return Capture(canvas, shop.gameObject, "runtime-shop", size.x, size.y);
         Click((Component)Field(rows[0], "purchaseButton")); yield return null;
         Assert.That(state.SpecialStacks(definition.id, target), Is.EqualTo(stacks + 1));
-        foreach (var cost in costs) Assert.That(Call(inventory, "GetMaterialAmount", Enum.ToObject(TypeOf("MaterialType"), cost.Key)), Is.EqualTo(0));
+        foreach (var cost in costs) Assert.That(Amount(inventory, cost.Key), Is.EqualTo(0));
         Click((Component)Field(shop, "closeButton")); yield return null;
         Assert.That(Property(presenter, "IsShopOpen"), Is.False); Assert.That(shop.gameObject.activeSelf, Is.False);
         Assert.That(Property(modal, "CurrentModal").ToString(), Is.EqualTo("None")); Assert.That(Time.timeScale, Is.EqualTo(1));
