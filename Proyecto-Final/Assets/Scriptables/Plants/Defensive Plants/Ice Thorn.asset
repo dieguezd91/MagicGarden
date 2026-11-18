@@ -15,7 +15,7 @@ MonoBehaviour:
   upgradeLineId: 
   plantName: Ice Thorn
   plantPrefab: {fileID: 6736001113723686055, guid: 7ffe7863eb5fa3a439d4f853ad3b704b, type: 3}
-  plantIcon: {fileID: 430904352, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
+  plantIcon: {fileID: 1561430864, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
   fullyGrownSprite: {fileID: 430904352, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
   daysToGrow: 1
   description: hola soy ice
