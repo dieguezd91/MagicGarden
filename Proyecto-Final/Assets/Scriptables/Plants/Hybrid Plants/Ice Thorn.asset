@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Ice Thorn
   m_EditorClassIdentifier: 
   upgradeLineId: 
-  plantName: Frost Thorn
+  plantName: Ice Thorn
   plantPrefab: {fileID: 6736001113723686055, guid: 7ffe7863eb5fa3a439d4f853ad3b704b, type: 3}
-  plantIcon: {fileID: -1990512455, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
+  plantIcon: {fileID: 1561430864, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
   fullyGrownSprite: {fileID: 430904352, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
   daysToGrow: 1
   description: <u>Defensive plant</u>. Shoots at enemies within range.

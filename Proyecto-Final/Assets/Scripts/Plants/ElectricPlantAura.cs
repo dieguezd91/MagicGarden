@@ -50,7 +50,8 @@ public class ElectricPlantAura : Plant
 
     private void ApplyAreaEffects()
     {
-        if (UpgradeRuntime.GameplayBlocked)
+
+        if (!IsFullyGrown() || UpgradeRuntime.GameplayBlocked)
             return;
 
         Collider2D[] hits = Physics2D.OverlapCircleAll(
