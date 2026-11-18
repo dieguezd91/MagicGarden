@@ -10,7 +10,8 @@
     {"stat":4,"displayName":"Far bloom","weight":0.8,"maxStacks":10},
     {"stat":5,"displayName":"Wide bloom","weight":0.8,"maxStacks":10},
     {"stat":6,"displayName":"Forceful bloom","weight":0.6,"maxStacks":10},
-    {"stat":7,"displayName":"Abundant bloom","weight":0.025,"maxStacks":3}
+    {"stat":7,"displayName":"Abundant bloom","weight":0.025,"maxStacks":3},
+    {"stat":8,"displayName":"Garden bloom","weight":0.15,"maxStacks":3,"forceRarity":true,"fixedRarity":2}
   ],
   "rarities": [
     {"rarity":0,"weight":50,"bonus":0.05},

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MagicGarden
 {
-    public enum Stat { MaxHealth, Damage, AttackSpeed, MoveSpeed, Range, Area, Knockback, Quantity }
+    public enum Stat { MaxHealth, Damage, AttackSpeed, MoveSpeed, Range, Area, Knockback, Quantity, PlantLimit }
     public enum Rarity { Base, Common, Rare, Legendary }
     public enum EffectKind { LateralProjectiles, ExtraPierce, TraversalDamage, AreaMultiplier, AdditionalTargets }
 
@@ -13,6 +13,9 @@ namespace MagicGarden
         public string displayName;
         public float weight;
         public int maxStacks;
+        // Optional fixed rarity. Both fields default to "not fixed" when absent from JSON (JsonUtility leaves missing fields at default(T)).
+        public bool forceRarity;
+        public Rarity fixedRarity;
     }
     [Serializable] public class RarityRule
     {
@@ -73,13 +76,17 @@ namespace MagicGarden
         private readonly Dictionary<string, int[]> stacks = new Dictionary<string, int[]>();
         private readonly Dictionary<string, int> specials = new Dictionary<string, int>();
         private readonly Dictionary<string, float[]> effects = new Dictionary<string, float[]>();
+        // Stat ids are append-only; arrays and guards derive their size from the last enum member.
+        public const int StatCount = (int)Stat.PlantLimit + 1;
         public static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
-        public int Stacks(string id, Stat stat) => !string.IsNullOrEmpty(id) && (int)stat >= 0 && (int)stat < 8 && stacks.TryGetValue(id, out var a) ? a[(int)stat] : 0;
+        // Additive stats add exactly one per stack to their base, independent of rarity bonus and profile ratio.
+        public static bool Additive(Stat stat) => stat == Stat.Quantity || stat == Stat.PlantLimit;
+        public int Stacks(string id, Stat stat) => !string.IsNullOrEmpty(id) && (int)stat >= 0 && (int)stat < StatCount && stacks.TryGetValue(id, out var a) ? a[(int)stat] : 0;
         public int SpecialStacks(string id, string target) => specials.TryGetValue(target + ":" + id, out var n) ? n : 0;
         public float Effect(string target, EffectKind kind) => !string.IsNullOrEmpty(target) && (int)kind >= 0 && (int)kind < 5 && effects.TryGetValue(target, out var a) ? a[(int)kind] : 0;
         public float Factor(string id, Stat stat, float ratio)
         {
-            if (string.IsNullOrEmpty(id) || (int)stat < 0 || (int)stat >= 8) return 1;
+            if (string.IsNullOrEmpty(id) || (int)stat < 0 || (int)stat >= StatCount) return 1;
             float bonus = bonuses.TryGetValue(id, out var a) ? a[(int)stat] : 0;
             double result = 1d + (double)bonus * ratio;
             return Finite(ratio) && ratio >= 0 ? (float)Math.Min(1000000d, Math.Max(1d, result)) : 1;
@@ -87,7 +94,7 @@ namespace MagicGarden
         public float Value(string id, Stat stat, float basis, float ratio)
         {
             if (!Finite(basis) || basis < 0) return stat == Stat.AttackSpeed ? 0.001f : 0;
-            if (stat == Stat.Quantity) return basis + Stacks(id, stat);
+            if (Additive(stat)) return basis + Stacks(id, stat);
             double result = (double)basis * Factor(id, stat, ratio);
             return (float)Math.Min(stat == Stat.AttackSpeed ? 1000d : 100000000d, result);
         }
@@ -98,17 +105,17 @@ namespace MagicGarden
         }
         public bool CanApply(Target target, StatRule rule)
         {
-            return target != null && !string.IsNullOrEmpty(target.Id) && rule != null && (int)rule.stat >= 0 && (int)rule.stat < 8 &&
+            return target != null && !string.IsNullOrEmpty(target.Id) && rule != null && (int)rule.stat >= 0 && (int)rule.stat < StatCount &&
                 Finite(rule.weight) && rule.weight > 0 && rule.maxStacks > Stacks(target.Id, rule.stat) &&
                 target.Bases.TryGetValue(rule.stat, out var basis) && Finite(basis) && basis > 0 &&
                 (rule.stat != Stat.AttackSpeed || Value(target.Id, rule.stat, basis, target.Ratio(rule.stat)) < 1000) &&
-                (rule.stat == Stat.Quantity || (Finite(target.Ratio(rule.stat)) && target.Ratio(rule.stat) > 0));
+                (Additive(rule.stat) || (Finite(target.Ratio(rule.stat)) && target.Ratio(rule.stat) > 0));
         }
         public float Preview(Target target, StatRule rule, RarityRule rarity)
         {
             float basis = target.Bases[rule.stat];
             float current = Value(target.Id, rule.stat, basis, target.Ratio(rule.stat));
-            if (rule.stat == Stat.Quantity) return current + 1;
+            if (Additive(rule.stat)) return current + 1;
             float previous = bonuses.TryGetValue(target.Id, out var a) ? a[(int)rule.stat] : 0;
             double accumulated = Math.Min(1000000d, (double)previous + rarity.bonus);
             double factor = Math.Min(1000000d, 1d + accumulated * target.Ratio(rule.stat));
@@ -118,10 +125,10 @@ namespace MagicGarden
         {
             if (offer == null || !CanApply(offer.Target, offer.Rule) || offer.Rarity == null ||
                 !Finite(offer.Rarity.bonus) || offer.Rarity.bonus < 0 ||
-                (offer.Rule.stat != Stat.Quantity && offer.Rarity.bonus == 0)) return false;
+                (!Additive(offer.Rule.stat) && offer.Rarity.bonus == 0)) return false;
             string id = offer.Target.Id;
-            if (!bonuses.TryGetValue(id, out var a)) bonuses.Add(id, a = new float[8]);
-            if (!stacks.TryGetValue(id, out var s)) stacks.Add(id, s = new int[8]);
+            if (!bonuses.TryGetValue(id, out var a)) bonuses.Add(id, a = new float[StatCount]);
+            if (!stacks.TryGetValue(id, out var s)) stacks.Add(id, s = new int[StatCount]);
             a[(int)offer.Rule.stat] = Math.Min(1000000, a[(int)offer.Rule.stat] + offer.Rarity.bonus);
             s[(int)offer.Rule.stat]++;
             return true;
@@ -168,7 +175,8 @@ namespace MagicGarden
             foreach (var rarity in rarities) if (rarity.bonus > 0) hasPercentBonus = true;
             foreach (var target in owned)
                 foreach (var rule in balance.stats)
-                    if (state.CanApply(target, rule) && (rule.stat == Stat.Quantity || hasPercentBonus))
+                    if (state.CanApply(target, rule) && (RunState.Additive(rule.stat) || hasPercentBonus) &&
+                        (!rule.forceRarity || FixedRarity(rule, rarities) != null))
                     {
                         var offer = new Offer { Target = target, Rule = rule };
                         if (seen.Add(offer.Key)) candidates.Add(offer);
@@ -187,23 +195,35 @@ namespace MagicGarden
                 }
                 var offer = candidates[index];
                 candidates.RemoveAt(index);
-                double rarityTotal = 0;
-                foreach (var rarity in rarities)
-                    if (offer.Rule.stat == Stat.Quantity || rarity.bonus > 0) rarityTotal += rarity.weight;
-                roll = random.NextDouble() * rarityTotal;
-                offer.Rarity = rarities[rarities.Count - 1];
-                foreach (var rarity in rarities)
+                if (offer.Rule.forceRarity) offer.Rarity = FixedRarity(offer.Rule, rarities); // no roll: the rarity is data-driven
+                else
                 {
-                    if (offer.Rule.stat != Stat.Quantity && rarity.bonus == 0) continue;
-                    offer.Rarity = rarity;
-                    roll -= rarity.weight;
-                    if (roll < 0) break;
+                    double rarityTotal = 0;
+                    foreach (var rarity in rarities)
+                        if (RunState.Additive(offer.Rule.stat) || rarity.bonus > 0) rarityTotal += rarity.weight;
+                    roll = random.NextDouble() * rarityTotal;
+                    offer.Rarity = rarities[rarities.Count - 1];
+                    foreach (var rarity in rarities)
+                    {
+                        if (!RunState.Additive(offer.Rule.stat) && rarity.bonus == 0) continue;
+                        offer.Rarity = rarity;
+                        roll -= rarity.weight;
+                        if (roll < 0) break;
+                    }
                 }
                 offer.Before = state.Value(offer.Target.Id, offer.Rule.stat, offer.Target.Bases[offer.Rule.stat], offer.Target.Ratio(offer.Rule.stat));
                 offer.After = state.Preview(offer.Target, offer.Rule, offer.Rarity);
                 result.Add(offer);
             }
             return result;
+        }
+        // The valid rarity a rule is pinned to, or null when the rule is not fixed or its rarity cannot produce a usable offer.
+        private static RarityRule FixedRarity(StatRule rule, List<RarityRule> rarities)
+        {
+            if (!rule.forceRarity) return null;
+            foreach (var rarity in rarities)
+                if (rarity.rarity == rule.fixedRarity && (RunState.Additive(rule.stat) || rarity.bonus > 0)) return rarity;
+            return null;
         }
     }
 

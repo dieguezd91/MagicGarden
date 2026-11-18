@@ -98,7 +98,7 @@ public sealed class UpgradePanel : MonoBehaviour
             {
                 Icon = runtime.Icon(offer.Target.Id), Target = offer.Target.Name, Name = offer.Rule.displayName,
                 Stat = offer.Rule.stat.ToString(), Rarity = offer.Rarity.rarity.ToString().ToUpperInvariant(), Tint = ColorFor(offer.Rarity.rarity),
-                Bonus = offer.Rule.stat == Stat.Quantity ? "+1" : $"+{offer.Rarity.bonus * offer.Target.Ratio(offer.Rule.stat) * 100:0.##}% base",
+                Bonus = RunState.Additive(offer.Rule.stat) ? "+1" : $"+{offer.Rarity.bonus * offer.Target.Ratio(offer.Rule.stat) * 100:0.##}% base",
                 Preview = $"{offer.Before:0.###} → {offer.After:0.###}" + (offer.Rule.stat == Stat.AttackSpeed ? " attacks/s" : "")
             });
         sessionBackdrop?.Show();

@@ -179,4 +179,119 @@ public class UpgradeCoreTests
         Assert.That(state.Buy(baseUpgrade, other), Is.False);
         state.Clear(); Assert.That(state.SpecialStacks("lateral", target.Id), Is.Zero);
     }
+
+    // Plant limit: an additive player stat (like Quantity) that is always offered at one fixed rarity.
+    private const float PlantLimitStart = 5;
+    private Target PlayerTarget()
+    {
+        var target = new Target { Id = "player", Capability = "Player", Profile = new ScalingProfile { ratios = new float[] { 1, 0, 0, 1, 0, 0, 0, 0 } } };
+        target.Bases[Stat.MaxHealth] = 100;
+        target.Bases[Stat.MoveSpeed] = 5;
+        target.Bases[Stat.PlantLimit] = PlantLimitStart;
+        return target;
+    }
+    private StatRule PlantLimitRule(float weight = 0.15f, int maximum = 3) => new StatRule
+        { stat = Stat.PlantLimit, displayName = "Garden bloom", weight = weight, maxStacks = maximum, forceRarity = true, fixedRarity = Rarity.Rare };
+    private Balance FourRarityBalance(params StatRule[] stats) => new Balance
+    {
+        stats = stats,
+        rarities = new[]
+        {
+            new RarityRule { rarity = Rarity.Base, weight = 50, bonus = 0.05f }, new RarityRule { rarity = Rarity.Common, weight = 35, bonus = 0.10f },
+            new RarityRule { rarity = Rarity.Rare, weight = 12, bonus = 0.20f }, new RarityRule { rarity = Rarity.Legendary, weight = 3, bonus = 0.35f }
+        }
+    };
+    [TestCase(0f)] [TestCase(0.05f)] [TestCase(0.1f)] [TestCase(0.2f)] [TestCase(0.35f)]
+    public void PlantLimitIsExactlyOnePerStackForEveryRarityAndStopsAtThree(float bonus)
+    {
+        var state = new RunState(); var target = PlayerTarget(); var rule = PlantLimitRule();
+        var rarity = new RarityRule { rarity = Rarity.Rare, bonus = bonus, weight = 1 };
+        for (int stack = 0; stack < 3; stack++)
+        {
+            Assert.That(state.Value(target.Id, Stat.PlantLimit, PlantLimitStart, target.Ratio(Stat.PlantLimit)), Is.EqualTo(PlantLimitStart + stack));
+            Assert.That(state.Preview(target, rule, rarity), Is.EqualTo(PlantLimitStart + stack + 1));
+            Assert.That(state.Apply(new Offer { Target = target, Rule = rule, Rarity = rarity }), Is.True);
+            Assert.That(state.Stacks(target.Id, Stat.PlantLimit), Is.EqualTo(stack + 1));
+        }
+        Assert.That(state.Value(target.Id, Stat.PlantLimit, PlantLimitStart, 0), Is.EqualTo(8));
+        Assert.That(state.CanApply(target, rule), Is.False);
+        Assert.That(state.Apply(new Offer { Target = target, Rule = rule, Rarity = rarity }), Is.False);
+        Assert.That(state.Value(target.Id, Stat.PlantLimit, PlantLimitStart, 0), Is.EqualTo(8));
+        Assert.That(target.Bases[Stat.PlantLimit], Is.EqualTo(PlantLimitStart));
+        Assert.That(state.Value(target.Id, Stat.MaxHealth, 100, 1), Is.EqualTo(100));
+        state.Clear();
+        Assert.That(state.Value(target.Id, Stat.PlantLimit, PlantLimitStart, 0), Is.EqualTo(PlantLimitStart));
+    }
+    [Test] public void PlantLimitIsOnlyOfferedToTargetsWithAPlantLimitBase()
+    {
+        var state = new RunState(); var rule = PlantLimitRule();
+        Assert.That(state.CanApply(PlayerTarget(), rule), Is.True);
+        Assert.That(state.CanApply(Target(), rule), Is.False);
+        var empty = PlayerTarget(); empty.Bases[Stat.PlantLimit] = 0;
+        Assert.That(state.CanApply(empty, rule), Is.False);
+    }
+    [Test] public void MaximumStacksFilterPlantLimitFromTheOfferPool()
+    {
+        var state = new RunState(); var target = PlayerTarget(); var balance = FourRarityBalance(PlantLimitRule());
+        for (int stack = 0; stack < 3; stack++)
+        {
+            var offers = OfferSelector.Select(state, new[] { target }, balance, new Random(stack));
+            Assert.That(offers.Count, Is.EqualTo(1));
+            Assert.That(offers[0].Before, Is.EqualTo(PlantLimitStart + stack));
+            Assert.That(offers[0].After, Is.EqualTo(PlantLimitStart + stack + 1));
+            Assert.That(state.Apply(offers[0]), Is.True);
+        }
+        Assert.That(OfferSelector.Select(state, new[] { target }, balance, new Random(9)), Is.Empty);
+    }
+    [Test] public void FixedRarityAlwaysYieldsRareWhileOtherStatsStillRoll()
+    {
+        var balance = FourRarityBalance(PlantLimitRule(1), new StatRule { stat = Stat.MaxHealth, weight = 1, maxStacks = 10 }, new StatRule { stat = Stat.MoveSpeed, weight = 1, maxStacks = 10 });
+        var state = new RunState(); var target = PlayerTarget(); var random = new Random(77);
+        var seen = new HashSet<Rarity>(); int plantLimit = 0;
+        for (int i = 0; i < 600; i++)
+            foreach (var offer in OfferSelector.Select(state, new[] { target }, balance, random, 3))
+            {
+                if (offer.Rule.stat == Stat.PlantLimit) { plantLimit++; Assert.That(offer.Rarity.rarity, Is.EqualTo(Rarity.Rare)); }
+                else seen.Add(offer.Rarity.rarity);
+            }
+        Assert.That(plantLimit, Is.EqualTo(600));
+        CollectionAssert.AreEquivalent(new[] { Rarity.Base, Rarity.Common, Rarity.Rare, Rarity.Legendary }, seen);
+    }
+    [Test] public void FixedRarityIsNotAppliedWhenTheFlagIsOffAndRuleDefaultsToNotFixed()
+    {
+        Assert.That(new StatRule().forceRarity, Is.False);
+        var balance = FourRarityBalance(new StatRule { stat = Stat.MaxHealth, weight = 1, maxStacks = 10, fixedRarity = Rarity.Rare });
+        var state = new RunState(); var target = PlayerTarget(); var random = new Random(5); var seen = new HashSet<Rarity>();
+        for (int i = 0; i < 400; i++) seen.Add(OfferSelector.Select(state, new[] { target }, balance, random, 1)[0].Rarity.rarity);
+        Assert.That(seen.Count, Is.EqualTo(4));
+    }
+    [Test] public void FixedRarityMissingFromTheRarityTableRemovesTheOfferInsteadOfSubstituting()
+    {
+        var balance = FourRarityBalance(PlantLimitRule());
+        balance.rarities = new[] { new RarityRule { rarity = Rarity.Common, weight = 1, bonus = 0.1f }, new RarityRule { rarity = Rarity.Rare, weight = 0, bonus = 0.2f } };
+        Assert.That(OfferSelector.Select(new RunState(), new[] { PlayerTarget() }, balance, new Random(1)), Is.Empty);
+    }
+    [Test] public void PlantLimitWeightKeepsItRareRelativeToWeightOneStats()
+    {
+        var balance = FourRarityBalance(PlantLimitRule(), new StatRule { stat = Stat.MaxHealth, weight = 1, maxStacks = 10 }, new StatRule { stat = Stat.MoveSpeed, weight = 1, maxStacks = 10 });
+        var state = new RunState(); var target = PlayerTarget(); var random = new Random(2024); int plantLimit = 0, health = 0;
+        for (int i = 0; i < 4000; i++)
+        {
+            var stat = OfferSelector.Select(state, new[] { target }, balance, random, 1)[0].Rule.stat;
+            if (stat == Stat.PlantLimit) plantLimit++; else if (stat == Stat.MaxHealth) health++;
+        }
+        // Expected share 0.15 / 2.15 = 7.0% against 46.5% for a weight-1 stat.
+        Assert.That(plantLimit, Is.InRange(200, 360));
+        Assert.That(plantLimit * 4, Is.LessThan(health));
+    }
+    [Test] public void QuantityStillBehavesAsBeforeAndIsNotFixedToARarity()
+    {
+        var balance = FourRarityBalance(new StatRule { stat = Stat.Quantity, weight = 1, maxStacks = 3 });
+        var state = new RunState(); var target = Target(); var random = new Random(11); var seen = new HashSet<Rarity>();
+        for (int i = 0; i < 400; i++) seen.Add(OfferSelector.Select(state, new[] { target }, balance, random, 1)[0].Rarity.rarity);
+        Assert.That(seen.Count, Is.EqualTo(4));
+        Assert.That(state.Apply(new Offer { Target = target, Rule = balance.stats[0], Rarity = balance.rarities[0] }), Is.True);
+        Assert.That(state.Value(target.Id, Stat.Quantity, 1, 0), Is.EqualTo(2));
+        Assert.That(state.Value(target.Id, Stat.PlantLimit, PlantLimitStart, 0), Is.EqualTo(PlantLimitStart));
+    }
 }
