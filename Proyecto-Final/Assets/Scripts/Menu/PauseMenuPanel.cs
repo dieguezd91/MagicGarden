@@ -70,11 +70,13 @@ public class PauseMenuPanel : UIControllerBase
         }
     }
 
-    public void SetSkipButtonActive(bool isActive)
+    // The skip button always stays visible; it is only clickable while a tutorial is running.
+    public void SetSkipButtonInteractable(bool interactable)
     {
         if (_skipTutorialButton != null)
         {
-            _skipTutorialButton.gameObject.SetActive(isActive);
+            _skipTutorialButton.gameObject.SetActive(true);
+            _skipTutorialButton.Interactable = interactable;
         }
     }
 }

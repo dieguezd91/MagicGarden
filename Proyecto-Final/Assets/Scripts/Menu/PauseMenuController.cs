@@ -204,14 +204,7 @@ public class PauseMenuController : UIControllerBase
     {
         if (_pauseMenuPanel != null)
         {
-            if (TutorialManager.Instance != null)
-            {
-                _pauseMenuPanel.SetSkipButtonActive(TutorialManager.Instance.IsTutorialActive());
-            }
-            else
-            {
-                _pauseMenuPanel.SetSkipButtonActive(false);
-            }
+            _pauseMenuPanel.SetSkipButtonInteractable(TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialActive());
 
             _pauseMenuPanel.Show();
         }
