@@ -12,4 +12,7 @@ public class TutorialSequence : ScriptableObject
 
     [Tooltip("Use each step's allowNightTransition instead of the altar's legacy numeric step threshold.")]
     public bool useExplicitNightPermission;
+
+    [Tooltip("Only while this tutorial is active, the player can do just the actions unlocked by the current step and every earlier step. Pause and skip stay available.")]
+    public bool lockActionsUntilTaught;
 }

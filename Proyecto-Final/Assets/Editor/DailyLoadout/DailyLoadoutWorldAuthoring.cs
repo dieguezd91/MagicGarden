@@ -124,8 +124,11 @@ public static class DailyLoadoutWorldAuthoring
         TutorialObjectiveType next, string previousText, string nextText)
     {
         var step = AssetDatabase.LoadAssetAtPath<TutorialStep>(path);
-        if ((step.objectiveType != previous && step.objectiveType != next) ||
-            (step.instructionText != previousText && step.instructionText != nextText))
+        // An already migrated step keeps the objective; its copy belongs to the tutorial authors
+        // (the redesigned tutorial rewrote it), so only a step still on the previous objective must carry known text.
+        bool migrated = step.objectiveType == next;
+        if ((step.objectiveType != previous && !migrated) ||
+            (!migrated && step.instructionText != previousText && step.instructionText != nextText))
             throw new InvalidOperationException("Custom tutorial objective/text found; review before migration: " + path);
     }
 
@@ -145,6 +148,8 @@ public static class DailyLoadoutWorldAuthoring
         var step = AssetDatabase.LoadAssetAtPath<TutorialStep>(path);
         if (step.objectiveType != previous && step.objectiveType != next)
             throw new InvalidOperationException("Unexpected objective; refusing to overwrite custom tutorial wiring: " + path);
+        // Already migrated: never overwrite the copy the tutorial authors wrote after the migration.
+        if (step.objectiveType == next) return;
         step.objectiveType = next; step.instructionText = text;
         EditorUtility.SetDirty(step); AssetDatabase.SaveAssetIfDirty(step);
     }

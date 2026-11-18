@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: Dig
   stepOrder: 3
-  instructionText: '<b>FOREST:</b> Select the shovel on your ability bar. Aim at nearby clear garden ground and <sprite name="MouseClick"> to dig one planting space. You can cycle abilities with <sprite name="QKey"> / <sprite name="EKey"> or the <sprite name="ScrollMouse">.'
+  instructionText: '<b>FOREST:</b> Switch tools with <sprite name="QKey"> / <sprite name="EKey"> or the <sprite name="ScrollMouse">. Select the shovel, then <sprite name="MouseClick"> clear ground nearby to dig a planting space.'
   stepImage: {fileID: -1576750221, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   objectiveType: 2
   requiredCount: 1
   isGatedStep: 0
   waitDuration: 3
+  unlockedActions: 136

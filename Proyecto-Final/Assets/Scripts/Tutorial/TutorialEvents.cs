@@ -30,6 +30,7 @@ public static class TutorialEvents
     public static event Action OnSeedTooltipDisplayed;
     public static event Action OnTeleportCasted;
     public static event Action OnAbilityChanged;
+    public static event Action OnPlantRemoved;
 
     public static event Action OnDailyLoadoutOpened;
     public static event Action OnDailyLoadoutProximity;
@@ -63,6 +64,7 @@ public static class TutorialEvents
     public static void InvokeRitualAltarProximity() => OnRitualAltarProximity?.Invoke();
     public static void InvokeTeleportCasted() => OnTeleportCasted?.Invoke();
     public static void InvokeAbilityChanged() => OnAbilityChanged?.Invoke();
+    public static void InvokePlantRemoved() => OnPlantRemoved?.Invoke();
     public static void InvokeSeedTooltipDisplayed() => OnSeedTooltipDisplayed?.Invoke();
 
     public static void InvokeFirstPlantReadyToHarvest()

@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: EnterHouse
   stepOrder: 8
-  instructionText: '<b>FOREST:</b> First, enter the house inside the ancestral tree. Walk through its doorway to prepare your daily loadout.'
+  instructionText: '<b>FOREST:</b> Enter the house in the ancestral tree through its doorway.'
   objectiveType: 6
   requiredCount: 1
   isGatedStep: 0
   waitDuration: 1
+  unlockedActions: 2

@@ -211,6 +211,7 @@ public class PlayerAbilitySystem : MonoBehaviour
     private void HandleCycleInput(int direction)
     {
         if (!IsAbilityGameState()) return;
+        if (!TutorialManager.Allows(TutorialAction.CycleTool)) return;
         if ((pauseController != null && pauseController.IsPaused)) return;
 
         CycleAbility(direction);
@@ -236,6 +237,9 @@ public class PlayerAbilitySystem : MonoBehaviour
 
         var flow = GameFlowController.Instance;
         if (flow == null) return false;
+        // Day positions select plants (slots 1-3), night positions select spells (slots 4-6).
+        var selectionAction = flow.CurrentPhase == GamePhase.Night ? TutorialAction.CastSpell : TutorialAction.SelectSeed;
+        if (!TutorialManager.Allows(selectionAction)) return false;
         var selection = new EquipmentGameplaySelection(Loadout, seedInventory, SpellInventory.Instance);
         bool selected = selection.TrySelectPosition(position);
         if (selected)
@@ -258,6 +262,7 @@ public class PlayerAbilitySystem : MonoBehaviour
     {
         if (isDigging || isHarvesting) return;
         if (!IsAbilityGameState()) return;
+        if (!TutorialManager.Allows(TutorialAction.CycleTool)) return;
         if (Time.unscaledTime < nextScrollCycleTime) return;
         nextScrollCycleTime = Time.unscaledTime + ScrollCycleInterval;
 
@@ -320,6 +325,7 @@ public class PlayerAbilitySystem : MonoBehaviour
 
     private void HandlePlanting()
     {
+        if (!TutorialManager.Allows(TutorialAction.Plant)) return;
         if (!isPlayingInteractionAnimation)
         {
             var selectedSlot = seedInventory != null ? seedInventory.GetSelectedPlantSlot() : null;
@@ -492,6 +498,7 @@ public class PlayerAbilitySystem : MonoBehaviour
 
     private void HandleHarvesting()
     {
+        if (!TutorialManager.Allows(TutorialAction.Harvest)) return;
         Vector3 mouseWorld = GetMouseWorldPosition();
 
         HarvestablePlant harvestable =
@@ -530,6 +537,7 @@ public class PlayerAbilitySystem : MonoBehaviour
 
     private void HandleRemoving()
     {
+        if (!TutorialManager.Allows(TutorialAction.RemovePlant)) return;
         if (!isPlayingInteractionAnimation)
         {
             Vector3 mouseWorld = GetMouseWorldPosition();
@@ -574,6 +582,7 @@ public class PlayerAbilitySystem : MonoBehaviour
         TilePlantingSystem.Instance.UnregisterPlantAt(cellPos);
         Destroy(plant.gameObject);
         warningBubble?.ShowMessage("Plant removed.");
+        TutorialEvents.InvokePlantRemoved();
 
         yield return new WaitForSeconds(interactionAnimationDuration * 0.6f);
 
@@ -584,6 +593,7 @@ public class PlayerAbilitySystem : MonoBehaviour
     public void StartHarvesting(HarvestablePlant plant)
     {
         if (UpgradeRuntime.GameplayBlocked) return;
+        if (!TutorialManager.Allows(TutorialAction.Harvest)) return;
         if (currentAbility != PlayerAbility.Harvesting ||
             plant == null ||
             !plant.IsReadyToHarvest() ||
@@ -688,6 +698,7 @@ public class PlayerAbilitySystem : MonoBehaviour
     public bool TryDig(Vector2 position)
     {
         if (UpgradeRuntime.GameplayBlocked) return false;
+        if (!TutorialManager.Allows(TutorialAction.Dig)) return false;
         if (currentAbility != PlayerAbility.Digging || isDigging)
             return false;
 

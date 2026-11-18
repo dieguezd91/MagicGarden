@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: DefensivePlant
   stepOrder: 4
-  instructionText: '<b>FOREST:</b> Select any filled plant slot from your confirmed loadout with 1-3. With seed stock available, aim at the dug space and <sprite name="MouseClick"> to plant once. Your chosen plant is enough; no second type is required.'
-  stepImage: {fileID: 0}
+  instructionText: '<b>FOREST:</b> Select a filled plant slot with 1-3, then <sprite name="MouseClick"> the dug soil to plant it. Plants need days to grow.'
+  stepImage: {fileID: -596440827, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   objectiveType: 3
   requiredCount: 1
   isGatedStep: 0
   waitDuration: 2
+  unlockedActions: 272

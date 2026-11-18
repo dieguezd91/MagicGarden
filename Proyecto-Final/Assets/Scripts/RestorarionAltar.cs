@@ -29,6 +29,7 @@ public class RestorationAltar : MonoBehaviour, IInteractionLifecycle
     public bool CanInteract()
     {
         var ui = UIManager.Instance;
+        if (!TutorialManager.Allows(TutorialAction.OpenDailyLoadout)) return false;
         return isActiveAndEnabled && activePresenter == null && Time.timeScale > 0f &&
             GameFlowController.Instance != null && GameFlowController.Instance.CurrentPhase == GamePhase.Day &&
             !UpgradeRuntime.GameplayBlocked && ui != null && ui.DailyLoadout != null &&

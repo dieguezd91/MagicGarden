@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfcb4ccc532b709488bc7e73f2917f2c, type: 3}
+  m_Name: TeleportAndInventory
+  m_EditorClassIdentifier: 
+  stepID: TeleportAndInventory
+  stepOrder: 6
+  instructionText: '<b>FOREST:</b> Teleport with <sprite name="SpaceKey">. Then open your inventory with <sprite name="TABKey"> or <sprite name="IKey">.'
+  stepImage: {fileID: 0}
+  objectiveType: 25
+  requiredCount: 1
+  isGatedStep: 0
+  allowNightTransition: 0
+  waitDuration: 3
+  unlockedActions: 1536
+  useConfiguredCompletion: 1
+  conditionCombination: 0
+  conditions:
+  - objective: 25
+    requiredCount: 1
+  - objective: 11
+    requiredCount: 1
+  waitMode: 0
+  hint: {fileID: 0}
+  enterActions: []

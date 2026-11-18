@@ -71,6 +71,25 @@ public sealed class DailyLoadoutWorldAuthoringTests
         }
     }
 
+    // The redesigned tutorial rewrote the open step's copy after the Stage 4C migration. Re-running the wiring
+    // must neither reject it as custom text nor overwrite it with the old migration text.
+    [Test]
+    public void WiringAcceptsAndPreservesTheRedesignedAlreadyMigratedOpenStep()
+    {
+        string path = (string)Authoring.GetField("OpenStepPath").GetValue(null);
+        var step = AssetDatabase.LoadMainAssetAtPath(path);
+        string before = (string)F.Field(step, "instructionText");
+        Assert.That(before, Is.Not.EqualTo((string)Authoring.GetField("OpenText").GetValue(null)), "The installed copy is the redesigned one.");
+        var objectives = F.Production("TutorialObjectiveType");
+        var validate = Authoring.GetMethod("ValidateTutorialMigration", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+        Assert.DoesNotThrow(() => validate.Invoke(null, new object[] { path, Enum.Parse(objectives, "OpenRestoration"),
+            Enum.Parse(objectives, "OpenDailyLoadout"), "unused previous text", (string)Authoring.GetField("OpenText").GetValue(null) }));
+        var migrate = Authoring.GetMethod("MigrateStep", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+        migrate.Invoke(null, new object[] { path, Enum.Parse(objectives, "OpenRestoration"), Enum.Parse(objectives, "OpenDailyLoadout"),
+            (string)Authoring.GetField("OpenText").GetValue(null) });
+        Assert.That((string)F.Field(AssetDatabase.LoadMainAssetAtPath(path), "instructionText"), Is.EqualTo(before));
+    }
+
     [Test]
     public void ExistingEnumValuesRemainStableAndNewObjectivesAreAppended()
     {
@@ -80,6 +99,8 @@ public sealed class DailyLoadoutWorldAuthoringTests
         Assert.That(Convert.ToInt32(Enum.Parse(objectives, "AbilityChanged")), Is.EqualTo(27));
         Assert.That(Convert.ToInt32(Enum.Parse(objectives, "OpenDailyLoadout")), Is.EqualTo(28));
         Assert.That(Convert.ToInt32(Enum.Parse(objectives, "DailyLoadoutProximity")), Is.EqualTo(29));
+        Assert.That(Convert.ToInt32(Enum.Parse(objectives, "RemovePlant")), Is.EqualTo(32));
+        Assert.That(Convert.ToInt32(Enum.Parse(objectives, "OpenCauldronShop")), Is.EqualTo(33));
     }
 
     [Test]

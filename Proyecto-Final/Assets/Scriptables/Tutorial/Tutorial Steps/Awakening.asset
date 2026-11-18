@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: Welcome
   stepOrder: 0
-  instructionText: '<b>FOREST:</b> Awaken, Summerlimbs. I am the forest. I created you, an ENT, to help defend our home. You do not know this place yet, but this place knows you.'
+  instructionText: '<b>FOREST:</b> Awaken, Summerlimbs. I am the forest, and I made you to defend our home. By day, tend the garden. By night, protect the ancestral tree from infernal creatures. I do not know why they attack it.'
   stepImage: {fileID: 0}
   objectiveType: 15
   requiredCount: 1
   isGatedStep: 0
   waitDuration: 5
+  unlockedActions: 0

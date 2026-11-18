@@ -211,6 +211,9 @@ public class InventoryUIController : UIControllerBase
         if (isOptions)
             return true;
 
+        if (!TutorialManager.Allows(TutorialAction.Inventory))
+            return false;
+
         return state != GamePhase.Night &&
                (pauseController == null || !pauseController.IsPaused);
     }

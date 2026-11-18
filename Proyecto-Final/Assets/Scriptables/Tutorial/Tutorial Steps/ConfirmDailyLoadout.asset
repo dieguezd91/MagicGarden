@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: CastSpell
   stepOrder: 16
-  instructionText: '<b>FOREST:</b> Your daily choices must be confirmed before practice. If you closed without confirming, reopen the loadout, select a plant and a spell, press Confirm, then close it. Empty slots are not filled for you.'
+  instructionText: '<b>FOREST:</b> Confirm a loadout with at least one plant and one spell. If you closed it early, reopen it and press Confirm.'
   stepImage: {fileID: 0}
   objectiveType: 30
   requiredCount: 1
   isGatedStep: 0
   waitDuration: 3
+  unlockedActions: 0

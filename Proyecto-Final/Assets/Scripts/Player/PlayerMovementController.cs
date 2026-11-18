@@ -132,7 +132,7 @@ public class PlayerMovementController : MonoBehaviour
             return;
         }
 
-        if (tutorialBlocksMovement)
+        if (tutorialBlocksMovement || !TutorialManager.Allows(TutorialAction.Move))
         {
             currentVelocity = Vector2.zero;
 

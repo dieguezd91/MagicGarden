@@ -49,6 +49,8 @@ public class AbilityUIManager : MonoBehaviour
 
     private void OnAbilitySlotSelected(PlayerAbility selectedAbility)
     {
+        // HUD clicks switch tools like Q/E/scroll, so they follow the same tutorial lock.
+        if (!TutorialManager.Allows(TutorialAction.CycleTool)) return;
         if (playerAbilitySystem != null)
         {
             playerAbilitySystem.SetAbility(selectedAbility);

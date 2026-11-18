@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: Move
   stepOrder: 1
-  instructionText: '<b>FOREST:</b> Take your first steps, Summerlimbs. Move with <sprite name="WASDKeys"> or <sprite name="ArrowKeys">. This is your home now.'
+  instructionText: '<b>FOREST:</b> Take your first steps. Move with <sprite name="WASDKeys"> or <sprite name="ArrowKeys">.'
   stepImage: {fileID: 0}
   objectiveType: 1
   requiredCount: 1
   isGatedStep: 0
   waitDuration: 3
+  unlockedActions: 1

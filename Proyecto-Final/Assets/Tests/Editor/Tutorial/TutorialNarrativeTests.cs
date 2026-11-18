@@ -13,19 +13,21 @@ public class TutorialNarrativeTests
     const string ManagerPath = "Assets/Prefabs/Managers/TutorialManager.prefab";
     const string SequencePath = "Assets/Scriptables/Tutorial/SummerlimbsTutorial.asset";
 
+    // Active steps of the redesigned 14-step flow. Merged-away steps (ForestMission, PrepareDailyLoadout,
+    // PrepareForNight, ResourcesAndProgression) are no longer played and are not asserted here.
     [TestCase("b5b4175de3cb5684e8d3e96c0cd4112a", "Awakening", "Welcome")]
-    [TestCase("a31fc7518f137254b897040382fa3f24", "ForestMission", "Welcome")]
     [TestCase("d4710db85cc460f4599be7dbc410419f", "Movement", "Move")]
     [TestCase("cb7dacc489cc747499b90491e8aeff6e", "EnterHouse", "EnterHouse")]
-    [TestCase("8e1e6aeb5954a88fda4ebc8c7222e39e", "PrepareDailyLoadout", "PrepareDailyLoadout")]
     [TestCase("70f3c369687ff3c49a0e32972ed1102f", "OpenDailyLoadout", "OpenRestoration")]
     [TestCase("ef553f94880ac5045877bec9009af927", "ConfirmDailyLoadout", "CastSpell")]
     [TestCase("84611ffc204d3e0489d10fbf745a1469", "ExitHouse", "LeaveHouse")]
     [TestCase("16ffda535a901394d8ffed95633194d3", "Dig", "Dig")]
     [TestCase("35354b9ca811854458056aa6d7ad6a5d", "Plant", "DefensivePlant")]
-    [TestCase("32923ab09714fac4797e4fee3fcfd529", "PrepareForNight", "Teleport")]
+    [TestCase("52e591c678d8ee47cb81c34efe5a4bf8", "RemovePlant", "RemovePlant")]
+    [TestCase("15e17bab3d0592116b7b378d7d1f1012", "TeleportAndInventory", "TeleportAndInventory")]
     [TestCase("a546d1b43bc895247b7588f27571b808", "NightDefense", "UseRitualAltar")]
-    [TestCase("2fb5c407efd677244b021bb8ebf88593", "ResourcesAndProgression", "Harvest")]
+    [TestCase("33e916dbb8b77c800d430210455cbbcf", "CauldronUpgradeShop", "OpenCauldronShop")]
+    [TestCase("b30912872ca6572a231053402ad09c06", "HarvestResources", "HarvestResource")]
     [TestCase("d3178642d5f6f524caa68f9a44276f34", "TutorialComplete", "TutorialComplete")]
     public void LessonUsesSemanticNameWithoutChangingStableIdentity(string guid, string name, string legacyId)
     {
@@ -180,8 +182,9 @@ public class TutorialNarrativeTests
             {
                 var rows = Rows(step);
                 bool any = (bool)Field(step, "useConfiguredCompletion") && Field(step, "conditionCombination").ToString() == "Any";
-                // A non-harvestable legal choice cannot emit readiness/harvest. Other lessons remain possible.
-                Func<KeyValuePair<string, int>, bool> possible = r => r.Key != "Harvest" && r.Key != "FirstPlantReady" &&
+                // A non-harvestable legal choice cannot emit plant readiness. Harvest is not plant-dependent: it gathers the
+                // scene's bush/rock/tree nodes (HarvestablePlant), so every legal plant choice can still complete it.
+                Func<KeyValuePair<string, int>, bool> possible = r => r.Key != "FirstPlantReady" &&
                     (!(r.Key == "PlantProduction" || r.Key == "PlantDefensive") || r.Key == choice);
                 Assert.That(rows.Length == 0 || (any ? rows.Any(possible) : rows.All(possible)), Is.True,
                     step.name + ": mandatory completion excludes a single non-harvestable " + choice + " choice.");
@@ -240,7 +243,7 @@ public class TutorialNarrativeTests
         // reconciles actual PlantManager availability locally on the initialized step.
         var supported = new[] { "Move", "Dig", "Plant", "Harvest", "CastSpell", "EnterHouse",
             "UseRitualAltar", "StartNight", "DefeatEnemy", "SurviveNight", "OpenInventory",
-            "OpenCrafting", "OpenRestoration", "PlantProduction", "PlantDefensive",
+            "OpenCrafting", "OpenRestoration", "PlantProduction", "PlantDefensive", "RemovePlant", "OpenCauldronShop",
             "CraftingProximity", "RestorationProximity", "RitualAltarProximity",
             "SeedTooltipDisplayed", "TeleportSpell", "AbilityChanged", "OpenDailyLoadout", "DailyLoadoutProximity",
             "FirstPlantReady", "ConfirmDailyLoadout", "ExitHouse" };

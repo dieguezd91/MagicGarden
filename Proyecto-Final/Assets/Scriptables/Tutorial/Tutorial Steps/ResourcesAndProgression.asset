@@ -21,3 +21,4 @@ MonoBehaviour:
   isGatedStep: 1
   allowNightTransition: 1
   waitDuration: 3
+  unlockedActions: 0

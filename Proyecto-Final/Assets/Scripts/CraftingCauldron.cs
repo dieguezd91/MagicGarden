@@ -21,7 +21,8 @@ public class CraftingCauldron : MonoBehaviour, IInteractable
 
     public bool CanInteract()
     {
-        return !UpgradeRuntime.GameplayBlocked && GameFlowController.Instance.CurrentPhase == GamePhase.Day &&
+        return TutorialManager.Allows(TutorialAction.CauldronShop) &&
+               !UpgradeRuntime.GameplayBlocked && GameFlowController.Instance.CurrentPhase == GamePhase.Day &&
                !(UIManager.Instance?.Flow != null && UIManager.Instance.Flow.IsOpen(UIModal.Crafting));
     }
 

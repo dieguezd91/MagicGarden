@@ -21,6 +21,9 @@ public class TutorialManager : MonoBehaviour
     private bool configuredWaitFinished;
     private float configuredElapsed;
     private bool configuredClockStarted;
+    // Objectives observed during the current step and whether its hideDialogueAfter rule already hid the panel.
+    private readonly HashSet<TutorialObjectiveType> observedObjectives = new HashSet<TutorialObjectiveType>();
+    private bool dialogueHiddenByRule;
     private bool firstPlantReadyObserved;
     private bool loadoutConfirmedObserved;
     private bool houseExitObserved;
@@ -46,6 +49,8 @@ public class TutorialManager : MonoBehaviour
     private PlayerMovementController playerMovementController;
 
     public bool IsTutorialActive() => tutorialActive;
+    /// <summary>True while the current step's hideDialogueAfter rule keeps the dialogue panel hidden.</summary>
+    public bool IsDialogueHiddenByRule => dialogueHiddenByRule;
     public bool RequiresUsableLoadout => tutorialActive && sequence != null && sequence.requireUsableLoadout;
 
     public bool CanStartTutorialNight(int legacyMinimumStepOrder)
@@ -55,6 +60,31 @@ public class TutorialManager : MonoBehaviour
             return currentStep != null && currentStep.allowNightTransition;
         return GetCurrentStepOrder() >= legacyMinimumStepOrder;
     }
+
+    /// <summary>
+    /// The single action-lock query. True when no tutorial lock applies (completed, skipped, disabled,
+    /// or a sequence without the lock); otherwise the action must be unlocked by the current step
+    /// or an earlier one.
+    /// </summary>
+    public bool IsActionAllowed(TutorialAction action)
+    {
+        if (!UsesActionLock) return true;
+        return TutorialActionLock.IsAllowed(tutorialSteps, currentStepIndex, action);
+    }
+
+    /// <summary>
+    /// True while an active tutorial runs a sequence that opted into the progressive lock. Without it
+    /// (legacy lists, unlocked sequences) the previous per-step freeze on gated steps still applies.
+    /// </summary>
+    public bool UsesActionLock => tutorialActive && sequence != null && sequence.lockActionsUntilTaught;
+
+    /// <summary>Null-safe form of <see cref="IsActionAllowed"/> for gameplay scripts: true without a manager.</summary>
+    public static bool Allows(TutorialAction action)
+    {
+        var manager = Instance;
+        return manager == null || manager.IsActionAllowed(action);
+    }
+
     public bool CanAcceptPlayerInput()
     {
         if (!tutorialActive) return true;
@@ -70,6 +100,16 @@ public class TutorialManager : MonoBehaviour
     private void ApplyInputGatingForStep(TutorialStep step)
     {
         if (step == null) return;
+
+        if (UsesActionLock)
+        {
+            // No per-step freeze: what a step allows comes from the cumulative action lock
+            // (IsActionAllowed), so text-only steps keep every earlier lesson enabled.
+            // Only clear blocks left by the ritual typing gate.
+            if (playerMovementController != null) playerMovementController.SetTutorialMovementBlocked(false);
+            if (playerController != null) playerController.SetTutorialActionBlocked(false);
+            return;
+        }
 
         if (step.objectiveType == TutorialObjectiveType.Move)
         {
@@ -105,6 +145,8 @@ public class TutorialManager : MonoBehaviour
     
     private void PreApplyGatingForUpcomingStep()
     {
+        if (UsesActionLock) return;
+
         int nextIndex = currentStepIndex + 1;
         if (tutorialSteps == null || nextIndex >= tutorialSteps.Count) return;
 
@@ -131,8 +173,9 @@ public class TutorialManager : MonoBehaviour
         ApplyInputGatingForStep(step);
         ArmMoveTriggerIfNeeded(step);
 
-        bool hide = step.enterActions != null && step.enterActions.Count > 0 &&
-            step.enterActions[step.enterActions.Count - 1] == TutorialStepAction.HidePanel;
+        bool hide = (step.enterActions != null && step.enterActions.Count > 0 &&
+            step.enterActions[step.enterActions.Count - 1] == TutorialStepAction.HidePanel) ||
+            (dialogueHiddenByRule && step == currentStep);
         if (tutorialUI != null)
         {
             if (hide) tutorialUI.HideStepImmediate();
@@ -263,6 +306,8 @@ public class TutorialManager : MonoBehaviour
         TutorialEvents.OnFirstPlantReadyToHarvest += CheckObjective_FirstPlantReady;
         TutorialEvents.OnAbilityChanged += CheckObjective_AbilityChanged;
         TutorialEvents.OnTeleportCasted += CheckObjective_TeleportCasted;
+        TutorialEvents.OnPlantRemoved += CheckObjective_PlantRemoved;
+        TutorialEvents.OnCraftingOpened += CheckObjective_CauldronShopOpened;
     }
 
     private void RefreshModalSubscription()
@@ -327,6 +372,8 @@ public class TutorialManager : MonoBehaviour
         TutorialEvents.OnFirstPlantReadyToHarvest -= CheckObjective_FirstPlantReady;
         TutorialEvents.OnAbilityChanged -= CheckObjective_AbilityChanged;
         TutorialEvents.OnTeleportCasted -= CheckObjective_TeleportCasted;
+        TutorialEvents.OnPlantRemoved -= CheckObjective_PlantRemoved;
+        TutorialEvents.OnCraftingOpened -= CheckObjective_CauldronShopOpened;
 
         // Clean up any dynamic subscription we may have added for waiting on house exit
         if (_houseExitReleaseSubscribed)
@@ -489,6 +536,8 @@ public class TutorialManager : MonoBehaviour
         currentStepIndex = index;
         currentStep = tutorialSteps[index];
         currentProgress = 0;
+        observedObjectives.Clear();
+        dialogueHiddenByRule = false;
         firstPlantReadyObserved = false;
         loadoutConfirmedObserved = houseExitObserved = false;
         conditionProgress = new int[currentStep.conditions == null ? 0 : currentStep.conditions.Count];
@@ -653,9 +702,9 @@ public class TutorialManager : MonoBehaviour
             if (isTransitioning) return;
             if (isPausedByMenu)
             {
-                // The station emits its opening objective after acquiring the modal.
+                // Stations and panels emit their opening objective after acquiring the modal.
                 // Keep that observation without advancing configured lessons behind it.
-                if (type == TutorialObjectiveType.OpenDailyLoadout) eventBuffer.Enqueue(type);
+                if (IsModalOpeningObjective(type)) eventBuffer.Enqueue(type);
                 return;
             }
             if (!canAcceptInput) eventBuffer.Enqueue(type);
@@ -687,8 +736,19 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    /// <summary>Objectives whose event is raised right after a modal opened (and so paused the tutorial).</summary>
+    private static bool IsModalOpeningObjective(TutorialObjectiveType type)
+    {
+        return type == TutorialObjectiveType.OpenDailyLoadout ||
+            type == TutorialObjectiveType.OpenInventory ||
+            type == TutorialObjectiveType.OpenCauldronShop;
+    }
+
     private void RecordConfiguredEvent(TutorialObjectiveType type)
     {
+        observedObjectives.Add(type);
+        if (type == TutorialObjectiveType.PlantProduction || type == TutorialObjectiveType.PlantDefensive)
+            observedObjectives.Add(TutorialObjectiveType.Plant);
         for (int i = 0; i < conditionProgress.Length; i++)
         {
             var condition = currentStep.conditions[i];
@@ -701,6 +761,15 @@ public class TutorialManager : MonoBehaviour
             (currentStep.conditionCombination == TutorialConditionCombination.All
                 ? Enumerable.Range(0, conditionProgress.Length).All(i => conditionProgress[i] >= Mathf.Max(1, currentStep.conditions[i].requiredCount))
                 : Enumerable.Range(0, conditionProgress.Length).Any(i => conditionProgress[i] >= Mathf.Max(1, currentStep.conditions[i].requiredCount)));
+        ApplyDialogueHideRule();
+    }
+
+    // Data-driven (TutorialStep.hideDialogueAfter): only the panel hides; completion, unlocks and modal handling are untouched.
+    private void ApplyDialogueHideRule()
+    {
+        if (dialogueHiddenByRule || currentStep == null || !currentStep.ShouldHideDialogue(observedObjectives)) return;
+        dialogueHiddenByRule = true;
+        if (tutorialUI != null) tutorialUI.HideStep();
     }
 
     private void TryCompleteConfiguredStep()
@@ -791,6 +860,8 @@ public class TutorialManager : MonoBehaviour
     private void CheckObjective_FirstPlantReady() => CheckObjective(TutorialObjectiveType.FirstPlantReady);
     private void CheckObjective_TeleportCasted() => CheckObjective(TutorialObjectiveType.TeleportSpell);
     private void CheckObjective_InventoryOpened() => CheckObjective(TutorialObjectiveType.OpenInventory);
+    private void CheckObjective_PlantRemoved() => CheckObjective(TutorialObjectiveType.RemovePlant);
+    private void CheckObjective_CauldronShopOpened() => CheckObjective(TutorialObjectiveType.OpenCauldronShop);
     private void CheckObjective_AbilityChanged() => CheckObjective(TutorialObjectiveType.AbilityChanged);
     private void CheckObjective_SeedTooltipDisplayed() => CheckObjective(TutorialObjectiveType.SeedTooltipDisplayed);
 

@@ -102,6 +102,7 @@ public class PlayerSpellController : MonoBehaviour
     private void HandleAttack()
     {
         if (GameFlowController.Instance.CurrentPhase != GamePhase.Night) return;
+        if (!TutorialManager.Allows(TutorialAction.CastSpell)) return;
         if (playerController != null && !playerController.CanAct()) return;
         if (playerAbilitySystem != null && playerAbilitySystem.IsBusy()) return;
 
@@ -185,6 +186,7 @@ public class PlayerSpellController : MonoBehaviour
     private bool CanCastSpell()
     {
         if (UpgradeRuntime.GameplayBlocked) return false;
+        if (!TutorialManager.Allows(TutorialAction.CastSpell)) return false;
         var session = GetComponent<PlayerContentUnlockSystem>()?.Loadout;
         if (SpellInventory.Instance == null || session == null ||
             session.Admission.CheckSpellInventoryIndex(SpellInventory.Instance.GetSelectedSlotIndex(), out _) != EquipmentAdmissionResult.Allowed)
@@ -275,6 +277,7 @@ public class PlayerSpellController : MonoBehaviour
     {
         if (SpellInventory.Instance == null) return;
         if (GameFlowController.Instance.CurrentPhase != GamePhase.Night) return;
+        if (!TutorialManager.Allows(TutorialAction.CastSpell)) return;
         if (playerController != null && !playerController.CanAct()) return;
 
         var session = GetComponent<PlayerContentUnlockSystem>()?.Loadout;

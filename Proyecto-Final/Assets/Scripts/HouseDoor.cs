@@ -163,12 +163,26 @@ public class HouseDoor : MonoBehaviour
         if (worldTransition == null || worldTransition.IsTransitioning) return;
         if (Time.time - lastUseTime < cooldown) return;
 
+        // Progressive tutorial lock: the door works in both directions once the tutorial taught it.
+        if (!TutorialManager.Allows(TutorialAction.HouseDoor))
+        {
+            if (tutorialGatedFeedback != null)
+            {
+                if (feedbackCoroutine != null) StopCoroutine(feedbackCoroutine);
+                feedbackCoroutine = StartCoroutine(ShowGatedFeedback());
+            }
+
+            return;
+        }
+
         player = other.transform;
         bool goingInside = !worldTransition.IsInInterior;
 
         if (!goingInside)
         {
-            if (TutorialManager.Instance != null && TutorialManager.Instance.IsPlayerGated())
+            // Without the progressive lock (legacy lists, unlocked sequences) gated steps still block leaving.
+            var tutorial = TutorialManager.Instance;
+            if (tutorial != null && !tutorial.UsesActionLock && tutorial.IsPlayerGated())
             {
                 if (tutorialGatedFeedback != null)
                 {

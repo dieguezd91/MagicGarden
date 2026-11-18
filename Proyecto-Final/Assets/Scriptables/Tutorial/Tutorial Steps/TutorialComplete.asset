@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: TutorialComplete
   stepOrder: 22
-  instructionText: '<b>FOREST:</b> Summerlimbs, this place is your home. Each day, prepare your garden and confirm your daily choices inside the house. Each night, defend the ancestral tree. Keep learning; I will be here with you.'
+  instructionText: '<b>FOREST:</b> Well done, Summerlimbs. By day, prepare the garden and confirm your loadout. By night, defend the ancestral tree. Everything is unlocked now. I will be with you.'
   objectiveType: 15
   requiredCount: 1
   isGatedStep: 1
   allowNightTransition: 1
   waitDuration: 3
+  unlockedActions: 0

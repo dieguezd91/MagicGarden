@@ -21,6 +21,20 @@ public class TutorialSequenceEditor : Editor
             if (!orders.Add(step.stepOrder)) EditorGUILayout.HelpBox("Duplicate stepOrder: external gameplay queries may depend on this number.", MessageType.Warning);
             TutorialStepEditor.Validate(step);
         }
+        foreach (var problem in SoftLockProblems(sequence))
+            EditorGUILayout.HelpBox(problem, MessageType.Error);
+    }
+
+    /// <summary>
+    /// One message per step that could not be finished with the actions unlocked so far.
+    /// Empty when the sequence does not use the progressive action lock.
+    /// </summary>
+    public static List<string> SoftLockProblems(TutorialSequence sequence)
+    {
+        if (sequence == null || !sequence.lockActionsUntilTaught) return new List<string>();
+        var problems = TutorialActionLock.FindSoftLocks(sequence.steps);
+        for (int i = 0; i < problems.Count; i++) problems[i] = "Soft-lock: " + problems[i];
+        return problems;
     }
 }
 
@@ -72,7 +86,7 @@ public class TutorialStepEditor : Editor
                     break;
                 case TutorialObjectiveType.OpenCrafting:
                 case TutorialObjectiveType.OpenRestoration:
-                    EditorGUILayout.HelpBox(step.name + ": legacy OpenCrafting/OpenRestoration complete on CLOSE events, not opening.", MessageType.Info);
+                    EditorGUILayout.HelpBox(step.name + ": legacy OpenCrafting/OpenRestoration complete on CLOSE events, not opening. Use OpenCauldronShop to complete when the cauldron's upgrade shop opens.", MessageType.Info);
                     break;
             }
         }

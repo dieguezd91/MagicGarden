@@ -8,7 +8,7 @@ Stage 4C routes the **existing** `RestorationAltar` and F trigger to the Stage 4
 2. Run **Tools → Magic Garden → Daily Loadout → Wire Sacred Tree (Stage 4C)**. This explicit, idempotent command:
    - Adds one **nested instance** of the existing `DailyLoadoutPanel.prefab` under `Canvas Game UI.prefab`, initially inactive; binds `UIManager.dailyLoadout`, presenter view and the shared serialized UI flow. It refuses duplicate/unrecognized presenters rather than deleting user work.
    - Changes only the existing tree tutorial proximity route in `Restoration Altar.prefab`. Collider, F key, range, prompt, audio, restoration component and options stay intact.
-   - Migrates the **existing** two tutorial step assets and hint title using native asset APIs. Names, GUIDs, step IDs, ordering, counts and gating remain stable.
+   - Migrates the **existing** two tutorial step assets and hint title using native asset APIs. Names, GUIDs, step IDs, ordering, counts and gating remain stable. A step that already carries the migrated objective keeps its current copy: the redesigned tutorial merged the loadout rules into `OpenDailyLoadout.asset`, and re-running the menu neither rejects nor overwrites that text.
    - Validates the saved prefab references and the actual `Game` scene. If Game is not already loaded, it opens it additively, closes only that temporary scene and restores the active scene. It does not save or replace your open scene or hand-edit YAML.
 3. Review the generated asset diff. Run **Validate Sacred Tree (Stage 4C)** independently afterward. Rerunning Wire does not add another panel, presenter or handler.
 

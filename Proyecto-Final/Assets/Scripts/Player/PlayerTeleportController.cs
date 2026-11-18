@@ -100,6 +100,7 @@ public class PlayerTeleportController : MonoBehaviour
     private bool CanUseTeleport()
     {
         if (UpgradeRuntime.GameplayBlocked) return false;
+        if (!TutorialManager.Allows(TutorialAction.Teleport)) return false;
         if (currentTeleportCooldown > 0f) return false;
         if (IsInsideHouseLayer()) return false;
         if (!IsDaytime() && manaSystem != null && manaSystem.GetCurrentMana() < teleportManaCost) return false;

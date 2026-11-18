@@ -20,3 +20,4 @@ MonoBehaviour:
   requiredCount: 1
   isGatedStep: 1
   waitDuration: 1
+  unlockedActions: 0

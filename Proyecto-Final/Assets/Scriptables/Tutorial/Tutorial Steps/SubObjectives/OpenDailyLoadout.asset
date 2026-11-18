@@ -14,16 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: OpenRestoration
   stepOrder: 12
-  instructionText: <b>FOREST:</b> Approach the Sacred Tree loadout station and press
-    <sprite name="FKey"> . Select at least one plant and one spell, then press Confirm
-    when satisfied. Confirmation spends no stock and grants no seeds. Close the panel
-    when done; closing alone does not confirm.
-  stepImage: {fileID: 0}
+  instructionText: '<b>FOREST:</b> Each day you choose a loadout once: plants for slots 1-3 and spells for slots 4-6. Pick at least one of each and press Confirm. Choices lock until tomorrow. Open it at the Sacred Tree with <sprite name="FKey">.'
+  stepImage: {fileID: 1439159968, guid: d5879276d50f47440a06b03dcf0a46db, type: 3}
   objectiveType: 28
   requiredCount: 1
   isGatedStep: 0
   allowNightTransition: 0
   waitDuration: 1
+  unlockedActions: 4
   useConfiguredCompletion: 0
   conditionCombination: 0
   conditions: []

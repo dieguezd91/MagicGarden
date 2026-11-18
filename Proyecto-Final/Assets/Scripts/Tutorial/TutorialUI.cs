@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -33,6 +34,14 @@ public class TutorialUI : MonoBehaviour
     [Header("LAYOUT SETTINGS - WITH IMAGE (Reduced)")]
     [SerializeField] private float sizeDeltaX_WithImage = -230f;
     [SerializeField] private float anchoredPosX_WithImage = -80f;
+
+    [Header("MULTIPLE IMAGES (step.stepImages, two or more)")]
+    [SerializeField] private float multiImageSize = 90f;
+    [SerializeField] private float multiImageSpacing = 8f;
+    // Created on demand as clones of stepImageDisplay, laid out to its left.
+    private readonly List<Image> extraImageDisplays = new List<Image>();
+    private Vector2 singleImageSize;
+    private Vector2 singleImagePosition;
 
     [Header("ADAPTIVE DIALOGUE")]
     [SerializeField, Range(0.25f, 1f)] private float maximumViewportHeight = 0.75f;
@@ -83,7 +92,12 @@ public class TutorialUI : MonoBehaviour
         if (pauseController == null) pauseController = FindObjectOfType<PauseController>();
         if (canvasGroup != null) canvasGroup.alpha = 0f;
         if (panelTransform != null) panelTransform.localScale = Vector3.zero;
-        if (stepImageDisplay != null) stepImageDisplay.gameObject.SetActive(false);
+        if (stepImageDisplay != null)
+        {
+            singleImageSize = stepImageDisplay.rectTransform.sizeDelta;
+            singleImagePosition = stepImageDisplay.rectTransform.anchoredPosition;
+            stepImageDisplay.gameObject.SetActive(false);
+        }
 
         if (continueButton != null)
         {
@@ -170,22 +184,16 @@ public class TutorialUI : MonoBehaviour
         // Ensure the panel is visible immediately (avoid stuck scale = 0). Keep scale at 1 so fade still shows.
         if (panelTransform != null) panelTransform.localScale = Vector3.one;
 
-        bool hasImage = step.stepImage != null && stepImageDisplay != null;
-
-        if (stepImageDisplay != null)
-        {
-            stepImageDisplay.gameObject.SetActive(hasImage);
-            if (hasImage)
-            {
-                stepImageDisplay.sprite = step.stepImage;
-                stepImageDisplay.preserveAspect = true;
-            }
-        }
+        var images = step.GetDisplayImages();
+        bool hasImage = images.Count > 0 && stepImageDisplay != null;
+        float imageStripExtra = hasImage && images.Count > 1 ? ImageStripWidth(images.Count) - singleImageSize.x : 0f;
+        ShowStepImages(images);
 
         if (textScrollViewport != null)
         {
-            float targetSizeDeltaX = hasImage ? sizeDeltaX_WithImage : sizeDeltaX_NoImage;
-            float targetPosX = hasImage ? anchoredPosX_WithImage : anchoredPosX_NoImage;
+            // A wider image strip moves the viewport's right edge inwards; its left edge stays where the single image layout puts it.
+            float targetSizeDeltaX = hasImage ? sizeDeltaX_WithImage - imageStripExtra : sizeDeltaX_NoImage;
+            float targetPosX = hasImage ? anchoredPosX_WithImage - imageStripExtra * 0.5f : anchoredPosX_NoImage;
 
             Vector2 size = textScrollViewport.sizeDelta;
             size.x = targetSizeDeltaX;
@@ -248,6 +256,54 @@ public class TutorialUI : MonoBehaviour
         {
             if (canvasGroup != null) canvasGroup.alpha = 1f;
         }
+    }
+
+    private float ImageStripWidth(int count)
+    {
+        return count * multiImageSize + (count - 1) * multiImageSpacing;
+    }
+
+    // One image keeps the authored geometry exactly; several are laid side by side, first sprite leftmost,
+    // ending at the authored right edge of stepImageDisplay.
+    private void ShowStepImages(List<Sprite> images)
+    {
+        if (stepImageDisplay == null) return;
+        int count = images.Count;
+        stepImageDisplay.gameObject.SetActive(count > 0);
+        var rect = stepImageDisplay.rectTransform;
+        rect.sizeDelta = singleImageSize;
+        rect.anchoredPosition = singleImagePosition;
+        if (count > 0)
+        {
+            stepImageDisplay.sprite = images[count - 1];
+            stepImageDisplay.preserveAspect = true;
+        }
+        if (count > 1)
+        {
+            rect.sizeDelta = new Vector2(multiImageSize, multiImageSize);
+            for (int slot = 1; slot < count; slot++)
+            {
+                var extra = GetExtraImage(slot - 1);
+                extra.gameObject.SetActive(true);
+                extra.sprite = images[count - 1 - slot];
+                extra.preserveAspect = true;
+                extra.rectTransform.sizeDelta = new Vector2(multiImageSize, multiImageSize);
+                extra.rectTransform.anchoredPosition = singleImagePosition - new Vector2(slot * (multiImageSize + multiImageSpacing), 0f);
+            }
+        }
+        for (int i = Mathf.Max(0, count - 1); i < extraImageDisplays.Count; i++)
+            extraImageDisplays[i].gameObject.SetActive(false);
+    }
+
+    private Image GetExtraImage(int index)
+    {
+        while (extraImageDisplays.Count <= index)
+        {
+            var clone = Instantiate(stepImageDisplay.gameObject, stepImageDisplay.transform.parent, false);
+            clone.name = stepImageDisplay.gameObject.name + " (extra " + (extraImageDisplays.Count + 1) + ")";
+            extraImageDisplays.Add(clone.GetComponent<Image>());
+        }
+        return extraImageDisplays[index];
     }
 
     // Upgrade the existing viewport in place; retain prefab text, button and art references.

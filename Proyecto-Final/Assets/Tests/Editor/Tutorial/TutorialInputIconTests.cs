@@ -14,11 +14,21 @@ public class TutorialInputIconTests
         return property != null ? property.GetValue(value) : value.GetType().GetField(name).GetValue(value);
     }
 
-    [TestCase("32923ab09714fac4797e4fee3fcfd529", "SpaceKey", @"(?i)\bSpace\b")]
-    [TestCase("32923ab09714fac4797e4fee3fcfd529", "TABKey", @"(?i)\bTab\b")]
-    [TestCase("32923ab09714fac4797e4fee3fcfd529", "IKey", @"\bI\b")]
-    [TestCase("32923ab09714fac4797e4fee3fcfd529", "MouseClick", @"(?i)left[- ]click")]
+    // Redesigned steps: teleport + inventory (TeleportAndInventory), Dig (tool cycling), Plant, remove, night, cauldron, harvest.
+    [TestCase("15e17bab3d0592116b7b378d7d1f1012", "SpaceKey", @"(?i)\bSpace\b")]
+    [TestCase("15e17bab3d0592116b7b378d7d1f1012", "TABKey", @"(?i)\bTab\b")]
+    [TestCase("15e17bab3d0592116b7b378d7d1f1012", "IKey", @"\bI\b")]
     [TestCase("16ffda535a901394d8ffed95633194d3", "ScrollMouse", @"(?i)mouse\s+wheel")]
+    [TestCase("16ffda535a901394d8ffed95633194d3", "QKey", @"\bQ\b")]
+    [TestCase("16ffda535a901394d8ffed95633194d3", "EKey", @"\bE\b")]
+    [TestCase("16ffda535a901394d8ffed95633194d3", "MouseClick", @"(?i)left[- ]click")]
+    [TestCase("35354b9ca811854458056aa6d7ad6a5d", "MouseClick", @"(?i)left[- ]click")]
+    [TestCase("52e591c678d8ee47cb81c34efe5a4bf8", "MouseClick", @"(?i)left[- ]click")]
+    [TestCase("a546d1b43bc895247b7588f27571b808", "MouseClick", @"(?i)left[- ]click")]
+    [TestCase("a546d1b43bc895247b7588f27571b808", "FKey", @"\bF\b")]
+    [TestCase("70f3c369687ff3c49a0e32972ed1102f", "FKey", @"\bF\b")]
+    [TestCase("33e916dbb8b77c800d430210455cbbcf", "FKey", @"\bF\b")]
+    [TestCase("b30912872ca6572a231053402ad09c06", "MouseClick", @"(?i)left[- ]click")]
     public void AvailableInputUsesItsIconInsteadOfLiteralBinding(string guid, string icon, string literal)
     {
         var step = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));

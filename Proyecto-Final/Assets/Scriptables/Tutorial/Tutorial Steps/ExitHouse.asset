@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: LeaveHouse
   stepOrder: 15
-  instructionText: '<b>FOREST:</b> Your confirmed loadout is equipped and locked for today. Reopening it only lets you inspect it. Walk out through the doorway to return to the garden.'
+  instructionText: '<b>FOREST:</b> Your loadout is locked for today. Walk out through the doorway to return to the garden.'
   objectiveType: 31
   requiredCount: 1
   isGatedStep: 0
   waitDuration: 3
+  unlockedActions: 0
