@@ -36,10 +36,10 @@
     {"capability":"StormRoseReactiveAura","ratios":[0,1,1,0,0,1,0,0]}
   ],
   "specials": [
-    {"id":"basic-lateral","capability":"BasicRangeSpell","displayName":"Lateral shot","description":"Two lateral projectiles per cast.","maxStacks":1,"prerequisites":[],"costs":[{"material":15,"amount":200}],"effects":[{"kind":0,"value":2}]},
-    {"id":"pierce-extension","capability":"PiercingSpell","displayName":"Persistent pierce","description":"One extra enemy beyond normal travel range; traversed hits gain damage.","maxStacks":1,"prerequisites":[],"costs":[{"material":15,"amount":200}],"effects":[{"kind":1,"value":1},{"kind":2,"value":0.25}]},
-    {"id":"wide-explosion","capability":"BasicAreaSpell","displayName":"Expanded blast","description":"Explosion radius +30%.","maxStacks":2,"prerequisites":[],"costs":[{"material":15,"amount":200}],"effects":[{"kind":3,"value":0.30}]},
-    {"id":"branching-volley","capability":"AttackPlant","displayName":"Branching volley","description":"Attack one additional distinct enemy in range.","maxStacks":2,"prerequisites":[],"costs":[{"material":15,"amount":200}],"effects":[{"kind":4,"value":1}]},
-    {"id":"branching-volley-master","capability":"AttackPlant","displayName":"Master volley","description":"Another distinct enemy; requires Branching volley.","maxStacks":1,"prerequisites":["branching-volley"],"costs":[{"material":15,"amount":200}],"effects":[{"kind":4,"value":1}]}
+    {"id":"basic-lateral","capability":"BasicRangeSpell","displayName":"Lateral shot","description":"Two lateral projectiles per cast.","maxStacks":1,"prerequisites":[],"costs":[{"material":15,"amount":200},{"material":1,"amount":3},{"material":2,"amount":2}],"effects":[{"kind":0,"value":2}]},
+    {"id":"pierce-extension","capability":"PiercingSpell","displayName":"Persistent pierce","description":"One extra enemy beyond normal travel range; traversed hits gain damage.","maxStacks":1,"prerequisites":[],"costs":[{"material":15,"amount":200},{"material":1,"amount":4},{"material":3,"amount":2}],"effects":[{"kind":1,"value":1},{"kind":2,"value":0.25}]},
+    {"id":"wide-explosion","capability":"BasicAreaSpell","displayName":"Expanded blast","description":"Explosion radius +30%.","maxStacks":2,"prerequisites":[],"costs":[{"material":15,"amount":200},{"material":4,"amount":3},{"material":1,"amount":2}],"effects":[{"kind":3,"value":0.30}]},
+    {"id":"branching-volley","capability":"AttackPlant","displayName":"Branching volley","description":"Attack one additional distinct enemy in range.","maxStacks":2,"prerequisites":[],"costs":[{"material":15,"amount":200},{"material":2,"amount":3},{"material":3,"amount":2}],"effects":[{"kind":4,"value":1}]},
+    {"id":"branching-volley-master","capability":"AttackPlant","displayName":"Master volley","description":"Another distinct enemy; requires Branching volley.","maxStacks":1,"prerequisites":["branching-volley"],"costs":[{"material":15,"amount":200},{"material":3,"amount":5}],"effects":[{"kind":4,"value":1}]}
   ]
 }

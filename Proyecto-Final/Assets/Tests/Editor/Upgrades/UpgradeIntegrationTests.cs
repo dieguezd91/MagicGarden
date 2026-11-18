@@ -176,17 +176,68 @@ public class UpgradeIntegrationTests
         Assert.That(found.Count, Is.EqualTo(5));
         Assert.That(balance.stats[(int)Stat.Quantity].weight, Is.LessThan(0.05f));
     }
-    [Test] public void DefaultBalanceSpecialsCostOnlyTwoNormalNightsOfGold()
+    [Test] public void DefaultBalanceSpecialsCostTwoNormalNightsOfGoldPlusTheirMaterials()
     {
-        // A normal night pays at most 30 + 50 + 20 = 100 gold (RewardsSystem defaults).
+        // A normal night pays at most 30 + 50 + 20 = 100 gold (RewardsSystem defaults); materials keep their original amounts.
+        var expected = new Dictionary<string, string>
+        {
+            ["basic-lateral"] = "15x200 1x3 2x2",
+            ["pierce-extension"] = "15x200 1x4 3x2",
+            ["wide-explosion"] = "15x200 4x3 1x2",
+            ["branching-volley"] = "15x200 2x3 3x2",
+            ["branching-volley-master"] = "15x200 3x5",
+        };
         var balance = JsonUtility.FromJson<Balance>(Resources.Load<TextAsset>("MagicGardenBalance").text);
-        Assert.That(balance.specials.Length, Is.EqualTo(5));
+        Assert.That(balance.specials.Length, Is.EqualTo(expected.Count));
         foreach (var special in balance.specials)
         {
-            Assert.That(special.costs.Length, Is.EqualTo(1), special.id);
-            Assert.That(special.costs[0].material, Is.EqualTo(GoldId), special.id);
-            Assert.That(special.costs[0].amount, Is.EqualTo(200), special.id);
+            var costs = new List<string>();
+            foreach (var cost in special.costs) costs.Add(cost.material + "x" + cost.amount);
+            Assert.That(string.Join(" ", costs), Is.EqualTo(expected[special.id]), special.id);
         }
+    }
+    [Test] public void CauldronCostLabelUsesIconsAndKeepsNamesForMaterialsWithoutIcon()
+    {
+        var label = Production("UpgradePanel").GetMethod("CostLabel", BindingFlags.NonPublic | BindingFlags.Static);
+        string Label(int material, string name, int owned, int amount) => (string)label.Invoke(null, new[] { Material(material), name, owned, amount });
+        Assert.That(Label(GoldId, "Gold", 120, 200), Is.EqualTo("<sprite name=\"GoldIcon\"> 120/200"));
+        Assert.That(Label(1, "Spectral Crystal", 2, 3), Is.EqualTo("<sprite name=\"SpectralCrystal\"> 2/3"));
+        Assert.That(Label(2, "Windwalker Essence", 0, 2), Is.EqualTo("<sprite name=\"WindwalkerEssence\"> 0/2"));
+        Assert.That(Label(3, "Voltaic Core", 5, 5), Is.EqualTo("<sprite name=\"VoltaicCore\"> 5/5"));
+        Assert.That(Label(4, "Eternal Ember", 1, 3), Is.EqualTo("<sprite name=\"EternalEmber\"> 1/3"));
+        Assert.That(Label(5, "Stellar Fragment", 1, 2), Is.EqualTo("Stellar Fragment 1/2"), "No icon in UtilitySprites: keep the name");
+        Assert.That(Production("UpgradePanel").GetField("CostSeparator", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null), Is.EqualTo(" + "));
+    }
+    [Test] public void CostIconsAreCenteredOnTheDigitsWithoutHorizontalOffset()
+    {
+        // TMP 3.0 scales a sprite (sprite asset without face info) to the font ascent. Its vertical center must match the
+        // m5x7 digits' center (half the cap line) so it does not look raised; bearingX == 0 keeps it from overlapping the
+        // previous character or leaving a gap after it.
+        var font = UnityEditor.AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Plugins/TextMesh Pro/Fonts/m5x7.asset");
+        var face = font.GetType().GetProperty("faceInfo").GetValue(font);
+        float ascent = (float)face.GetType().GetProperty("ascentLine").GetValue(face);
+        float cap = (float)face.GetType().GetProperty("capLine").GetValue(face);
+        var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Sprites/SpriteSheets/UtilitySprites.asset");
+        Assert.That(asset, Is.Not.Null);
+        var glyphs = new Dictionary<uint, object>();
+        foreach (var glyph in (System.Collections.IEnumerable)asset.GetType().GetProperty("spriteGlyphTable").GetValue(asset))
+            glyphs[(uint)glyph.GetType().GetProperty("index").GetValue(glyph)] = glyph;
+        var names = new HashSet<string> { "GoldIcon", "SpectralCrystal", "WindwalkerEssence", "VoltaicCore", "EternalEmber" };
+        int found = 0;
+        foreach (var character in (System.Collections.IEnumerable)asset.GetType().GetProperty("spriteCharacterTable").GetValue(asset))
+        {
+            string name = (string)character.GetType().GetProperty("name").GetValue(character);
+            if (!names.Contains(name)) continue;
+            var glyph = glyphs[(uint)character.GetType().GetProperty("glyphIndex").GetValue(character)];
+            var metrics = glyph.GetType().GetProperty("metrics").GetValue(glyph);
+            float Metric(string field) => (float)metrics.GetType().GetProperty(field).GetValue(metrics);
+            Assert.That(Metric("horizontalBearingX"), Is.EqualTo(0f), name);
+            float center = (Metric("horizontalBearingY") - Metric("height") / 2f) * ascent / Metric("height");
+            Assert.That(center, Is.EqualTo(cap / 2f).Within(0.1f), name);
+            Assert.That(Metric("horizontalAdvance"), Is.EqualTo(Metric("width")), name);
+            found++;
+        }
+        Assert.That(found, Is.EqualTo(names.Count));
     }
     private static StatRule RuleFor(Balance balance, Stat stat)
     {

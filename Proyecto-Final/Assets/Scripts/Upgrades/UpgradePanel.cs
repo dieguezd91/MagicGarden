@@ -6,6 +6,20 @@ using UnityEngine;
 public sealed class UpgradePanel : MonoBehaviour
 {
     internal const string GoldIconTag = "<sprite name=\"GoldIcon\">";
+    internal const string CostSeparator = " + ";
+
+    // Resources with an icon in the cost label's UtilitySprites TMP sprite asset; the icon replaces the name.
+    internal static string CostLabel(MaterialType type, string name, int owned, int amount)
+    {
+        string icon = type switch
+        {
+            MaterialType.Gold => GoldIconTag,
+            MaterialType.SpectralCrystal or MaterialType.WindwalkerEssence or MaterialType.VoltaicCore or MaterialType.EternalEmber
+                => $"<sprite name=\"{type}\">",
+            _ => null
+        };
+        return $"{icon ?? name} {owned}/{amount}";
+    }
     [SerializeField] private LevelUpPanelView levelUpView;
     [SerializeField] private SpecialUpgradePanelView shopView;
     [Tooltip("Optional: shows the seeds/spells unlocked by the level, alone, before its upgrade choice.")]
@@ -119,16 +133,16 @@ public sealed class UpgradePanel : MonoBehaviour
             foreach (var definition in runtime.Balance.specials)
             {
                 if (definition.capability != target.Capability) continue;
-                string costs = "";
+                var requirements = new List<string>();
                 foreach (var cost in definition.costs)
                 {
                     var inventory = InventoryManager.Instance;
-                    string name = inventory != null ? inventory.GetMaterialName((MaterialType)cost.material) : ((MaterialType)cost.material).ToString();
-                    int owned = inventory != null ? inventory.GetResourceAmount((MaterialType)cost.material) : 0;
-                    // Gold uses the GoldIcon sprite of the label's UtilitySprites TMP sprite asset.
-                    string resource = (MaterialType)cost.material == MaterialType.Gold ? GoldIconTag : name;
-                    costs += $"{resource} {owned}/{cost.amount}  ";
+                    var type = (MaterialType)cost.material;
+                    string name = inventory != null ? inventory.GetMaterialName(type) : type.ToString();
+                    int owned = inventory != null ? inventory.GetResourceAmount(type) : 0;
+                    requirements.Add(CostLabel(type, name, owned, cost.amount));
                 }
+                string costs = string.Join(CostSeparator, requirements);
                 items.Add(new SpecialUpgradeItemData
                 {
                     Icon = runtime.Icon(target.Id), Target = target.Name, Name = definition.displayName, Description = definition.description,

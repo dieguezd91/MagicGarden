@@ -823,7 +823,7 @@ public class UpgradeUIArtPlayModeChecks
         foreach (var cost in costs) Grant(inventory, cost.Key, cost.Value);
         Call(presenter, "ShowShop"); yield return null;
         Assert.That(Property(Field(rows[0], "purchaseButton"), "interactable"), Is.True);
-        Assert.That(((string)Property(Field(rows[0], "costsLabel"), "text")).Trim(), Is.EqualTo("<sprite name=\"GoldIcon\"> 200/200"), "Cauldron upgrades cost only gold, shown with the gold icon");
+        Assert.That(((string)Property(Field(rows[0], "costsLabel"), "text")).Trim(), Does.StartWith("<sprite name=\"GoldIcon\"> 200/200 + <sprite name=\""), "Cauldron upgrades cost gold (shown first, with the gold icon) + materials with their icons");
         foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720), new Vector2Int(1280, 1024) }) yield return Capture(canvas, shop.gameObject, "runtime-shop", size.x, size.y);
         Click((Component)Field(rows[0], "purchaseButton")); yield return null;
         Assert.That(state.SpecialStacks(definition.id, target), Is.EqualTo(stacks + 1));
