@@ -113,32 +113,50 @@ public class PlayerTeleportController : MonoBehaviour
 
     private bool TryUseTeleport(Vector2 direction)
     {
-        if (!CanUseTeleport()) return false;
+        if (!CanUseTeleport())
+            return false;
+
+        if (teleportPrefab == null || playerTransform == null)
+            return false;
+
+        TeleportSpell teleportTemplate =
+            teleportPrefab.GetComponent<TeleportSpell>();
+
+        if (teleportTemplate == null)
+            return false;
+
+        if (!teleportTemplate.CanTeleportTo(direction, playerTransform.position))
+            return false;
+
+        GameObject spellObject = Instantiate(
+            teleportPrefab,
+            playerTransform.position,
+            Quaternion.identity
+        );
+
+        TeleportSpell spellComponent = spellObject.GetComponent<TeleportSpell>();
+
+        if (spellComponent == null)
+        {
+            Destroy(spellObject);
+            return false;
+        }
+
+        spellComponent.SetUpgradeTarget("ability:teleport", "TeleportSpell");
+        spellComponent.Cast(direction, playerTransform.position);
 
         if (manaSystem != null && !IsDaytime())
         {
             manaSystem.UseMana(teleportManaCost);
         }
 
-        if (teleportPrefab != null && playerTransform != null)
-        {
-            GameObject spellObject = Instantiate(teleportPrefab, playerTransform.position, Quaternion.identity);
-            Spell spellComponent = spellObject.GetComponent<Spell>();
-
-            if (spellComponent != null)
-            {
-                spellComponent.SetUpgradeTarget("ability:teleport", "TeleportSpell");
-                spellComponent.Cast(direction, playerTransform.position);
-            }
-            else
-            {
-                Destroy(spellObject);
-            }
-        }
-
         currentTeleportCooldown = TeleportCooldown;
         previousEffectiveCooldown = currentTeleportCooldown;
-        OnTeleportCooldownChanged?.Invoke(currentTeleportCooldown, TeleportCooldown);
+
+        OnTeleportCooldownChanged?.Invoke(
+            currentTeleportCooldown,
+            TeleportCooldown
+        );
 
         TutorialEvents.InvokeTeleportCasted();
 

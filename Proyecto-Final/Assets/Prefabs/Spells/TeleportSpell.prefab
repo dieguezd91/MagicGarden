@@ -9826,10 +9826,29 @@ MonoBehaviour:
   lifeTime: 0
   floatingDamagePrefab: {fileID: 0}
   impactParticlesPrefab: {fileID: 0}
+  castSound:
+    clips: []
+    volume: 1
+    pitch: 1
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  impactSound:
+    clips: []
+    volume: 1
+    pitch: 1
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
   teleportDistance: 5
   collisionMask:
     serializedVersion: 2
     m_Bits: 2064
+  teleportableLayers:
+    serializedVersion: 2
+    m_Bits: 1025
   teleportStartEffectPrefab: {fileID: 4468635833933053790}
   teleportEndEffectPrefab: {fileID: 5451077192953695099}
   effectDuration: 0.5
