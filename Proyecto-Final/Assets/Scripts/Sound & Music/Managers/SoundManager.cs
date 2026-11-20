@@ -304,6 +304,23 @@ public class SoundManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Stops every pooled source holding this clip, including PlayOneShot playback.
+    /// Does not check isPlaying, which is not reliable for one-shots.
+    /// </summary>
+    public void StopClip(AudioClip clip)
+    {
+        if (clip == null) return;
+        foreach (var source in audioSourcePool)
+        {
+            if (source != null && source.clip == clip)
+            {
+                Debug.Log($"[TypeSFX] t={Time.unscaledTime:F3} f={Time.frameCount} StopClip {clip.name} on {source.name} (isPlaying before={source.isPlaying}, time={source.time:F3})");
+                source.Stop();
+            }
+        }
+    }
+
     public void StopAll()
     {
         foreach (var source in audioSourcePool)

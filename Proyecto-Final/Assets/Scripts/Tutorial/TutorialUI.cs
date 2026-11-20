@@ -231,6 +231,7 @@ public class TutorialUI : MonoBehaviour
         instructionText.text = step.DisplayText;
         instructionText.maxVisibleCharacters = 0;
         FitDialogue();
+        Debug.Log($"[TypeSFX] t={Time.unscaledTime:F3} f={Time.frameCount}  Typewriter START ({step.DisplayText?.Length ?? 0} chars)");
         typewriterCoroutine = StartCoroutine(TypewriterEffect(step.DisplayText));
         typingActive = true;
 
@@ -471,9 +472,6 @@ public class TutorialUI : MonoBehaviour
 
     private IEnumerator TypewriterEffect(string text)
     {
-        // make sure no previous keypress sounds linger when the coroutine starts
-        writtingSoundBase?.StopKeypressSounds();
-
         yield return null;
 
         instructionText.text = "";
@@ -486,15 +484,21 @@ public class TutorialUI : MonoBehaviour
             UpdateScrollIndicator();
         }
 
-        int totalCharacters = text.Length;
+        // Count what TMP actually displays. The raw string includes rich-text tags
+        // (<b>, <u>, <sprite name="...">) that never become visible characters, so
+        // looping over text.Length kept "typing" (and playing keypress sounds)
+        // after the last visible letter had already appeared.
+        instructionText.ForceMeshUpdate();
+        var textInfo = instructionText.textInfo;
+        int totalCharacters = textInfo.characterCount;
         keypressCounter = 0;
 
         for (int i = 0; i <= totalCharacters; i++)
         {
             instructionText.maxVisibleCharacters = i;
-            if (i > 0 && i <= text.Length)
+            if (i > 0)
             {
-                char addedChar = text[i - 1];
+                char addedChar = textInfo.characterInfo[i - 1].character;
                 if (!char.IsWhiteSpace(addedChar))
                 {
                     // guard playback in case typing was cancelled/fast-forwarded from another thread
@@ -503,14 +507,16 @@ public class TutorialUI : MonoBehaviour
                     int k = Mathf.Max(1, keypressesPerSound);
                     if (writtingSoundBase != null && ((keypressCounter - 1) % k) == 0)
                     {
+                        Debug.Log($"[TypeSFX] t={Time.unscaledTime:F3} f={Time.frameCount}  char {i}/{totalCharacters} '{addedChar}' -> keypress");
                         writtingSoundBase.PlayKeypressSound();
                     }
                 }
             }
             yield return new WaitForSecondsRealtime(typewriterSpeed);
         }
+        Debug.Log($"[TypeSFX] t={Time.unscaledTime:F3} f={Time.frameCount}  Typewriter loop DONE (last letter shown)");
         // final reveal ensure
-        instructionText.maxVisibleCharacters = totalCharacters;
+        instructionText.maxVisibleCharacters = Mathf.Max(totalCharacters, text.Length);
 
         // Keep the beginning readable after natural typing; wheel/drag can reach the rest.
         if (textScrollRect != null)
@@ -522,9 +528,6 @@ public class TutorialUI : MonoBehaviour
         // typing finished: set the continue button state appropriately
         typingActive = false;
         OnTypingFinished();
-
-        // stop any lingering keypress sounds
-        writtingSoundBase?.StopKeypressSounds();
 
         // clear the typing coroutine reference so IsTyping is false
         typewriterCoroutine = null;
@@ -617,6 +620,7 @@ public class TutorialUI : MonoBehaviour
 
     private void KillAllAnimations()
     {
+        Debug.Log($"[TypeSFX] t={Time.unscaledTime:F3} f={Time.frameCount}  KillAllAnimations");
         if (textScrollRect != null) textScrollRect.StopMovement();
         if (currentSequence != null && currentSequence.IsActive())
         {
@@ -670,16 +674,11 @@ public class TutorialUI : MonoBehaviour
                 OnPauseMenuClosed();
             }
         }
-
-        // Safety: if typing is not active and no coroutine is running, ensure keypress sounds are stopped.
-        if (!typingActive && typewriterCoroutine == null)
-        {
-            writtingSoundBase?.StopKeypressSounds();
-        }
     }
 
     private void FastForwardTypewriter()
     {
+        Debug.Log($"[TypeSFX] t={Time.unscaledTime:F3} f={Time.frameCount}  FastForwardTypewriter");
         if (typewriterCoroutine != null)
         {
             StopCoroutine(typewriterCoroutine);
@@ -701,9 +700,6 @@ public class TutorialUI : MonoBehaviour
         // When fast-forwarding, treat it as typing finished and update the continue button accordingly
         typingActive = false;
 
-        // Ensure any lingering keypress sounds are stopped when fast-forwarding
-        writtingSoundBase?.StopKeypressSounds();
-
         OnTypingFinished();
         // notify external listeners that typing finished (fast-forward)
         TypingFinished?.Invoke();
@@ -712,6 +708,7 @@ public class TutorialUI : MonoBehaviour
     // Centralized handler to update the Continue button after typing finishes (natural or fast-forward)
     private void OnTypingFinished()
     {
+        Debug.Log($"[TypeSFX] t={Time.unscaledTime:F3} f={Time.frameCount}  OnTypingFinished");
         // Always stop any keypress sounds as soon as typing is considered finished
         writtingSoundBase?.StopKeypressSounds();
 
