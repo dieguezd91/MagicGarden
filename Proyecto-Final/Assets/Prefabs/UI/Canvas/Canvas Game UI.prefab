@@ -807,7 +807,7 @@ MonoBehaviour:
   playerMovement: {fileID: 0}
   moveCamera: {fileID: 0}
   dayNightLightController: {fileID: 0}
-  freeMovementDuration: 2
+  freeMovementDuration: 1
   cameraFocusTimeout: 3
   beforeFadeDelay: 1.5
   fadeInDuration: 2.5

@@ -11,6 +11,7 @@ public class NightToDayTransitionController : MonoBehaviour
     [SerializeField] private PlayerMovementController playerMovement;
     [SerializeField] private MoveCamera moveCamera;
     [SerializeField] private DayNightLightController dayNightLightController;
+    [SerializeField] private Animator playerAnimator;
 
     [Header("TRANSITION TIMING")]
     [SerializeField] private float freeMovementDuration = 2f;
@@ -29,7 +30,7 @@ public class NightToDayTransitionController : MonoBehaviour
 
     private Coroutine transitionCoroutine;
     private bool isTransitioning;
-
+    private static readonly int IsSleepingHash = Animator.StringToHash("isSleeping");
     public bool IsTransitioning => isTransitioning;
 
     private void Awake()
@@ -106,6 +107,9 @@ public class NightToDayTransitionController : MonoBehaviour
 
         onPlayerStoppedBeforeFade?.Invoke();
 
+        if (playerAnimator != null)
+            playerAnimator.SetBool(IsSleepingHash, true);
+
         yield return new WaitForSecondsRealtime(beforeFadeDelay);
 
         if (blackScreen != null)
@@ -127,6 +131,9 @@ public class NightToDayTransitionController : MonoBehaviour
             GameFlowController.Instance.SetPhase(GamePhase.Day);
         }
 
+        if (playerAnimator != null)
+            playerAnimator.SetBool(IsSleepingHash, false);
+
         if (dayNightLightController != null)
             dayNightLightController.ApplyDayVisualsImmediately();
 
@@ -142,8 +149,12 @@ public class NightToDayTransitionController : MonoBehaviour
         if (moveCamera != null)
             moveCamera.EndDayTransitionFocus();
 
+
         if (playerMovement != null)
+        {
+            yield return new WaitForSecondsRealtime(2f);
             playerMovement.SetDayTransitionBlocked(false);
+        }
 
         isTransitioning = false;
         transitionCoroutine = null;
