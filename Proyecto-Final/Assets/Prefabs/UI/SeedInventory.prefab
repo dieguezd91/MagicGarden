@@ -92,7 +92,7 @@ MonoBehaviour:
     daysToGrow: 1
     description: 
     seedCount: 999999
-    data: {fileID: 11400000, guid: 8e9c788b085a9dd42965688e67d239d0, type: 2}
+    data: {fileID: 11400000, guid: 4da0072fd11f4b241b6294dc07b14cab, type: 2}
   - seedType: 0
     plantPrefab: {fileID: 0}
     plantName: 

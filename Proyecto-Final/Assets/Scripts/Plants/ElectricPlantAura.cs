@@ -8,6 +8,8 @@ public class ElectricPlantAura : Plant
     [SerializeField] private float radius = 2.5f;
     [SerializeField] private float damagePerSecond = 2f;
     [SerializeField] private float areaCheckInterval = 0.1f;
+    [Header("Plant Health")]
+    [SerializeField] private LifeController plantLife;
 
     [SerializeField] private LayerMask enemyLayer;
 
@@ -52,7 +54,10 @@ public class ElectricPlantAura : Plant
     {
 
         if (!IsFullyGrown() || UpgradeRuntime.GameplayBlocked)
+        {
+            SetAttackAnimation(false);
             return;
+        }
 
         Collider2D[] hits = Physics2D.OverlapCircleAll(
             transform.position,
@@ -77,6 +82,8 @@ public class ElectricPlantAura : Plant
 
             ShowDamageText(enemyLife.transform, damage);
         }
+
+        SetAttackAnimation(hitAny);
 
         // Damage ticks every areaCheckInterval; sound only once per zapSoundInterval across all orchids.
         // Time.time < last covers a stale static after an editor play session without domain reload.
@@ -113,6 +120,20 @@ public class ElectricPlantAura : Plant
             fdt?.Initialize(target);
             fdt?.AddDamage(dmg);
         }
+    }
+
+
+    private void SetAttackAnimation(bool isAttacking)
+    {
+        if (animator == null)
+            return;
+
+        if (plantLife == null)
+            plantLife = GetComponent<LifeController>();
+
+        bool plantIsAlive = plantLife != null && plantLife.IsAlive();
+
+        animator.SetBool("Attack", isAttacking && plantIsAlive);
     }
 
     private void OnDrawGizmosSelected()

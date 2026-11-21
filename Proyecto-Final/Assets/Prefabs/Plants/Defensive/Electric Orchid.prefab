@@ -218,6 +218,7 @@ MonoBehaviour:
   radius: 5.5
   damagePerSecond: 10
   areaCheckInterval: 0.4
+  plantLife: {fileID: 3956378746745884272}
   enemyLayer:
     serializedVersion: 2
     m_Bits: 256
@@ -349,7 +350,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &7574673749215179323
 Transform:
   m_ObjectHideFlags: 0
