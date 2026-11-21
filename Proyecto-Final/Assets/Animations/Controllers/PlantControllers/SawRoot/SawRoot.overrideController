@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SawRoot
+  m_Controller: {fileID: 9100000, guid: 7cf8e22d590653246a82e59504f99930, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: 7b74bd6d151336145b7a0332a92c7b71, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 8bd4805117621b543b4b5dcb240d6252, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 48fdd64e42316ee4b965c583c8d84fc9, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 0a01ef987be2b4440be957e477982be6, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 407233c2bd9eb6242aa1d42074f88f49, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 9d601741b7329a1489b81b85ed8c3809, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 6b572040550770f41b7742fa27a55a35, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 01505957f03d44947b8ec771fd4d962b, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: cc2083e467f78a541be75160d16f5ed9, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 93c7ac4df89f4eb46b53f2d6aa7dd703, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: b5e13c1b77ad3bc478f3aac45da7a5a6, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 8b4a6c487d90fbb4a8044f46a9254026, type: 2}

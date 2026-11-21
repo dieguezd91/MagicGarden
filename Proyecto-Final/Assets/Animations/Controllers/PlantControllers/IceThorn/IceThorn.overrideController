@@ -6,7 +6,7 @@ AnimatorOverrideController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: FrostThorn
+  m_Name: IceThorn
   m_Controller: {fileID: 9100000, guid: 7cf8e22d590653246a82e59504f99930, type: 2}
   m_Clips:
   - m_OriginalClip: {fileID: 7400000, guid: 7b74bd6d151336145b7a0332a92c7b71, type: 2}
