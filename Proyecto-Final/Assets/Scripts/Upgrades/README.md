@@ -12,6 +12,8 @@ Stable default ids are `player`, `ability:teleport`, `spell:<slotIndex>`, and `p
 
 ## Balance asset
 
+In Unity, open **Tools > Magic Garden > Upgrade Balance**. Edit the values outside Play Mode and click **Save** to update the existing JSON. **Reload** discards the draft and reads the file again. The game reads saved values the next time the Game scene loads.
+
 `Assets/Scriptables/Upgrades/Resources/MagicGardenBalance.json` is loaded automatically as a TextAsset. Numeric enum order is stable:
 
 - Stats: MaxHealth=0, Damage=1, AttackSpeed=2, MoveSpeed=3, Range=4, Area=5, Knockback=6, Quantity=7, PlantLimit=8.
