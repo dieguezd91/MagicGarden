@@ -243,6 +243,8 @@ MonoBehaviour:
   doorLockAnimator: {fileID: 0}
   tutorialGatedFeedback: {fileID: 0}
   feedbackDuration: 2.5
+  interactionTrigger: {fileID: 818041089221737788}
+  rearmClearance: 0.4
 --- !u!61 &818041089221737788
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -275,7 +277,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.09154773, y: -0.5565586}
+  m_Offset: {x: 0.108089924, y: -0.51614285}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -286,7 +288,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1.757585, y: 0.26838493}
+  m_Size: {x: 1.7245007, y: 0.1875534}
   m_EdgeRadius: 0
 --- !u!1 &9200303291753838371
 GameObject:

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class HouseDoor : MonoBehaviour
 {
@@ -22,6 +23,13 @@ public class HouseDoor : MonoBehaviour
     [SerializeField] private float feedbackDuration = 2.5f;
     private Coroutine feedbackCoroutine;
 
+    [Header("Door Trigger")]
+    [SerializeField] private Collider2D interactionTrigger;
+    [SerializeField] private float rearmClearance = 0.3f;
+
+    private Collider2D[] playerColliders;
+    private bool waitingForPlayerToClearDoor = false;
+
     private WorldTransitionAnimator worldTransition;
     private float lastUseTime;
     private Transform player;
@@ -31,12 +39,17 @@ public class HouseDoor : MonoBehaviour
     private bool hasEnteredOnce = false;
     private Coroutine tutorialCoroutine;
 
+
+
     private bool pendingLockUpdate = false;
 
     private void Awake()
     {
         worldTransition = FindObjectOfType<WorldTransitionAnimator>();
         if (tutorialGatedFeedback != null) tutorialGatedFeedback.SetActive(false);
+
+        if (interactionTrigger == null)
+            interactionTrigger = GetComponent<Collider2D>();
     }
 
     private void Start()
@@ -62,6 +75,23 @@ public class HouseDoor : MonoBehaviour
         {
             bool shouldBeLocked = GameFlowController.Instance.CurrentPhase == GamePhase.Night;
             doorLockAnimator.SetVisualState(shouldBeLocked);
+        }
+    }
+
+
+    private void Update()
+    {
+        if (!waitingForPlayerToClearDoor || player == null || interactionTrigger == null)
+            return;
+
+        if (worldTransition != null && worldTransition.IsTransitioning)
+            return;
+
+        if (IsPlayerClearOfDoor())
+        {
+            waitingForPlayerToClearDoor = false;
+            player = null;
+            playerColliders = null;
         }
     }
 
@@ -157,18 +187,47 @@ public class HouseDoor : MonoBehaviour
         UpdateLockVisual(shouldBeLocked);
     }
 
+
+    private bool IsPlayerClearOfDoor()
+    {
+        if (playerColliders == null || playerColliders.Length == 0)
+            return false;
+
+        Bounds safeBounds = interactionTrigger.bounds;
+        safeBounds.Expand(rearmClearance * 2f);
+
+        foreach (Collider2D playerCollider in playerColliders)
+        {
+            if (playerCollider == null ||
+                !playerCollider.enabled ||
+                playerCollider.isTrigger)
+                continue;
+
+            if (safeBounds.Intersects(playerCollider.bounds))
+                return false;
+        }
+
+        return true;
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Player")) return;
-        if (worldTransition == null || worldTransition.IsTransitioning) return;
-        if (Time.time - lastUseTime < cooldown) return;
 
-        // Progressive tutorial lock: the door works in both directions once the tutorial taught it.
+        if (waitingForPlayerToClearDoor)
+            return;
+
+
+
+        if (worldTransition == null || worldTransition.IsTransitioning) return;
+
         if (!TutorialManager.Allows(TutorialAction.HouseDoor))
         {
             if (tutorialGatedFeedback != null)
             {
-                if (feedbackCoroutine != null) StopCoroutine(feedbackCoroutine);
+                if (feedbackCoroutine != null)
+                    StopCoroutine(feedbackCoroutine);
+
                 feedbackCoroutine = StartCoroutine(ShowGatedFeedback());
             }
 
@@ -180,13 +239,15 @@ public class HouseDoor : MonoBehaviour
 
         if (!goingInside)
         {
-            // Without the progressive lock (legacy lists, unlocked sequences) gated steps still block leaving.
             var tutorial = TutorialManager.Instance;
+
             if (tutorial != null && !tutorial.UsesActionLock && tutorial.IsPlayerGated())
             {
                 if (tutorialGatedFeedback != null)
                 {
-                    if (feedbackCoroutine != null) StopCoroutine(feedbackCoroutine);
+                    if (feedbackCoroutine != null)
+                        StopCoroutine(feedbackCoroutine);
+
                     feedbackCoroutine = StartCoroutine(ShowGatedFeedback());
                 }
 
@@ -214,9 +275,17 @@ public class HouseDoor : MonoBehaviour
             canEnterAtNight = false;
         }
 
+        playerColliders = player.GetComponentsInChildren<Collider2D>();
+
+        waitingForPlayerToClearDoor = true;
+
         HandleTransition(goingInside);
-        lastUseTime = Time.time;
+
+        Physics2D.SyncTransforms();
     }
+
+    
+
 
     private IEnumerator ShowGatedFeedback()
     {
