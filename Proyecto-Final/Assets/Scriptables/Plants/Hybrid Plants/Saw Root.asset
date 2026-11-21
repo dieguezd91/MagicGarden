@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8489d19cee3c9134ea421acc03cf5431, type: 3}
   m_Name: Saw Root
   m_EditorClassIdentifier: 
-  plantName: Frost Thorn
+  upgradeLineId: 
+  plantName: Saw Root
   plantPrefab: {fileID: 6736001113723686055, guid: 90a63aa992622ea48b1f19f09449817a, type: 3}
   plantIcon: {fileID: -1990512455, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   fullyGrownSprite: {fileID: -2001277165, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
