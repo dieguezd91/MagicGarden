@@ -7,6 +7,9 @@ public class PlayerTeleportController : MonoBehaviour
     [SerializeField] private int teleportManaCost = 10;
     [SerializeField] private float teleportCooldown = 2f;
 
+
+    private NightToDayTransitionController nightToDayTransition;
+
     private float currentTeleportCooldown = 0f;
     private float previousEffectiveCooldown;
 
@@ -38,6 +41,7 @@ public class PlayerTeleportController : MonoBehaviour
         playerAbilitySystem = GetComponent<PlayerAbilitySystem>();
         manaSystem = GetComponent<ManaSystem>();
         playerTransform = transform;
+        nightToDayTransition = FindObjectOfType<NightToDayTransitionController>();
     }
 
     private void OnEnable()
@@ -100,6 +104,7 @@ public class PlayerTeleportController : MonoBehaviour
     private bool CanUseTeleport()
     {
         if (UpgradeRuntime.GameplayBlocked) return false;
+        if (nightToDayTransition != null && nightToDayTransition.IsTransitioning) return false;
         if (!TutorialManager.Allows(TutorialAction.Teleport)) return false;
         if (currentTeleportCooldown > 0f) return false;
         if (IsInsideHouseLayer()) return false;

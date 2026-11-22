@@ -152,7 +152,7 @@ public class NightToDayTransitionController : MonoBehaviour
 
         if (playerMovement != null)
         {
-            yield return new WaitForSecondsRealtime(2f);
+            yield return new WaitForSecondsRealtime(2.2f);
             playerMovement.SetDayTransitionBlocked(false);
         }
 
