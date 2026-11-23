@@ -24,7 +24,7 @@ MonoBehaviour:
   footstepCooldown: 1
   experienceReward: 0
   manaDropChance: 0.5
-  bossMaxHealth: 1600
+  bossMaxHealth: 1000
   minAttackDistance: 1.5
   meleeRadius: 1.2
   specialRadius: 2.5
