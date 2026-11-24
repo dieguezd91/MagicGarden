@@ -244,26 +244,21 @@ public class UpgradeIntegrationTests
         foreach (var rule in balance.stats) if (rule.stat == stat) return rule;
         return null;
     }
-    [Test] public void DefaultBalanceHasAFixedRarePlantLimitAndNoOtherFixedRarity()
+    // The plant limit grows with the player level, so the default balance no longer offers the "Garden bloom" upgrade.
+    [Test] public void DefaultBalanceHasNoPlantLimitUpgradeAndNoFixedRarity()
     {
         var balance = JsonUtility.FromJson<Balance>(Resources.Load<TextAsset>("MagicGardenBalance").text);
-        var plantLimit = RuleFor(balance, Stat.PlantLimit);
-        Assert.That(plantLimit, Is.Not.Null);
-        Assert.That(plantLimit.displayName, Is.EqualTo("Garden bloom"));
-        Assert.That(plantLimit.weight, Is.EqualTo(0.15f).Within(0.0001f));
-        Assert.That(plantLimit.maxStacks, Is.EqualTo(3));
-        Assert.That(plantLimit.forceRarity, Is.True);
-        Assert.That(plantLimit.fixedRarity, Is.EqualTo(Rarity.Rare));
-        // JsonUtility leaves absent fields at default(T): every other rule must still roll its rarity.
-        foreach (var rule in balance.stats)
-            if (rule.stat != Stat.PlantLimit) Assert.That(rule.forceRarity, Is.False, rule.stat.ToString());
+        Assert.That(RuleFor(balance, Stat.PlantLimit), Is.Null);
+        foreach (var rule in balance.stats) Assert.That(rule.displayName, Is.Not.EqualTo("Garden bloom"));
+        // JsonUtility leaves absent fields at default(T): every rule must still roll its rarity.
+        foreach (var rule in balance.stats) Assert.That(rule.forceRarity, Is.False, rule.stat.ToString());
         var quantity = RuleFor(balance, Stat.Quantity);
         Assert.That(quantity.displayName, Is.EqualTo("Abundant bloom"));
         Assert.That(quantity.weight, Is.EqualTo(0.025f).Within(0.0001f));
         Assert.That(quantity.maxStacks, Is.EqualTo(3));
         for (int i = 0; i < balance.stats.Length; i++) Assert.That((int)balance.stats[i].stat, Is.EqualTo(i));
     }
-    [Test] public void DefaultBalanceOffersPlantLimitToThePlayerOnlyAndAlwaysAsRare()
+    [Test] public void DefaultBalanceNeverOffersPlantLimitEvenToAPlayerWithAPlantLimitBase()
     {
         var balance = JsonUtility.FromJson<Balance>(Resources.Load<TextAsset>("MagicGardenBalance").text);
         var player = new Target { Id = "player", Name = "Player", Capability = "Player" };
@@ -277,41 +272,33 @@ public class UpgradeIntegrationTests
         for (int i = 0; i < 400; i++)
             foreach (var offer in OfferSelector.Select(state, new[] { player, spell }, balance, random, 3))
             {
-                if (offer.Rule.stat == Stat.PlantLimit)
-                {
-                    plantLimitOffers++;
-                    Assert.That(offer.Target.Id, Is.EqualTo("player"));
-                    Assert.That(offer.Rarity.rarity, Is.EqualTo(Rarity.Rare));
-                    Assert.That(offer.Before, Is.EqualTo(5)); Assert.That(offer.After, Is.EqualTo(6));
-                }
+                if (offer.Rule.stat == Stat.PlantLimit) plantLimitOffers++;
                 else rarities.Add(offer.Rarity.rarity);
             }
-        Assert.That(plantLimitOffers, Is.GreaterThan(0));
+        Assert.That(plantLimitOffers, Is.Zero);
         Assert.That(rarities.Count, Is.EqualTo(4));
     }
-    [Test] public void PlantQuantityLimitIsStartingValuePlusRunStacksAndResetsWithoutMutatingTheSerializedValue()
+    [Test] public void PlantQuantityLimitIsStartingValuePlusOnePerLevelWithoutCapAndWithoutMutatingTheSerializedValue()
     {
         var system = Component("PlantQuantitySystem");
         var starting = system.GetType().GetField("startingQuantity", BindingFlags.NonPublic | BindingFlags.Instance);
         int start = (int)starting.GetValue(system);
         Assert.That(start, Is.EqualTo(5));
+        Assert.That(system.GetType().GetField("QuantityPerLevel").GetValue(null), Is.EqualTo(1));
         Assert.That(Call(system, "get_BaseQuantity"), Is.EqualTo(start));
-        Assert.That(Call(system, "get_CurrentQuantity"), Is.EqualTo(start)); // no run state without the game scene
-        var state = new RunState(); var target = new Target { Id = "player", Capability = "Player" };
-        target.Bases[Stat.PlantLimit] = start;
-        var rule = new StatRule { stat = Stat.PlantLimit, weight = 0.15f, maxStacks = 3, forceRarity = true, fixedRarity = Rarity.Rare };
-        var rare = new RarityRule { rarity = Rarity.Rare, weight = 12, bonus = 0.2f };
-        Assert.That(Call(system, "LimitWith", state), Is.EqualTo(start));
-        for (int stack = 1; stack <= 3; stack++)
-        {
-            Assert.That(state.Apply(new Offer { Target = target, Rule = rule, Rarity = rare }), Is.True);
-            Assert.That(Call(system, "LimitWith", state), Is.EqualTo(start + stack));
-        }
-        Assert.That(Call(system, "LimitWith", state), Is.EqualTo(8));
-        Assert.That(Call(system, "LimitWith", (object)null), Is.EqualTo(start));
+        Assert.That(Call(system, "get_CurrentQuantity"), Is.EqualTo(start)); // no player yet: level 1
+        Assert.That(Call(system, "LimitAtLevel", 1), Is.EqualTo(5));
+        Assert.That(Call(system, "LimitAtLevel", 2), Is.EqualTo(6));
+        Assert.That(Call(system, "LimitAtLevel", 3), Is.EqualTo(7));
+        Assert.That(Call(system, "LimitAtLevel", 100), Is.EqualTo(104), "no cap");
+        Assert.That(Call(system, "LimitAtLevel", 0), Is.EqualTo(5), "levels below 1 count as level 1");
+        var experience = Component("PlayerExperienceSystem");
+        var level = experience.GetType().GetField("currentLevel", BindingFlags.NonPublic | BindingFlags.Instance);
+        level.SetValue(experience, 4);
+        Assert.That(Call(system, "get_CurrentQuantity"), Is.EqualTo(8));
+        level.SetValue(experience, 1); // what PlayerExperienceSystem.ResetProgression does
+        Assert.That(Call(system, "get_CurrentQuantity"), Is.EqualTo(start));
         Assert.That(starting.GetValue(system), Is.EqualTo(start));
         Assert.That(Call(system, "get_BaseQuantity"), Is.EqualTo(start));
-        state.Clear(); // what UpgradeRuntime.ResetRun does
-        Assert.That(Call(system, "LimitWith", state), Is.EqualTo(start));
     }
 }

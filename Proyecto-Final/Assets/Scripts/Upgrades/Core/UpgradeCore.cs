@@ -77,6 +77,7 @@ namespace MagicGarden
         private readonly Dictionary<string, int> specials = new Dictionary<string, int>();
         private readonly Dictionary<string, float[]> effects = new Dictionary<string, float[]>();
         // Stat ids are append-only; arrays and guards derive their size from the last enum member.
+        // PlantLimit is no longer offered by the default balance (the plant limit grows with the player level) but stays reserved.
         public const int StatCount = (int)Stat.PlantLimit + 1;
         public static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
         // Additive stats add exactly one per stack to their base, independent of rarity bonus and profile ratio.

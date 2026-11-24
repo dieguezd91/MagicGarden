@@ -117,16 +117,41 @@ public class UpgradeUIArtTests
     private static GameObject Reward() => AssetDatabase.LoadAssetAtPath<GameObject>(RewardPath);
     private static UnityEngine.Object Serialized(object owner, string field) => new SerializedObject((UnityEngine.Object)owner).FindProperty(field).objectReferenceValue;
     private static Sprite SpriteOf(object graphic) => (Sprite)new SerializedObject((UnityEngine.Object)graphic).FindProperty("m_Sprite").objectReferenceValue;
+    [Test] public void RewardSlotsStackBetweenTheHeadingAndTheContinueButtonWithoutOverlapping()
+    {
+        var reward = Reward(); var view = reward.GetComponent(TypeOf("LevelUpRewardView"));
+        var heading = ((Component)Serialized(view, "headingLabel")).GetComponent<RectTransform>();
+        var button = ((Component)Serialized(view, "continueButton")).GetComponent<RectTransform>();
+        var card = (RectTransform)Serialized(view, "content");
+        float buttonTop = button.anchorMax.y + (button.sizeDelta.y * (1 - button.pivot.y)) / card.sizeDelta.y;
+        float previousBottom = heading.anchorMin.y;
+        foreach (string slot in new[] { "seedSlot", "spellSlot", "plantLimitSlot" })
+        {
+            var rect = ((GameObject)Serialized(view, slot)).GetComponent<RectTransform>();
+            Assert.That(rect.anchorMax.y, Is.LessThanOrEqualTo(previousBottom + 0.0001f), slot + " stays below the previous row");
+            Assert.That(rect.anchorMin.y, Is.GreaterThanOrEqualTo(buttonTop), slot + " stays above Continue");
+            Assert.That(rect.anchorMin.y, Is.LessThan(rect.anchorMax.y), slot);
+            previousBottom = rect.anchorMin.y;
+        }
+        // The three rows read as one column: every label starts and ends at the same horizontal anchors.
+        var seedLabel = ((Component)Serialized(view, "seedLabel")).GetComponent<RectTransform>();
+        foreach (string label in new[] { "spellLabel", "plantLimitLabel" })
+        {
+            var rect = ((Component)Serialized(view, label)).GetComponent<RectTransform>();
+            Assert.That(rect.anchorMin.x, Is.EqualTo(seedLabel.anchorMin.x).Within(0.0001f), label + " left edge");
+            Assert.That(rect.anchorMax.x, Is.EqualTo(seedLabel.anchorMax.x).Within(0.0001f), label + " right edge");
+        }
+    }
     [Test] public void RewardViewSerializedReferencesAreWiredAndFramedWithTutorialArt()
     {
         var reward = Reward(); var view = reward.GetComponent(TypeOf("LevelUpRewardView"));
         Assert.That(Property(view, "IsConfigured"), Is.True);
-        foreach (string field in new[] { "root", "headingLabel", "seedSlot", "spellSlot", "seedIcon", "spellIcon", "seedLabel", "spellLabel", "continueButton", "content", "group" })
+        foreach (string field in new[] { "root", "headingLabel", "seedSlot", "spellSlot", "seedIcon", "spellIcon", "seedLabel", "spellLabel", "plantLimitSlot", "plantLimitLabel", "continueButton", "content", "group" })
             Assert.That(Serialized(view, field), Is.Not.Null, field);
         Assert.That(reward.GetComponentInChildren(TypeOf("UIBackdrop"), true), Is.Null, "the level-up flow owns one backdrop for the reward and the upgrades");
         var box = Sprite("TutorialBox");
         Assert.That(SpriteOf(((Component)Serialized(view, "content")).GetComponent(TypeOf("UnityEngine.UI.Image", "UnityEngine.UI"))), Is.SameAs(box), "card frame");
-        foreach (string slot in new[] { "seedSlot", "spellSlot" })
+        foreach (string slot in new[] { "seedSlot", "spellSlot", "plantLimitSlot" })
             Assert.That(SpriteOf(((GameObject)Serialized(view, slot)).GetComponent(TypeOf("UnityEngine.UI.Image", "UnityEngine.UI"))), Is.SameAs(box), slot);
         var button = Serialized(view, "continueButton");
         Assert.That(SpriteOf(new SerializedObject(button).FindProperty("m_TargetGraphic").objectReferenceValue), Is.SameAs(Sprite("CraftButton")));

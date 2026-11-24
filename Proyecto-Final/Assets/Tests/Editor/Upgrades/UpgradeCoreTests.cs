@@ -180,7 +180,8 @@ public class UpgradeCoreTests
         state.Clear(); Assert.That(state.SpecialStacks("lateral", target.Id), Is.Zero);
     }
 
-    // Plant limit: an additive player stat (like Quantity) that is always offered at one fixed rarity.
+    // Generic engine coverage for an additive stat at one fixed rarity, using the reserved PlantLimit id.
+    // The default balance no longer offers it: the real plant limit grows with the player level (PlantQuantitySystem).
     private const float PlantLimitStart = 5;
     private Target PlayerTarget()
     {

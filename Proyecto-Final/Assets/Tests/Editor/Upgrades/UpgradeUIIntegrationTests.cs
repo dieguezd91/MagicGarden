@@ -208,10 +208,11 @@ public class UpgradeUIIntegrationTests
         Call(presenter, "Unbind", owner);
         Assert.That(Field(level, "Selected"), Is.Null); Assert.That(Field(shop, "Closed"), Is.Null);
     }
-    private object Reward(int level, string plantName, string spellName)
+    private object Reward(int level, string plantName, string spellName, int plantLimitBonus = 0, int plantLimit = 0)
     {
         var reward = Activator.CreateInstance(Production("LevelUnlockReward"), level);
         const BindingFlags any = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        if (plantLimitBonus > 0) reward.GetType().GetMethod("AddPlantLimit", any).Invoke(reward, new object[] { plantLimitBonus, plantLimit });
         if (plantName != null)
         {
             var plant = ScriptableObject.CreateInstance(Production("PlantDataSO")); created.Add(plant);
@@ -244,6 +245,23 @@ public class UpgradeUIIntegrationTests
         Assert.That(Call(view, "Show", Reward(4, null, "Ice")), Is.True);
         Assert.That(((GameObject)Field(view, "seedSlot")).activeSelf, Is.False);
         Assert.That(((GameObject)Field(view, "spellSlot")).activeSelf, Is.True);
+        Assert.That(((GameObject)Field(view, "plantLimitSlot")).activeSelf, Is.False);
+    }
+    [Test] public void RewardCardShowsThePlantLimitIncreaseAndItsNewTotal()
+    {
+        var view = Clone("LevelUpReward", "LevelUpRewardView");
+        Assert.That(Property(view, "IsConfigured"), Is.True);
+        Assert.That(Call(view, "Show", Reward(2, null, null, 1, 6)), Is.True);
+        Assert.That(Property(view, "IsVisible"), Is.True);
+        Assert.That((string)Property(Field(view, "headingLabel"), "text"), Does.Contain("2"));
+        Assert.That(((GameObject)Field(view, "seedSlot")).activeSelf, Is.False);
+        Assert.That(((GameObject)Field(view, "spellSlot")).activeSelf, Is.False);
+        Assert.That(((GameObject)Field(view, "plantLimitSlot")).activeSelf, Is.True);
+        Assert.That((string)Property(Field(view, "plantLimitLabel"), "text"), Is.EqualTo("Plant limit: +1 (6)"));
+        Call(view, "HideImmediate");
+        Assert.That(Call(view, "Show", Reward(3, "Sunflower", null, 1, 0)), Is.True);
+        Assert.That((string)Property(Field(view, "plantLimitLabel"), "text"), Is.EqualTo("Plant limit: +1"), "no total without a plant quantity system");
+        Assert.That(((GameObject)Field(view, "seedSlot")).activeSelf, Is.True);
     }
     [Test] public void RewardHideWhileInactiveIsImmediateAndSafeAndHideAfterShowIsImmediateOutsidePlayMode()
     {
@@ -270,11 +288,15 @@ public class UpgradeUIIntegrationTests
         Call(view, "Hide");
         Assert.That(Property(view, "IsVisible"), Is.False); Assert.That(hidden, Is.Zero, "closing through Hide is not an external disable");
     }
-    [Test] public void RewardHasContentOnlyWhenItUnlocksASeedOrASpell()
+    [Test] public void RewardHasContentWhenItUnlocksASeedASpellOrRaisesThePlantLimit()
     {
         Assert.That(Property(Reward(3, null, null), "HasContent"), Is.False);
         Assert.That(Property(Reward(3, "Sunflower", null), "HasContent"), Is.True);
         Assert.That(Property(Reward(4, null, "Ice"), "HasContent"), Is.True);
+        var plantLimit = Reward(5, null, null, 1, 9);
+        Assert.That(Property(plantLimit, "HasContent"), Is.True);
+        Assert.That(Property(plantLimit, "PlantLimitBonus"), Is.EqualTo(1));
+        Assert.That(Property(plantLimit, "PlantLimit"), Is.EqualTo(9));
     }
     [Test] public void RewardPrefabIsNestedAboveLevelUpPanelInCanvas()
     {

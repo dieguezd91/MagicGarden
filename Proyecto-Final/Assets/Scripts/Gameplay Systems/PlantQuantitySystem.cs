@@ -1,4 +1,3 @@
-using MagicGarden;
 using UnityEngine;
 
 public class PlantQuantitySystem : MonoBehaviour
@@ -8,18 +7,27 @@ public class PlantQuantitySystem : MonoBehaviour
     [Header("PLANT QUANTITY")]
     [SerializeField] private int startingQuantity = 5;
 
-    // Run-independent base limit: the serialized starting value unless legacy SetQuantity/IncreaseQuantity changed it.
-    // The serialized value and prefab are never mutated; the run's PlantLimit upgrades are added on top when read.
+    // Every level reached after the first raises the limit by this much, with no cap.
+    public const int QuantityPerLevel = 1;
+
+    // Level-1 limit: the serialized starting value unless legacy SetQuantity/IncreaseQuantity changed it.
+    // The serialized value and prefab are never mutated; the level bonus is added on top when read.
     private int baseQuantity = -1;
+    private PlayerExperienceSystem experience;
 
     public int BaseQuantity => baseQuantity >= 0 ? baseQuantity : Mathf.Max(0, startingQuantity);
-    public int CurrentQuantity => LimitWith(UpgradeRuntime.Current != null ? UpgradeRuntime.Current.State : null);
+    public int CurrentQuantity => LimitAtLevel(CurrentLevel);
 
-    // Base limit plus the PlantLimit stacks held by the given run state (one plant per stack). Resetting the run clears the stacks.
-    public int LimitWith(RunState state)
+    // Base limit plus one plant per level above 1. Resetting the progression to level 1 returns it to the base.
+    public int LimitAtLevel(int level) => BaseQuantity + Mathf.Max(0, level - 1) * QuantityPerLevel;
+
+    private int CurrentLevel
     {
-        float value = state != null ? state.Value(UpgradeRuntime.PlayerId, Stat.PlantLimit, BaseQuantity, 0) : BaseQuantity;
-        return Mathf.Max(0, Mathf.RoundToInt(value));
+        get
+        {
+            if (experience == null) experience = FindObjectOfType<PlayerExperienceSystem>();
+            return experience != null ? experience.CurrentLevel : 1;
+        }
     }
 
     private void Awake()

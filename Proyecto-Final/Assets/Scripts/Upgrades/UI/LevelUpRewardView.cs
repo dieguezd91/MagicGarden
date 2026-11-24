@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-// Shows the seeds and spells unlocked by one level, alone, until the player presses Continue.
+// Shows the seeds, spells and plant limit increase granted by one level, alone, until the player presses Continue.
 // The blur behind it belongs to the level-up session (UpgradePanel.sessionBackdrop), which also stays behind the upgrade choices.
 public sealed class LevelUpRewardView : MonoBehaviour
 {
@@ -14,6 +14,8 @@ public sealed class LevelUpRewardView : MonoBehaviour
     [SerializeField] private GameObject seedSlot, spellSlot;
     [SerializeField] private Image seedIcon, spellIcon;
     [SerializeField] private TMP_Text seedLabel, spellLabel;
+    [SerializeField] private GameObject plantLimitSlot;
+    [SerializeField] private TMP_Text plantLimitLabel;
     [SerializeField] private Button continueButton;
     [Header("Open/close tween (the card pops over the backdrop)")]
     [SerializeField] private RectTransform content;
@@ -23,7 +25,8 @@ public sealed class LevelUpRewardView : MonoBehaviour
     public event Action Continued;
 
     public bool IsConfigured => root == gameObject && headingLabel != null && seedSlot != null && spellSlot != null &&
-        seedIcon != null && spellIcon != null && seedLabel != null && spellLabel != null && continueButton != null;
+        seedIcon != null && spellIcon != null && seedLabel != null && spellLabel != null && continueButton != null &&
+        plantLimitSlot != null && plantLimitLabel != null;
     // Stays true while the open/close tween runs, so card selection stays blocked until the reward is fully gone.
     public bool IsVisible => root != null && root.activeSelf;
     public bool IsAnimating => tween != null && tween.IsRunning;
@@ -43,11 +46,15 @@ public sealed class LevelUpRewardView : MonoBehaviour
         continueButton.onClick.RemoveListener(Continue);
         continueButton.onClick.AddListener(Continue);
         UpgradeUiSounds.AddHover(continueButton);
-        headingLabel.text = $"LEVEL {reward.Level} — New unlocks";
+        headingLabel.text = $"LEVEL {reward.Level} — Rewards";
         Fill(seedSlot, seedIcon, seedLabel, "Seed", Names(reward.Plants, p => p != null ? p.plantName : null),
             reward.Plants.Count > 0 && reward.Plants[0] != null ? reward.Plants[0].plantIcon : null);
         Fill(spellSlot, spellIcon, spellLabel, "Spell", Names(reward.Spells, s => s != null ? s.SpellName : null),
             reward.Spells.Count > 0 && reward.Spells[0] != null ? reward.Spells[0].SpellIcon : null);
+        plantLimitSlot.SetActive(reward.PlantLimitBonus > 0);
+        plantLimitLabel.text = reward.PlantLimit > 0
+            ? $"Plant limit: +{reward.PlantLimitBonus} ({reward.PlantLimit})"
+            : $"Plant limit: +{reward.PlantLimitBonus}";
         bool fresh = !root.activeSelf || tween.IsClosing;
         afterClose = null;
         root.SetActive(true);

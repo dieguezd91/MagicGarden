@@ -228,9 +228,6 @@ public sealed class UpgradeRuntime : MonoBehaviour
         var player = new Target { Id = PlayerId, Name = "Player", Capability = "Player" };
         if (baseHealth > 0) player.Bases[Stat.MaxHealth] = baseHealth;
         if (movement != null) player.Bases[Stat.MoveSpeed] = movement.BaseMoveSpeed;
-        // The plant limit's base is the plant system's own starting limit; run stacks are added on top of it by RunState.
-        var plantQuantity = PlantQuantitySystem.Instance != null ? PlantQuantitySystem.Instance : FindObjectOfType<PlantQuantitySystem>();
-        if (plantQuantity != null) player.Bases[Stat.PlantLimit] = plantQuantity.BaseQuantity;
         var playerIcon = experience != null ? experience.GetComponent<SpriteRenderer>()?.sprite : null;
         AddTarget(player, playerIcon);
         var teleport = experience != null ? experience.GetComponent<PlayerTeleportController>() : null;

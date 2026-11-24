@@ -423,7 +423,8 @@ public class UpgradeUIArtPlayModeChecks
         Assert.That(Property(backdrop, "HasBlur"), Is.False);
         yield return new ExitPlayMode();
     }
-    [UnityTest] public IEnumerator EachLevelRewardShowsOnceAndLevelsWithoutRewardGoStraightToUpgrades()
+    // Every level-up raises the plant limit, so every level shows its reward once before its upgrades.
+    [UnityTest] public IEnumerator EveryLevelShowsItsRewardOnceBeforeItsUpgrades()
     {
         yield return new EnterPlayMode();
         yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/Game.unity", new LoadSceneParameters(LoadSceneMode.Single));
@@ -442,12 +443,15 @@ public class UpgradeUIArtPlayModeChecks
             AssertBackdropSteady(sessionBackdrop, snapshot, "pending level " + step);
             int pending = (int)Property(g.experience, "PendingChoices");
             int level = current - pending + 1;
+            Assert.That(RewardHasContent(g, level), Is.True, "every level-up raises the plant limit: level " + level);
             if (RewardHasContent(g, level))
             {
                 rewardLevels.Add(level);
                 Assert.That(Property(g.reward, "IsVisible"), Is.True, "reward for level " + level);
                 Assert.That(g.level.gameObject.activeSelf, Is.False);
                 Assert.That((string)Property(Field(g.reward, "headingLabel"), "text"), Does.Contain(level.ToString()));
+                Assert.That(((GameObject)Field(g.reward, "plantLimitSlot")).activeSelf, Is.True, "plant limit row for level " + level);
+                Assert.That((string)Property(Field(g.reward, "plantLimitLabel"), "text"), Does.StartWith("Plant limit: +1"));
                 Click((Component)Field(g.reward, "continueButton"));
                 yield return WaitIdle(g);
                 AssertBackdropSteady(sessionBackdrop, snapshot, "after the reward of level " + level);
@@ -464,7 +468,7 @@ public class UpgradeUIArtPlayModeChecks
             Click((Component)Field(cards.GetValue(0), "selectButton")); yield return null;
             Assert.That(Property(g.experience, "PendingChoices"), Is.EqualTo(pending - 1));
         }
-        Assert.That(rewardLevels, Is.Not.Empty); Assert.That(plainLevels, Is.Not.Empty);
+        Assert.That(plainLevels, Is.Empty); Assert.That(rewardLevels.Count, Is.EqualTo(current - 1));
         Assert.That(rewardLevels.Distinct().Count(), Is.EqualTo(rewardLevels.Count));
         Assert.That(Choosing(g), Is.False);
         yield return WaitBackdrop(sessionBackdrop, false);

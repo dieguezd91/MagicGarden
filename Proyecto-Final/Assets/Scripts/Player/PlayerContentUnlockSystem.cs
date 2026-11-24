@@ -194,6 +194,10 @@ public class PlayerContentUnlockSystem : MonoBehaviour
         EnsurePlayerExperienceSystem();
         EnsureSpellInventory();
 
+        // The plant limit itself is derived from the level (PlantQuantitySystem.LimitAtLevel); this only reports it.
+        var plantQuantity = PlantQuantitySystem.Instance;
+        RewardFor(level).AddPlantLimit(PlantQuantitySystem.QuantityPerLevel, plantQuantity != null ? plantQuantity.LimitAtLevel(level) : 0);
+
         if (playerExperienceSystem == null || playerExperienceSystem.ProgressionData == null)
         {
             return;
@@ -246,7 +250,7 @@ public class PlayerContentUnlockSystem : MonoBehaviour
         }
     }
 
-    // Content newly unlocked by reaching this level; null when the level granted nothing new.
+    // Content newly unlocked and the plant limit increase granted by reaching this level; null for levels never reached by a level-up.
     public LevelUnlockReward GetLevelReward(int level) =>
         levelRewards.TryGetValue(level, out var reward) ? reward : null;
 

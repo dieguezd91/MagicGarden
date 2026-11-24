@@ -419,9 +419,15 @@ public sealed class InventoryBaselineTests
             Assert.That((IEnumerable)Property(reward, "Plants"), Is.EqualTo(new object[] { plant2 }));
             Assert.That((IEnumerable)Property(reward, "Spells"), Is.EqualTo(new object[] { spell2 }));
             Assert.That(Property(reward, "Level"), Is.EqualTo(2));
+            Assert.That(Property(reward, "PlantLimitBonus"), Is.EqualTo(1), "every level-up raises the plant limit by one");
             Call(xp, "AddExperience", 10000);
             Assert.That((int)Property(xp, "CurrentLevel"), Is.GreaterThanOrEqualTo(3));
-            Assert.That(Call(unlocks, "GetLevelReward", 3), Is.Null, "level with only already-unlocked content has no reward");
+            var onlyPlantLimit = Call(unlocks, "GetLevelReward", 3);
+            Assert.That(onlyPlantLimit, Is.Not.Null, "level with only already-unlocked content still raises the plant limit");
+            Assert.That((IEnumerable)Property(onlyPlantLimit, "Plants"), Is.Empty);
+            Assert.That((IEnumerable)Property(onlyPlantLimit, "Spells"), Is.Empty);
+            Assert.That(Property(onlyPlantLimit, "PlantLimitBonus"), Is.EqualTo(1));
+            Assert.That(Property(onlyPlantLimit, "HasContent"), Is.True);
             Call(xp, "ResetProgression");
             Assert.That(Call(unlocks, "GetLevelReward", 2), Is.Null);
         }
