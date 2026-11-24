@@ -18,7 +18,8 @@ MonoBehaviour:
   plantIcon: {fileID: -1990512455, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   fullyGrownSprite: {fileID: -2001277165, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
   daysToGrow: 1
-  description: <u>Defensive plant</u>. Shoots at enemies within range.
+  description: <u>Defensive plant</u>. Shoots a Saw at the enemies within range.
+    And the Saw deals damage per second
   seedType: 14
   slotIndex: 0
   hasDeathAnimation: 1

@@ -12,12 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8489d19cee3c9134ea421acc03cf5431, type: 3}
   m_Name: Dark Root
   m_EditorClassIdentifier: 
+  upgradeLineId: 
   plantName: Dark Root
   plantPrefab: {fileID: 3214456861987219935, guid: a3b61fa3938157140ad7b6fa0d84403f, type: 3}
   plantIcon: {fileID: -473241699, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   fullyGrownSprite: {fileID: -2043935357, guid: e385e8b9bc6101e46a9a68cfbe630db3, type: 3}
   daysToGrow: 1
-  description: <u>Production plant</u>. Produces materials used for crafting.
+  description: <u>Support plant</u>. Heals other damaged plants within range
   seedType: 3
   slotIndex: 0
   hasDeathAnimation: 1
+  spriteFacesLeft: 0
