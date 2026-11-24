@@ -3,10 +3,21 @@ using System.Collections.Generic;
 
 public class RewardsSystem : MonoBehaviour
 {
-    [Header("REWARDS")]
+    [Header("REWARDS (gold)")]
     [SerializeField] private int rewardNoPlantsDestroyed = 30;
     [SerializeField] private int rewardHomeUntouched = 50;
     [SerializeField] private int rewardPlayerUnharmed = 20;
+
+    [Header("FEEDBACK (shown at the end of the night)")]
+    [Tooltip("No plant was destroyed during the night")]
+    [SerializeField] private string defensesIntactMessage = "Defenses Intact";
+    [SerializeField] private Color defensesIntactColor = new Color(0.3f, 0.9f, 0.4f);
+    [Tooltip("The home took no damage during the night")]
+    [SerializeField] private string homeProtectedMessage = "Home Protected";
+    [SerializeField] private Color homeProtectedColor = new Color(1f, 0.8f, 0.2f);
+    [Tooltip("The player took no damage during the night")]
+    [SerializeField] private string witchUnharmedMessage = "Witch Unharmed";
+    [SerializeField] private Color witchUnharmedColor = new Color(0.7f, 0.4f, 1f);
 
     private bool anyPlantDestroyed = false;
     private bool playerTookDamage = false;
@@ -57,8 +68,8 @@ public class RewardsSystem : MonoBehaviour
             rewards.Add(new FloatingTextController.GoldReward
             {
                 goldAmount = rewardNoPlantsDestroyed,
-                message = "Defenses Intact",
-                textColor = new Color(0.3f, 0.9f, 0.4f)
+                message = defensesIntactMessage,
+                textColor = defensesIntactColor
             });
             totalGold += rewardNoPlantsDestroyed;
         }
@@ -69,8 +80,8 @@ public class RewardsSystem : MonoBehaviour
             rewards.Add(new FloatingTextController.GoldReward
             {
                 goldAmount = rewardHomeUntouched,
-                message = "Home Protected",
-                textColor = new Color(1f, 0.8f, 0.2f)
+                message = homeProtectedMessage,
+                textColor = homeProtectedColor
             });
             totalGold += rewardHomeUntouched;
         }
@@ -80,8 +91,8 @@ public class RewardsSystem : MonoBehaviour
             rewards.Add(new FloatingTextController.GoldReward
             {
                 goldAmount = rewardPlayerUnharmed,
-                message = "Witch Unharmed",
-                textColor = new Color(0.7f, 0.4f, 1f)
+                message = witchUnharmedMessage,
+                textColor = witchUnharmedColor
             });
             totalGold += rewardPlayerUnharmed;
         }

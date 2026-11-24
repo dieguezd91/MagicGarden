@@ -29,6 +29,64 @@ public class UpgradeIntegrationTests
         foreach (var item in created) if (item != null) UnityEngine.Object.DestroyImmediate(item);
         created.Clear();
     }
+    // Night gold feedback: designers edit messages, colors and the gold line format in the Inspector.
+    private static object Get(object instance, string field)
+        => instance.GetType().GetField(field, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(instance);
+    private static void Set(object instance, string field, object value)
+        => instance.GetType().GetField(field, BindingFlags.NonPublic | BindingFlags.Instance).SetValue(instance, value);
+    [Test] public void NightRewardMessagesAndColorsAreEditableAndDefaultToTheCurrentFeedback()
+    {
+        var rewards = Component("RewardsSystem");
+        Assert.That(Get(rewards, "rewardNoPlantsDestroyed"), Is.EqualTo(30));
+        Assert.That(Get(rewards, "rewardHomeUntouched"), Is.EqualTo(50));
+        Assert.That(Get(rewards, "rewardPlayerUnharmed"), Is.EqualTo(20));
+        Assert.That(Get(rewards, "defensesIntactMessage"), Is.EqualTo("Defenses Intact"));
+        Assert.That(Get(rewards, "homeProtectedMessage"), Is.EqualTo("Home Protected"));
+        Assert.That(Get(rewards, "witchUnharmedMessage"), Is.EqualTo("Witch Unharmed"));
+        Assert.That(Get(rewards, "defensesIntactColor"), Is.EqualTo(new Color(0.3f, 0.9f, 0.4f)));
+        Assert.That(Get(rewards, "homeProtectedColor"), Is.EqualTo(new Color(1f, 0.8f, 0.2f)));
+        Assert.That(Get(rewards, "witchUnharmedColor"), Is.EqualTo(new Color(0.7f, 0.4f, 1f)));
+        var floating = Component("FloatingTextController");
+        Assert.That(Get(floating, "noRewardMessage"), Is.EqualTo("The shadows watch in silence..."));
+        Assert.That(Get(floating, "noRewardColor"), Is.EqualTo(new Color(0.6f, 0.2f, 0.2f)));
+    }
+    [Test] public void GoldFeedbackLineUsesItsEditableFormatAndFallsBackWhenInvalid()
+    {
+        var floating = Component("FloatingTextController");
+        Assert.That(Call(floating, "FormatGoldEntry", "Defenses Intact", 30), Is.EqualTo("<sprite name=\"GoldIcon\"> Defenses Intact\n+30 gold"));
+        Assert.That(Call(floating, "FormatGoldEntry", "The shadows watch in silence...", 0), Is.EqualTo("The shadows watch in silence..."), "no gold: message only");
+        Set(floating, "goldEntryFormat", "{0}: {1} oro");
+        Assert.That(Call(floating, "FormatGoldEntry", "Casa protegida", 50), Is.EqualTo("Casa protegida: 50 oro"));
+        Set(floating, "goldEntryFormat", "{0} {3}");
+        UnityEngine.TestTools.LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("Invalid text format"));
+        Assert.That(Call(floating, "FormatGoldEntry", "Home Protected", 50), Is.EqualTo("<sprite name=\"GoldIcon\"> Home Protected\n+50 gold"));
+    }
+    // Night gold feedback game feel: every timing, scale and sound is an Inspector field.
+    [Test] public void NightGoldFeedbackAnimationIsEditableAndDefaultsToTheDesignedFeel()
+    {
+        var floating = Component("FloatingTextController");
+        Assert.That(Get(floating, "goldLineStagger"), Is.EqualTo(0.35f));
+        Assert.That(Get(floating, "goldLineEnterDuration"), Is.EqualTo(0.3f));
+        Assert.That(Get(floating, "goldLineStartScale"), Is.EqualTo(0.4f));
+        Assert.That(Get(floating, "goldCountDuration"), Is.EqualTo(0.6f));
+        Assert.That(Get(floating, "goldTickSound"), Is.EqualTo("PickUp"));
+        Assert.That(Get(floating, "goldTickInterval"), Is.EqualTo(0.06f));
+        Assert.That(Get(floating, "goldLineEnterEase").ToString(), Is.EqualTo("OutBack"));
+    }
+    [Test] public void NightGoldLinesAreStaggeredAndTheCounterGoesFromZeroToTheAmount()
+    {
+        var floating = Component("FloatingTextController");
+        Assert.That(Call(floating, "GoldLineDelay", 0), Is.EqualTo(0f));
+        Assert.That((float)Call(floating, "GoldLineDelay", 2), Is.EqualTo(0.7f).Within(1e-5f));
+        Set(floating, "goldLineStagger", 0.5f);
+        Assert.That((float)Call(floating, "GoldLineDelay", 3), Is.EqualTo(1.5f).Within(1e-5f));
+        Assert.That(Call(floating, "CountedGold", 30, 0f), Is.EqualTo(0));
+        Assert.That(Call(floating, "CountedGold", 30, 0.5f), Is.EqualTo(15));
+        Assert.That(Call(floating, "CountedGold", 30, 1f), Is.EqualTo(30));
+        Assert.That(Call(floating, "CountedGold", 30, 2f), Is.EqualTo(30), "progress is clamped");
+        Assert.That(Call(floating, "FormatGoldCount", "Home Protected", 0), Is.EqualTo("<sprite name=\"GoldIcon\"> Home Protected\n+0 gold"));
+        Assert.That(Call(floating, "FormatGoldCount", "Home Protected", 50), Is.EqualTo(Call(floating, "FormatGoldEntry", "Home Protected", 50)));
+    }
     [Test] public void InventoryInsufficientDuplicateCostsNeverPartiallySpend()
     {
         var inventory = Component("InventoryManager");

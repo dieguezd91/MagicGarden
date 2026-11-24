@@ -276,6 +276,54 @@ public class UpgradeUIIntegrationTests
         Call(view, "Hide");
         Assert.That(Property(view, "IsVisible"), Is.False);
     }
+    [Test] public void RewardCardRowAnimationsAreDesignerEditableWithSnappyDefaults()
+    {
+        var view = Clone("LevelUpReward", "LevelUpRewardView");
+        var serialized = new SerializedObject(view);
+        var defaults = new (string name, float value)[]
+        {
+            ("rowStagger", .1f), ("rowDuration", .2f), ("rowStartScale", .6f), ("iconBounceScale", 1.25f), ("iconBounceDuration", .3f),
+            ("plantLimitCountDuration", .35f), ("plantLimitPunchScale", 1.3f), ("plantLimitPunchDuration", .25f),
+        };
+        foreach (var (name, value) in defaults)
+        {
+            var property = serialized.FindProperty(name);
+            Assert.That(property, Is.Not.Null, name);
+            Assert.That(property.floatValue, Is.EqualTo(value).Within(1e-4f), name);
+            var field = view.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(field.GetCustomAttributes(typeof(TooltipAttribute), false), Is.Not.Empty, name + " has a tooltip");
+        }
+        Assert.That(serialized.FindProperty("rowEase"), Is.Not.Null);
+        Assert.That(Field(view, "rowEase").ToString(), Is.EqualTo("OutBack"));
+        Assert.That(view.GetType().GetField("rowEase", BindingFlags.Instance | BindingFlags.NonPublic).GetCustomAttributes(typeof(TooltipAttribute), false), Is.Not.Empty);
+    }
+    [Test] public void RewardCardRowsSnapToTheirFinalStateOutsidePlayMode()
+    {
+        var view = Clone("LevelUpReward", "LevelUpRewardView");
+        var slots = new[] { (GameObject)Field(view, "seedSlot"), (GameObject)Field(view, "spellSlot"), (GameObject)Field(view, "plantLimitSlot") };
+        var icons = new[] { ((Component)Field(view, "seedIcon")).transform, ((Component)Field(view, "spellIcon")).transform };
+        var plantLimit = (Component)Field(view, "plantLimitLabel");
+        foreach (var slot in slots) slot.transform.localScale = Vector3.one * .3f; // left over from a previous animation
+        foreach (var icon in icons) icon.localScale = Vector3.one * 2f;
+        plantLimit.transform.localScale = Vector3.one * 1.5f;
+        Assert.That(Call(view, "Show", Reward(5, "Sunflower", "Ice", 1, 9)), Is.True);
+        Assert.That(Property(view, "IsAnimating"), Is.False, "EditMode snaps instead of animating the rows");
+        foreach (var slot in slots)
+        {
+            Assert.That(slot.activeSelf, Is.True, slot.name);
+            Assert.That(slot.transform.localScale, Is.EqualTo(Vector3.one), slot.name);
+            if (slot.TryGetComponent(out CanvasGroup rowGroup)) Assert.That(rowGroup.alpha, Is.EqualTo(1f), slot.name);
+        }
+        foreach (var icon in icons) Assert.That(icon.localScale, Is.EqualTo(Vector3.one));
+        Assert.That(plantLimit.transform.localScale, Is.EqualTo(Vector3.one));
+        Assert.That((string)Property(plantLimit, "text"), Is.EqualTo("Plant limit: +1 (9)"), "the final value, not the previous limit");
+        Assert.That((string)Property(Field(view, "seedLabel"), "text"), Is.EqualTo("Seed: Sunflower"));
+        Assert.That((string)Property(Field(view, "spellLabel"), "text"), Is.EqualTo("Spell: Ice"));
+        Assert.That(Call(view, "Show", Reward(6, null, null, 1, 0)), Is.True, "re-Show with an unknown plant limit");
+        Assert.That(Property(view, "IsAnimating"), Is.False);
+        Assert.That((string)Property(plantLimit, "text"), Is.EqualTo("Plant limit: +1"));
+        Assert.That(plantLimit.transform.localScale, Is.EqualTo(Vector3.one));
+    }
     [Test] public void LevelUpPanelHideWhileInactiveIsImmediateAndNeverRaisesHidden()
     {
         var view = Clone("LevelUpPanel", "LevelUpPanelView");
@@ -287,6 +335,38 @@ public class UpgradeUIIntegrationTests
         Assert.That(Property(view, "IsAnimating"), Is.False); Assert.That(((CanvasGroup)Field(view, "group")).alpha, Is.EqualTo(1f));
         Call(view, "Hide");
         Assert.That(Property(view, "IsVisible"), Is.False); Assert.That(hidden, Is.Zero, "closing through Hide is not an external disable");
+    }
+    [Test] public void RewardCardTextsComeFromDesignerEditableFormats()
+    {
+        var view = Clone("LevelUpReward", "LevelUpRewardView");
+        var serialized = new SerializedObject(view);
+        Assert.That(serialized.FindProperty("headingFormat").stringValue, Is.EqualTo("LEVEL {0} — Rewards"));
+        Assert.That(serialized.FindProperty("seedFormat").stringValue, Is.EqualTo("Seed: {0}"));
+        Assert.That(serialized.FindProperty("spellFormat").stringValue, Is.EqualTo("Spell: {0}"));
+        Assert.That(serialized.FindProperty("plantLimitFormat").stringValue, Is.EqualTo("Plant limit: +{0} ({1})"));
+        Assert.That(serialized.FindProperty("plantLimitBonusOnlyFormat").stringValue, Is.EqualTo("Plant limit: +{0}"));
+        serialized.FindProperty("headingFormat").stringValue = "Nivel {0}";
+        serialized.FindProperty("seedFormat").stringValue = "Semilla: {0}";
+        serialized.FindProperty("spellFormat").stringValue = "Hechizo: {0}";
+        serialized.FindProperty("plantLimitFormat").stringValue = "Plantas +{0} = {1}";
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+        Assert.That(Call(view, "Show", Reward(4, "Sunflower", "Ice", 1, 8)), Is.True);
+        Assert.That((string)Property(Field(view, "headingLabel"), "text"), Is.EqualTo("Nivel 4"));
+        Assert.That((string)Property(Field(view, "seedLabel"), "text"), Is.EqualTo("Semilla: Sunflower"));
+        Assert.That((string)Property(Field(view, "spellLabel"), "text"), Is.EqualTo("Hechizo: Ice"));
+        Assert.That((string)Property(Field(view, "plantLimitLabel"), "text"), Is.EqualTo("Plantas +1 = 8"));
+    }
+    [Test] public void RewardCardFallsBackToTheDefaultTextWhenAFormatIsInvalid()
+    {
+        var view = Clone("LevelUpReward", "LevelUpRewardView");
+        var serialized = new SerializedObject(view);
+        serialized.FindProperty("plantLimitFormat").stringValue = "Plants {2}";
+        serialized.FindProperty("seedFormat").stringValue = "";
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+        LogAssert.Expect(LogType.Warning, new Regex("Invalid text format \"Plants \\{2\\}\""));
+        Assert.That(Call(view, "Show", Reward(2, "Sunflower", null, 1, 6)), Is.True);
+        Assert.That((string)Property(Field(view, "plantLimitLabel"), "text"), Is.EqualTo("Plant limit: +1 (6)"));
+        Assert.That((string)Property(Field(view, "seedLabel"), "text"), Is.EqualTo("Seed: Sunflower"), "an empty format uses the default");
     }
     [Test] public void RewardHasContentWhenItUnlocksASeedASpellOrRaisesThePlantLimit()
     {

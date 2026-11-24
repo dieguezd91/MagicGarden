@@ -375,6 +375,8 @@ public class UpgradeUIArtPlayModeChecks
         Assert.That(BackdropAlpha(backdrop), Is.InRange(.01f, .9f), "the blur fades in instead of appearing at once");
         yield return Capture(g.canvas, g.reward.gameObject, "runtime-reward-mid-open", 1920, 1080, false, true);
         yield return WaitIdle(g);
+        var levelTwo = Call(g.unlocks, "GetLevelReward", 2);
+        Assert.That((string)Property(Field(g.reward, "plantLimitLabel"), "text"), Is.EqualTo("Plant limit: +1 (" + Property(levelTwo, "PlantLimit") + ")"), "the plant limit ends at its final value once the rows finished");
         yield return WaitBackdropOpaque(backdrop);
         var snapshot = Field(backdrop, "blurTexture"); Assert.That(snapshot, Is.Not.Null);
         AssertBlurred(backdrop, "reward alone");
@@ -421,6 +423,46 @@ public class UpgradeUIArtPlayModeChecks
         Assert.That(BackdropAlpha(backdrop), Is.InRange(.01f, .99f), "the blur fades out instead of vanishing");
         yield return WaitBackdrop(backdrop, false);
         Assert.That(Property(backdrop, "HasBlur"), Is.False);
+        yield return new ExitPlayMode();
+    }
+    // Night gold feedback: each gold line starts at "+0", counts to its final text on unscaled time, and an invalid
+    // designer format warns once per line (not on every counter step) and falls back to the default text.
+    [UnityTest] public IEnumerator NightGoldLinesCountFromZeroToTheirFinalTextAndWarnOncePerLineOnAnInvalidFormat()
+    {
+        yield return new EnterPlayMode();
+        yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/Game.unity", new LoadSceneParameters(LoadSceneMode.Single));
+        for (int i = 0; i < 15; i++) yield return null;
+        var floating = Find("FloatingTextController");
+        Assert.That(floating, Is.Not.Null, "the Game scene has a FloatingTextController");
+        var tmpType = TypeOf("TMPro.TextMeshProUGUI", "Unity.TextMeshPro");
+        var rewardType = floating.GetType().GetNestedType("GoldReward");
+        var list = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(rewardType));
+        foreach (var (message, gold) in new[] { ("Defenses Intact", 30), ("Home Protected", 50) })
+        {
+            object reward = Activator.CreateInstance(rewardType);
+            rewardType.GetField("message").SetValue(reward, message);
+            rewardType.GetField("goldAmount").SetValue(reward, gold);
+            rewardType.GetField("textColor").SetValue(reward, Color.white);
+            list.Add(reward);
+        }
+        SetField(floating, "goldEntryFormat", "{0} {3}");
+        LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("Invalid text format"));
+        LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("Invalid text format"));
+        float savedScale = Time.timeScale; Time.timeScale = 0f; // a level-up can pause the game meanwhile
+        try
+        {
+            Call(floating, "ShowGoldFeedbackSequence", list, 80);
+            var entries = (IList)Field(floating, "goldFeedbackEntries");
+            Assert.That(entries.Count, Is.EqualTo(2));
+            string Text(int index) => (string)Property(((GameObject)entries[index]).GetComponent(tmpType), "text");
+            Assert.That(Text(1), Does.EndWith("+0 gold"), "the counter starts at zero");
+            float end = Time.realtimeSinceStartup + 2.5f; while (Time.realtimeSinceStartup < end) yield return null;
+            Assert.That(Text(0), Is.EqualTo("<sprite name=\"GoldIcon\"> Defenses Intact\n+30 gold"));
+            Assert.That(Text(1), Is.EqualTo("<sprite name=\"GoldIcon\"> Home Protected\n+50 gold"));
+            for (int i = 0; i < 2; i++)
+                Assert.That(Vector3.Distance(((GameObject)entries[i]).transform.localScale, Vector3.one), Is.LessThan(1e-3f), "line " + i + " ends at its layout scale");
+        }
+        finally { Time.timeScale = savedScale; }
         yield return new ExitPlayMode();
     }
     // Every level-up raises the plant limit, so every level shows its reward once before its upgrades.
@@ -621,6 +663,58 @@ public class UpgradeUIArtPlayModeChecks
         }
         finally { Time.timeScale = oldScale; UnityEngine.Object.Destroy(root); UnityEngine.Object.Destroy(events); }
         yield return null;
+    }
+    // The rows enter one by one after the card pops in, the plant limit counts from the previous limit to the new one, and Continue stays
+    // blocked (IsAnimating) until all of it finished. Unscaled time: timeScale is 0 like during a level-up.
+    [UnityTest] public IEnumerator RewardRowsEnterOneByOneAndThePlantLimitCountsUntilContinueUnlocks()
+    {
+        yield return new EnterPlayMode();
+        var root = new GameObject("Isolated reward rows", typeof(RectTransform), typeof(Canvas)); root.layer = 5;
+        root.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+        root.AddComponent(TypeOf("UnityEngine.UI.GraphicRaycaster", "UnityEngine.UI"));
+        var events = new GameObject("Rows EventSystem"); events.AddComponent(TypeOf("UnityEngine.EventSystems.EventSystem", "UnityEngine.UI"));
+        float oldScale = Time.timeScale; Time.timeScale = 0;
+        try
+        {
+            var reward = Panel("LevelUpReward", root.transform); Call(reward, "HideImmediate");
+            int continued = 0; Listen(reward, "Continued", (Action)(() => continued++));
+            var data = RewardData(3, "Sunflower");
+            data.GetType().GetMethod("AddPlantLimit", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Invoke(data, new object[] { 1, 6 });
+            Assert.That(Call(reward, "Show", data), Is.True);
+            var seed = (GameObject)Field(reward, "seedSlot"); var limit = (GameObject)Field(reward, "plantLimitSlot"); var label = Field(reward, "plantLimitLabel");
+            var seedIcon = ((Component)Field(reward, "seedIcon")).transform; var labelTransform = ((Component)label).transform;
+            Assert.That(Property(reward, "IsAnimating"), Is.True);
+            Assert.That(seed.GetComponent<CanvasGroup>().alpha, Is.EqualTo(0f), "rows wait for the card pop");
+            Assert.That(limit.GetComponent<CanvasGroup>().alpha, Is.EqualTo(0f));
+            Assert.That((string)Property(label, "text"), Is.EqualTo("Plant limit: +1 (5)"), "starts from the previous limit");
+            Click((Component)Field(reward, "continueButton")); Assert.That(continued, Is.Zero);
+            float end = Time.realtimeSinceStartup + 3f, seedStart = -1f, limitStart = -1f; bool continuedWhileAnimating = false, sawPreviousLimit = false;
+            while (Time.realtimeSinceStartup < end && (bool)Property(reward, "IsAnimating"))
+            {
+                float now = Time.realtimeSinceStartup;
+                if (seedStart < 0 && seed.GetComponent<CanvasGroup>().alpha > .02f) seedStart = now;
+                if (limitStart < 0 && limit.GetComponent<CanvasGroup>().alpha > .02f) limitStart = now;
+                sawPreviousLimit |= (string)Property(label, "text") == "Plant limit: +1 (5)";
+                Click((Component)Field(reward, "continueButton")); continuedWhileAnimating |= continued > 0;
+                yield return null;
+            }
+            Assert.That(Property(reward, "IsAnimating"), Is.False, "rows settled");
+            Assert.That(continuedWhileAnimating, Is.False, "Continue is blocked until the rows finish");
+            Assert.That(seedStart, Is.GreaterThan(0f)); Assert.That(limitStart, Is.GreaterThan(0f));
+            Assert.That(seedStart, Is.LessThanOrEqualTo(limitStart), "seed enters before the plant limit");
+            Assert.That(sawPreviousLimit, Is.True);
+            Assert.That((string)Property(label, "text"), Is.EqualTo("Plant limit: +1 (6)"));
+            foreach (var row in new[] { seed, limit }) { Assert.That(row.transform.localScale, Is.EqualTo(Vector3.one)); Assert.That(row.GetComponent<CanvasGroup>().alpha, Is.EqualTo(1f)); }
+            Assert.That(seedIcon.localScale, Is.EqualTo(Vector3.one)); Assert.That(labelTransform.localScale, Is.EqualTo(Vector3.one));
+            Assert.That(Property(reward, "IsVisible"), Is.True);
+            Click((Component)Field(reward, "continueButton"));
+            Assert.That(Property(reward, "IsAnimating"), Is.True, "closing");
+            yield return WaitOpen(reward);
+            Assert.That(continued, Is.EqualTo(1));
+        }
+        finally { Time.timeScale = oldScale; UnityEngine.Object.Destroy(root); UnityEngine.Object.Destroy(events); }
+        yield return null;
+        yield return new ExitPlayMode();
     }
     private static Texture2D RenderTo(Camera camera, int width, int height)
     {
