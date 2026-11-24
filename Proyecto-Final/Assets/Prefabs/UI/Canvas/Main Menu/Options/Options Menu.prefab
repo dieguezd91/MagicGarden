@@ -1108,7 +1108,7 @@ MonoBehaviour:
   sfxSlider: {fileID: 4165301558824148414}
   muteButton: {fileID: 6252287962899745701}
   sliderTickClip: {fileID: 0}
-  sliderTickMixerGroup: {fileID: -8065833381815908007, guid: 5e6626574c6616a40a8e778a90666ada, type: 2}
+  sliderTickMixerGroup: {fileID: -633828639928632731, guid: 5e6626574c6616a40a8e778a90666ada, type: 2}
   sliderTickVolume: 0.35
   mutedSliderAlpha: 0.4
   unmuteLabel: Unmute All

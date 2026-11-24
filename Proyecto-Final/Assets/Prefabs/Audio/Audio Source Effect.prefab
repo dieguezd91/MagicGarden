@@ -15,7 +15,7 @@ PrefabInstance:
     - target: {fileID: -8924039767200484127, guid: 5aac44cfda33ef640a5576b0b81ab9aa, type: 3}
       propertyPath: OutputAudioMixerGroup
       value: 
-      objectReference: {fileID: -8065833381815908007, guid: 5e6626574c6616a40a8e778a90666ada, type: 2}
+      objectReference: {fileID: 6400258563094984068, guid: 5e6626574c6616a40a8e778a90666ada, type: 2}
     - target: {fileID: 532959641812503686, guid: 5aac44cfda33ef640a5576b0b81ab9aa, type: 3}
       propertyPath: m_Name
       value: Audio Source Effect

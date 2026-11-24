@@ -109,11 +109,13 @@ public class GameOverController : MonoBehaviour
     {
         yield return new WaitForSeconds(gameOverDelay);
 
-        SoundManager.Instance?.Stop("Player_Low_Health_Heartbeat_Loop");
-        SoundManager.Instance?.Play("Game_Over");
-
+        // Phase first: the sting is game-over screen feedback, so it must start after the game is "over"
+        // to be routed to the UI mixer group instead of being muffled with the game.
         if (GameFlowController.Instance != null)
             GameFlowController.Instance.SetPhase(GamePhase.GameOver);
+
+        SoundManager.Instance?.Stop("Player_Low_Health_Heartbeat_Loop");
+        SoundManager.Instance?.Play("Game_Over");
 
         if (UIManager.Instance != null && UIManager.Instance.gameOverPanel != null)
         {

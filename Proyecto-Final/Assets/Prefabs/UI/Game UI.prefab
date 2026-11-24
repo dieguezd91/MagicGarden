@@ -2409,7 +2409,7 @@ MonoBehaviour:
   sfxSlider: {fileID: 5382776727498028253}
   muteButton: {fileID: 1754022704461259141}
   sliderTickClip: {fileID: 0}
-  sliderTickMixerGroup: {fileID: -8065833381815908007, guid: 5e6626574c6616a40a8e778a90666ada, type: 2}
+  sliderTickMixerGroup: {fileID: -633828639928632731, guid: 5e6626574c6616a40a8e778a90666ada, type: 2}
   sliderTickVolume: 0.35
 --- !u!114 &4455532361817896765
 MonoBehaviour:

@@ -64,7 +64,14 @@ public class InterfaceSoundBase : MonoBehaviour
         var soundData = GetSound(soundType);
         if (soundData == null) return;
         if (!soundData.CanPlay()) return;
-        SoundManager.Instance.PlayClip(soundData);
+        SoundManager.Instance.PlayClip(soundData, ui: IsMenuSound(soundType));
         soundData.SetLastPlayTime();
+    }
+
+    // Menu, pause and book sounds stay clear while the game behind them is muffled. Ability and seed
+    // selection are in-game HUD feedback and are muffled with the rest of the game.
+    private static bool IsMenuSound(InterfaceSoundType soundType)
+    {
+        return soundType != InterfaceSoundType.OnAbilityChanged && soundType != InterfaceSoundType.OnSeedSelect;
     }
 }

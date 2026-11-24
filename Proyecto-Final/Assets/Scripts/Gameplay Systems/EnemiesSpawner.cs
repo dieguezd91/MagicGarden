@@ -51,6 +51,15 @@ public class EnemiesSpawner : MonoBehaviour
     [Header("DAY TRANSITION")]
     [SerializeField] private NightToDayTransitionController nightToDayTransition;
 
+    [Header("NIGHT START")]
+    [Tooltip("Seconds after nightfall before the horde (or the boss night) begins, so the night music and the " +
+             "day-to-night animation can settle. Counted from nightfall: leaving the house later adds nothing. " +
+             "Pausing holds the countdown.")]
+    [SerializeField, Min(0f)] private float nightStartDelay = 5f;
+    private float nightFellAt = float.NegativeInfinity;
+    private GamePhase lastWorldPhase = GamePhase.None;
+    private Coroutine pendingNightStart;
+
     [Header("EVENTS")]
     public UnityEvent onHordeStart;
     public UnityEvent onHordeEnd;
@@ -104,6 +113,12 @@ public class EnemiesSpawner : MonoBehaviour
 
         GamePhase currentPhase = GameFlowController.Instance.CurrentPhase;
 
+        // WorldPhase: the level-up popup reports CurrentPhase "LevelUp" mid-night, which must not count as a new nightfall.
+        GamePhase worldPhase = GameFlowController.Instance.WorldPhase;
+        if (worldPhase == GamePhase.Night && lastWorldPhase != GamePhase.Night)
+            nightFellAt = Time.time;
+        lastWorldPhase = worldPhase;
+
         if (currentPhase == GamePhase.Night &&
             lastPhase != GamePhase.Night)
         {
@@ -111,14 +126,7 @@ public class EnemiesSpawner : MonoBehaviour
                 (dayTimerController != null &&
                  dayTimerController.NightStartedByTimer))
             {
-                if (IsBossNight())
-                {
-                    StartBossNight();
-                }
-                else
-                {
-                    StartContinuousHorde();
-                }
+                RequestNightStart();
             }
         }
 
@@ -136,15 +144,43 @@ public class EnemiesSpawner : MonoBehaviour
 
         if (GameFlowController.Instance.CurrentPhase == GamePhase.Night && !isSpawning)
         {
-            if (IsBossNight())
-            {
-                StartBossNight();
-            }
-            else
-            {
-                ConfigureEnemyRoulette();
-                StartContinuousHorde();
-            }
+            RequestNightStart();
+        }
+    }
+
+    // Starts tonight's horde or boss night once nightStartDelay has passed since nightfall.
+    private void RequestNightStart()
+    {
+        if (pendingNightStart != null)
+            return;
+        pendingNightStart = StartCoroutine(StartNightWhenReady());
+    }
+
+    private IEnumerator StartNightWhenReady()
+    {
+        // Scaled time, so pause and the level-up popup hold the countdown.
+        float readyAt = nightFellAt + nightStartDelay;
+        while (Time.time < readyAt)
+            yield return null;
+
+        // A level-up popup may be open; wait for it, but give up if the night ended meanwhile.
+        while (GameFlowController.Instance != null &&
+               GameFlowController.Instance.WorldPhase == GamePhase.Night &&
+               GameFlowController.Instance.CurrentPhase != GamePhase.Night)
+            yield return null;
+
+        pendingNightStart = null;
+        if (GameFlowController.Instance == null || GameFlowController.Instance.CurrentPhase != GamePhase.Night)
+            yield break;
+
+        if (IsBossNight())
+        {
+            StartBossNight();
+        }
+        else
+        {
+            ConfigureEnemyRoulette();
+            StartContinuousHorde();
         }
     }
 

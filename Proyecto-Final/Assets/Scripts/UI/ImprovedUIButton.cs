@@ -166,7 +166,7 @@ public class ImprovedUIButton : MonoBehaviour, IPointerEnterHandler, IPointerExi
     {
         if (!enabledFlag || clip == null) return;
         if (SoundManager.Instance == null) return;
-        SoundManager.Instance.PlayAudioClip(clip, _volume);
+        SoundManager.Instance.PlayAudioClip(clip, _volume, ui: true);
     }
     #endregion
 

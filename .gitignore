@@ -95,3 +95,7 @@ Proyecto-Final/Assets/AmplifyShaderEditor/Examples/Built-In Samples.unitypackage
 *.asd
 *.asd.meta
 /odd
+
+# Local audio masters (Suno originals) - kept on disk, not uploaded
+/Proyecto-Final/Assets/Audio/Music/Originals/
+/Proyecto-Final/Assets/Audio/Music/Originals.meta

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 using System;
 using System.Linq;
 
@@ -24,6 +25,34 @@ public class SoundManager : MonoBehaviour
 
     private AudioListener listener;
 
+    // Pooled sources are shared by every kind of sound, so each play picks its mixer group. Game sounds
+    // (enemies, plants, spells, pickups, level up, in-game HUD) go to Effects/Game, which is muffled while
+    // paused or after game over; menu sounds go to Effects/UI and stay clear.
+    [Header("Mixer routing")]
+    [SerializeField] private AudioMixerGroup gameGroup;
+    [SerializeField] private AudioMixerGroup uiGroup;
+    private PauseController pause;
+
+    /// <summary>
+    /// True while a menu has the player's attention (paused, game over, or no gameplay in this scene).
+    /// Anything that starts playing now is menu feedback rather than a game event.
+    /// </summary>
+    private bool MenuMoment
+    {
+        get
+        {
+            if (GameFlowController.Instance == null) return true; // main menu scene
+            if (GameFlowController.Instance.WorldPhase == GamePhase.GameOver) return true;
+            return pause != null && pause.IsPaused;
+        }
+    }
+
+    private void Route(AudioSource source, bool ui)
+    {
+        AudioMixerGroup group = ui || MenuMoment ? uiGroup : gameGroup;
+        if (group != null) source.outputAudioMixerGroup = group;
+    }
+
     // Dictionary to track sounds by name for quick lookup
     private Dictionary<string, Sound> soundLookup = new();
 
@@ -42,6 +71,8 @@ public class SoundManager : MonoBehaviour
 
     private void Start()
     {
+        pause = FindFirstObjectByType<PauseController>();
+
         // Create lookup dictionary for faster sound finding
         foreach (var sound in sounds)
         {
@@ -126,8 +157,9 @@ public class SoundManager : MonoBehaviour
         return position;
     }
 
-    private void ConfigureAudioSource(AudioSource source, Sound sound, float spatialBlend = 0f)
+    private void ConfigureAudioSource(AudioSource source, Sound sound, float spatialBlend = 0f, bool ui = false)
     {
+        Route(source, ui);
         source.clip = sound.clip;
         source.volume = sound.volume;
         source.pitch = sound.pitch;
@@ -153,7 +185,8 @@ public class SoundManager : MonoBehaviour
         return false;
     }
 
-    public void PlayOneShot(string name)
+    /// <param name="ui">Menu feedback (buttons, pause screens): never muffled.</param>
+    public void PlayOneShot(string name, bool ui = false)
     {
         if (!soundLookup.TryGetValue(name, out Sound sound))
         {
@@ -164,14 +197,14 @@ public class SoundManager : MonoBehaviour
         if (playingSources.Count >= MaxSimultaneousSameSound)
         {
             var sourceToRestart = playingSources[0];
-            ConfigureAudioSource(sourceToRestart, sound, 0f);
+            ConfigureAudioSource(sourceToRestart, sound, 0f, ui);
             sourceToRestart.Stop();
             sourceToRestart.PlayOneShot(sound.clip);
             LogPlay(name, sourceToRestart, sound.volume);
             return;
         }
         var audioSource = GetAvailableAudioSource();
-        ConfigureAudioSource(audioSource, sound, 0f);
+        ConfigureAudioSource(audioSource, sound, 0f, ui);
         audioSource.PlayOneShot(sound.clip);
         LogPlay(name, audioSource, sound.volume);
     }
@@ -268,7 +301,9 @@ public class SoundManager : MonoBehaviour
 
         AudioSource source = holder.GetComponent<AudioSource>();
         if (source == null) source = holder.AddComponent<AudioSource>();
-        if (source.outputAudioMixerGroup == null && audioSourcePool.Count > 0 && audioSourcePool[0] != null)
+        if (gameGroup != null)
+            source.outputAudioMixerGroup = gameGroup; // a loop on a world object is always a game sound
+        else if (source.outputAudioMixerGroup == null && audioSourcePool.Count > 0 && audioSourcePool[0] != null)
             source.outputAudioMixerGroup = audioSourcePool[0].outputAudioMixerGroup;
 
         source.playOnAwake = false;
@@ -391,7 +426,7 @@ public class SoundManager : MonoBehaviour
     /// <summary>
     /// Plays a SoundClipData using the pooling and limiting system.
     /// </summary>
-    public AudioSource PlayClip(SoundClipData data, SoundSourceType sourceType = SoundSourceType.Global, Transform parent = null)
+    public AudioSource PlayClip(SoundClipData data, SoundSourceType sourceType = SoundSourceType.Global, Transform parent = null, bool ui = false)
     {
         if (data == null) return null;
         var clip = data.GetClip();
@@ -403,6 +438,7 @@ public class SoundManager : MonoBehaviour
         {
             var sourceToRestart = playingSources[0];
             sourceToRestart.Stop();
+            Route(sourceToRestart, ui);
             sourceToRestart.clip = clip;
             sourceToRestart.volume = data.volume;
             sourceToRestart.pitch = data.GetPitch();
@@ -426,6 +462,7 @@ public class SoundManager : MonoBehaviour
             return sourceToRestart;
         }
         var audioSource = GetAvailableAudioSource();
+        Route(audioSource, ui);
         audioSource.clip = clip;
         audioSource.volume = data.volume;
         audioSource.pitch = data.GetPitch();
@@ -452,7 +489,7 @@ public class SoundManager : MonoBehaviour
     /// <summary>
     /// Plays an GetAudioClip directly using the pooling and limiting system.
     /// </summary>
-    public void PlayAudioClip(AudioClip clip, float volume = 0.5f, float pitch = 1f, bool loop = false)
+    public void PlayAudioClip(AudioClip clip, float volume = 0.5f, float pitch = 1f, bool loop = false, bool ui = false)
     {
         if (clip == null) return;
         if (!loop && StartedJustNow(clip)) return;
@@ -461,6 +498,7 @@ public class SoundManager : MonoBehaviour
         {
             var sourceToRestart = playingSources[0];
             sourceToRestart.Stop();
+            Route(sourceToRestart, ui);
             sourceToRestart.clip = clip;
             sourceToRestart.volume = volume;
             sourceToRestart.pitch = pitch;
@@ -475,6 +513,7 @@ public class SoundManager : MonoBehaviour
             return;
         }
         var audioSource = GetAvailableAudioSource();
+        Route(audioSource, ui);
         audioSource.clip = clip;
         audioSource.volume = volume;
         audioSource.pitch = pitch;

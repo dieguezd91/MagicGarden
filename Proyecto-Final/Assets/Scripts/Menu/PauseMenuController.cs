@@ -231,7 +231,7 @@ public class PauseMenuController : UIControllerBase
             _optionsMenuPanel.Show();
         }
 
-        SoundManager.Instance.PlayOneShot("ButtonClick");
+        SoundManager.Instance.PlayOneShot("ButtonClick", ui: true);
     }
 
     public void HideOptions()
@@ -239,7 +239,7 @@ public class PauseMenuController : UIControllerBase
         if (_optionsMenuPanel != null)
             _optionsMenuPanel.Hide();
         ShowPauseMenu();
-        SoundManager.Instance.PlayOneShot("ButtonClick");
+        SoundManager.Instance.PlayOneShot("ButtonClick", ui: true);
     }
 
     public void ShowInstructions()
@@ -250,7 +250,7 @@ public class PauseMenuController : UIControllerBase
         }
         else
         {
-            SoundManager.Instance?.PlayOneShot("ButtonClick");
+            SoundManager.Instance?.PlayOneShot("ButtonClick", ui: true);
         }
     }
 
@@ -261,7 +261,7 @@ public class PauseMenuController : UIControllerBase
         if (_pauseMenuPanel != null)
             _pauseMenuPanel.Hide();
 
-        SoundManager.Instance.PlayOneShot("ButtonClick");
+        SoundManager.Instance.PlayOneShot("ButtonClick", ui: true);
         SceneLoaderManager.Instance.LoadSceneByNameWithTransition("Menu");
     }
 

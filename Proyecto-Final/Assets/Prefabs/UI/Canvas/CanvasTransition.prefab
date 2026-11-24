@@ -735,7 +735,7 @@ MonoBehaviour:
   minimumLoadTime: 0.05
   fadeOutSound: {fileID: 8300000, guid: c91fcf414acc0344cb03b13996f1bf3b, type: 3}
   fadeInSound: {fileID: 8300000, guid: c91fcf414acc0344cb03b13996f1bf3b, type: 3}
-  transitionMixerGroup: {fileID: -8065833381815908007, guid: 5e6626574c6616a40a8e778a90666ada, type: 2}
+  transitionMixerGroup: {fileID: -633828639928632731, guid: 5e6626574c6616a40a8e778a90666ada, type: 2}
   transitionVolume: 0.6
 --- !u!1 &8922142490168992429
 GameObject:
