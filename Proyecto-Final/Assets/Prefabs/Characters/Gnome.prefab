@@ -4984,7 +4984,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 6d5204eb7bf37224686f402032879c57, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5309,7 +5309,16 @@ MonoBehaviour:
     pitchVariation: 0.1
     loop: 0
     randomizeClip: 1
-    cooldownTime: 0.0
+    cooldownTime: 0
+  impact:
+    clips:
+    - {fileID: 8300000, guid: 234c3752abfc4cda82469a0a5cd3719e, type: 3}
+    volume: 0.65
+    pitch: 1
+    pitchVariation: 0.06
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
   special:
     clips: []
     volume: 1
@@ -5334,15 +5343,6 @@ MonoBehaviour:
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
-  impact:
-    clips:
-    - {fileID: 8300000, guid: 234c3752abfc4cda82469a0a5cd3719e, type: 3}
-    volume: 0.65
-    pitch: 1
-    pitchVariation: 0.06
-    loop: 0
-    randomizeClip: 1
-    cooldownTime: 0.0
 --- !u!1001 &2888283139860618534
 PrefabInstance:
   m_ObjectHideFlags: 0
