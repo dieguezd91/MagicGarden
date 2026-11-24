@@ -581,6 +581,7 @@ public class PlayerAbilitySystem : MonoBehaviour
         SoundManager.Instance.Play("Remove");
         TilePlantingSystem.Instance.UnregisterPlantAt(cellPos);
         Destroy(plant.gameObject);
+        dayTimerController?.ConsumeAction(DayTimerController.DayActionType.Water);
         warningBubble?.ShowMessage("Plant removed.");
         TutorialEvents.InvokePlantRemoved();
 
