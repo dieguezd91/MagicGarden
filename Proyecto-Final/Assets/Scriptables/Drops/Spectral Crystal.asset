@@ -15,7 +15,7 @@ MonoBehaviour:
   materialName: Spectral Crystal
   materialIcon: {fileID: 1950191755, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   materialType: 1
-  materialDescription: Material used to craft new plants
+  materialDescription: Material used to buy new upgrades at the cauldron
   rarity: 1
   isDropped: 1
   isProduct: 1

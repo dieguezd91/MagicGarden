@@ -15,7 +15,7 @@ MonoBehaviour:
   materialName: Eternal Ember
   materialIcon: {fileID: 1807988885, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   materialType: 4
-  materialDescription: Material used to craft new plants
+  materialDescription: Material used to buy new upgrades at the cauldron
   rarity: 2
   isDropped: 1
   isProduct: 1

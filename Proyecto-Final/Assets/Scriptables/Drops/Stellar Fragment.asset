@@ -15,7 +15,7 @@ MonoBehaviour:
   materialName: Stellar Fragment
   materialIcon: {fileID: 79329245, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   materialType: 5
-  materialDescription: 
+  materialDescription: Material used to buy new upgrades at the cauldron
   rarity: 3
   isDropped: 1
   isProduct: 1

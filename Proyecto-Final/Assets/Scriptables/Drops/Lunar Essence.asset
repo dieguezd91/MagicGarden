@@ -15,7 +15,7 @@ MonoBehaviour:
   materialName: Lunar Essence
   materialIcon: {fileID: -1061087, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   materialType: 6
-  materialDescription: 
+  materialDescription: Material used to buy new upgrades at the cauldron
   rarity: 3
   isDropped: 1
   isProduct: 1
