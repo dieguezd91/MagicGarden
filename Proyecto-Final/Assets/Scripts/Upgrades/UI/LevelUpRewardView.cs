@@ -38,10 +38,12 @@ public sealed class LevelUpRewardView : MonoBehaviour
     [SerializeField] private ModalTween tween = new ModalTween();
     // Rows enter one by one after the card pops in. Everything runs on unscaled time (timeScale is 0 during a level-up).
     [Header("Rows (enter one by one after the card pops in)")]
-    [Tooltip("Seconds between one row starting to enter and the next one starting")]
-    [SerializeField, Min(0f)] private float rowStagger = 0.1f;
+    [Tooltip("Reading pause after a row finishes entering, bouncing and counting, before the next row enters")]
+    [SerializeField, Min(0f)] private float rowReadingGap = 0.35f;
+    [Tooltip("Seconds to read the final reward state after all row effects finish, before Continue unlocks")]
+    [SerializeField, Min(0f)] private float finalHoldDuration = 0.5f;
     [Tooltip("Seconds each row takes to fade and scale in")]
-    [SerializeField, Min(0f)] private float rowDuration = 0.2f;
+    [SerializeField, Min(0f)] private float rowDuration = 0.25f;
     [Tooltip("Scale a row starts from before growing to 1")]
     [SerializeField, Range(0f, 1f)] private float rowStartScale = 0.6f;
     [Tooltip("Ease of the row scale")]
@@ -53,7 +55,7 @@ public sealed class LevelUpRewardView : MonoBehaviour
     [SerializeField, Min(0f)] private float iconBounceDuration = 0.3f;
     [Header("Plant limit (counts from the previous limit to the new one, then punches)")]
     [Tooltip("Seconds the plant limit number takes to count from the previous limit to the new one")]
-    [SerializeField, Min(0f)] private float plantLimitCountDuration = 0.35f;
+    [SerializeField, Min(0f)] private float plantLimitCountDuration = 0.5f;
     [Tooltip("Peak scale of the plant limit text during its punch (1 = no punch)")]
     [SerializeField, Min(1f)] private float plantLimitPunchScale = 1.3f;
     [Tooltip("Seconds the plant limit punch lasts")]
@@ -102,13 +104,12 @@ public sealed class LevelUpRewardView : MonoBehaviour
             ? TextFormat.Apply(resolvedPlantLimitFormat, DefaultPlantLimitFormat, rewardBonus, rewardLimit)
             : TextFormat.Apply(plantLimitBonusOnlyFormat, DefaultPlantLimitBonusOnlyFormat, rewardBonus);
         plantLimitLabel.text = finalPlantLimitText;
-        bool fresh = !root.activeSelf || tween.IsClosing;
         afterClose = null;
+        tween.Kill();
         KillRows(true);
         root.SetActive(true);
         PrepareRows();
-        if (fresh) tween.Open(Content, Group, StartRows);
-        else if (!tween.IsRunning) StartRows();
+        tween.Open(Content, Group, StartRows);
         EventSystem.current?.SetSelectedGameObject(continueButton.gameObject);
         return true;
     }
@@ -139,9 +140,9 @@ public sealed class LevelUpRewardView : MonoBehaviour
     private void Finish()
     {
         tween.Kill();
-        if (root != null) root.SetActive(false);
         var next = afterClose;
         afterClose = null;
+        if (root != null) root.SetActive(false);
         next?.Invoke();
     }
 
@@ -158,6 +159,7 @@ public sealed class LevelUpRewardView : MonoBehaviour
     private void PrepareRows()
     {
         if (!Application.isPlaying) return; // outside Play Mode the rows are already in their final state
+        continueButton.interactable = false;
         foreach (var slot in ActiveRows())
         {
             RowGroup(slot).alpha = 0f;
@@ -184,6 +186,7 @@ public sealed class LevelUpRewardView : MonoBehaviour
     {
         KillRows(false);
         if (!Application.isPlaying) { SnapRows(); return; }
+        continueButton.interactable = false;
         var sequence = DOTween.Sequence().SetUpdate(true);
         float enter = Mathf.Max(0.001f, rowDuration), at = 0f;
         foreach (var slot in ActiveRows())
@@ -194,8 +197,11 @@ public sealed class LevelUpRewardView : MonoBehaviour
             if (slot == seedSlot) AddIconBounce(sequence, seedIcon, at);
             else if (slot == spellSlot) AddIconBounce(sequence, spellIcon, at);
             else AddPlantLimit(sequence, at + enter);
-            at += rowStagger;
+            // Include the actual icon/count/punch end, not just the row's entrance.
+            at = sequence.Duration() + Mathf.Max(0f, rowReadingGap);
         }
+        // No inter-row gap after the last row: the final reading hold takes its place.
+        sequence.AppendInterval(Mathf.Max(0f, finalHoldDuration));
         if (sequence.Duration() <= 0f) { sequence.Kill(); SnapRows(); return; }
         rowSequence = sequence;
         rowsRunning = true;
@@ -221,7 +227,7 @@ public sealed class LevelUpRewardView : MonoBehaviour
                 if (value == shown) return;
                 shown = value;
                 plantLimitLabel.text = TextFormat.Apply(resolvedPlantLimitFormat, DefaultPlantLimitFormat, rewardBonus, value);
-            }, 1f, count).SetEase(Ease.Linear));
+            }, 1f, count).SetEase(Ease.Linear).OnComplete(() => plantLimitLabel.text = finalPlantLimitText));
             punchAt += count;
         }
         if (plantLimitPunchScale > 1f)
@@ -240,6 +246,7 @@ public sealed class LevelUpRewardView : MonoBehaviour
         if (spellIcon != null) spellIcon.rectTransform.localScale = Vector3.one;
         plantLimitLabel.rectTransform.localScale = Vector3.one;
         if (finalPlantLimitText != null) plantLimitLabel.text = finalPlantLimitText;
+        continueButton.interactable = true;
     }
 
     private void KillRows(bool snap)
@@ -263,5 +270,13 @@ public sealed class LevelUpRewardView : MonoBehaviour
         return string.Join(", ", names);
     }
 
-    private void OnDestroy() { tween?.Kill(); KillRows(false); if (continueButton != null) continueButton.onClick.RemoveListener(Continue); }
+    private void OnDisable()
+    {
+        afterClose = null;
+        tween?.Kill();
+        KillRows(true);
+        if (IsConfigured) tween?.Snap(Content, Group, true);
+    }
+
+    private void OnDestroy() { tween?.Kill(); KillRows(true); if (continueButton != null) continueButton.onClick.RemoveListener(Continue); }
 }

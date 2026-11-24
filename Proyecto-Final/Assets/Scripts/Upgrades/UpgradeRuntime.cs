@@ -20,6 +20,10 @@ public sealed class UpgradeRuntime : MonoBehaviour
     private PlayerExperienceSystem experience;
     private int lastRewardLevel;
     private LevelUpIndicator indicator;
+    private ExperienceUIController experienceFeedback;
+    private NightToDayTransitionController nightTransition;
+    public bool HasPendingLevelPresentation => isActiveAndEnabled && panel != null && panel.IsReady &&
+        ((experience != null && experience.PendingChoices > 0) || choosing || panel.HasLevelPresentation);
     private LifeController playerLife;
     private PlayerMovementController movement;
     private PauseController pause;
@@ -60,6 +64,8 @@ public sealed class UpgradeRuntime : MonoBehaviour
         if (experience == null) { Debug.LogError("Magic Garden requires the scene's PlayerExperienceSystem."); enabled = false; return; }
         playerLife = experience.GetComponent<LifeController>();
         indicator = experience.GetComponentInChildren<LevelUpIndicator>(true); // Optional feedback: a missing one never blocks the flow.
+        experienceFeedback = FindObjectOfType<ExperienceUIController>();
+        nightTransition = FindObjectOfType<NightToDayTransitionController>();
         movement = experience.GetComponent<PlayerMovementController>();
         pause = FindObjectOfType<PauseController>();
         baseHealth = playerLife != null ? playerLife.maxHealth : 0;
@@ -96,8 +102,12 @@ public sealed class UpgradeRuntime : MonoBehaviour
         if (tutorial != null && tutorial.IsTutorialActive() &&
             (tutorial.IsPlayerGated() || !tutorial.CanAcceptPlayerInput() ||
              tutorial.GetCurrentObjectiveType() == TutorialObjectiveType.Wait || (tutorialUI != null && tutorialUI.IsTyping))) return;
-        // The level-up icon above the player plays first; the unlock/upgrade modals open once it finished.
-        if (indicator != null && indicator.IsPlaying) return;
+        // Choices remain allowed during the night controller's reward wait, never during its collapse/fade/wake.
+        if (nightTransition != null && nightTransition.IsPlayingAnimation) return;
+        if (FloatingTextController.Instance != null && FloatingTextController.Instance.IsShowingGoldFeedback) return;
+        if (indicator != null && indicator.HasPendingPresentation) return;
+        // Only the night sequence adds the full XP settle barrier; ordinary orb-level modal timing stays unchanged.
+        if (nightTransition != null && nightTransition.IsTransitioning && experienceFeedback != null && experienceFeedback.IsPresentationBusy) return;
         if (!flow.Open(UIModal.LevelUp)) return;
         savedScale = Time.timeScale;
         choosing = true;

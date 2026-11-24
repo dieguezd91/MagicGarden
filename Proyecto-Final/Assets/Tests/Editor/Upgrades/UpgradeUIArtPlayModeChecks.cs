@@ -278,14 +278,14 @@ public class UpgradeUIArtPlayModeChecks
     }
     private static bool Choosing(Game g) => (bool)Property(g.flow, "IsChoosingUpgrade");
     // The level-up modals tween in/out on unscaled time; selection is blocked until they settle, so flows wait for it.
-    private static IEnumerator WaitIdle(Component reward, Component level, float seconds = 3f)
+    private static IEnumerator WaitIdle(Component reward, Component level, float seconds = 5f)
     {
         float end = Time.realtimeSinceStartup + seconds;
         yield return null;
         while (Time.realtimeSinceStartup < end && ((bool)Property(reward, "IsAnimating") || (bool)Property(level, "IsAnimating"))) yield return null;
         Assert.That(Property(reward, "IsAnimating"), Is.False, "reward tween settled"); Assert.That(Property(level, "IsAnimating"), Is.False, "level-up tween settled");
     }
-    private static IEnumerator WaitIdle(Game g, float seconds = 3f) => WaitIdle(g.reward, g.level, seconds);
+    private static IEnumerator WaitIdle(Game g, float seconds = 5f) => WaitIdle(g.reward, g.level, seconds);
     private static bool RewardHasContent(Game g, int level)
     {
         var reward = Call(g.unlocks, "GetLevelReward", level);
@@ -328,6 +328,12 @@ public class UpgradeUIArtPlayModeChecks
         var g = SetupGame();
         Call(g.experience, "AddExperience", 100);
         Assert.That(Property(g.indicator, "IsPlaying"), Is.True, "plays the same frame the level is gained");
+        // Sample deterministically while the ring is active; the old .75s shots are after it has faded.
+        Call(g.indicator, "Tick", .18f);
+        var ring = (SpriteRenderer)Field(g.indicator, "ring");
+        Assert.That(ring, Is.Not.Null); Assert.That(ring.enabled, Is.True);
+        CaptureCloseUp(Camera.main, g.experience.transform, ring.transform, "runtime-levelup-ring-peak", 1280, 720);
+        Call(g.indicator, "Play");
         float start = Time.realtimeSinceStartup;
         yield return new WaitForSecondsRealtime(.75f);
         Assert.That(Property(g.indicator, "IsPlaying"), Is.True);
@@ -353,6 +359,263 @@ public class UpgradeUIArtPlayModeChecks
         Assert.That(played, Is.InRange(1.0f, 2.5f));
         yield return WaitForChoosing(g.flow, 3f, "modal opens once the indicator finished");
         Assert.That(Property(g.modal, "CurrentModal").ToString(), Is.EqualTo("LevelUp"));
+        yield return new ExitPlayMode();
+    }
+    [UnityTest] public IEnumerator ExperienceBarEndsOnTheExactValueAfterAGainAndOnTheNewLevelRangeAfterSeveralLevels()
+    {
+        yield return new EnterPlayMode();
+        yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/Game.unity", new LoadSceneParameters(LoadSceneMode.Single));
+        for (int i = 0; i < 15; i++) yield return null;
+        var g = SetupGame();
+        var bar = Find("ExperienceUIController"); Assert.That(bar, Is.Not.Null, "the Game scene has the XP bar");
+        var slider = (Component)Field(bar, "xpSlider"); var levelText = (Component)Field(bar, "levelText"); var xpText = (Component)Field(bar, "xpText");
+        var scale = slider.transform.localScale;
+        yield return null;
+        Call(g.experience, "AddExperience", 10);
+        yield return new WaitForSecondsRealtime(.04f);
+        Assert.That((float)Property(slider, "value"), Is.LessThan(10f), "fill is animated, not snapped");
+        yield return Capture(g.canvas, slider.gameObject, "runtime-xp-mid-fill", 1920, 1080, false, true);
+        yield return WaitBarValue(g, slider, 2f);
+        Assert.That(Property(slider, "value"), Is.EqualTo(10f));
+        Assert.That(Property(slider, "maxValue"), Is.EqualTo((float)(int)Property(g.experience, "ExperienceRequired")));
+        Call(g.experience, "AddExperience", 400);
+        int level = (int)Property(g.experience, "CurrentLevel");
+        Assert.That(level, Is.GreaterThanOrEqualTo(3), "several levels in one gain");
+        Assert.That(Property(levelText, "text"), Is.EqualTo("LV. " + level), "texts update immediately");
+        Assert.That(Property(xpText, "text"), Is.EqualTo((int)Property(g.experience, "CurrentExperience") + " / " + (int)Property(g.experience, "ExperienceRequired") + " XP"));
+        yield return WaitBarValue(g, slider, 4f);
+        int required = (int)Property(g.experience, "ExperienceRequired");
+        int floor = (int)Call(Property(g.experience, "ProgressionData"), "GetLevelThreshold", level);
+        Assert.That(Property(slider, "minValue"), Is.EqualTo((float)floor));
+        Assert.That(Property(slider, "maxValue"), Is.EqualTo((float)(required > floor ? required : floor + 1)));
+        Assert.That(Property(slider, "value"), Is.EqualTo((float)(int)Property(g.experience, "CurrentExperience")));
+        Assert.That(slider.transform.localScale.x, Is.EqualTo(scale.x).Within(1e-3f), "the punch leaves no scale drift");
+        yield return Capture(g.canvas, slider.gameObject, "runtime-xp-settled", 1920, 1080, false, true);
+        yield return new ExitPlayMode();
+    }
+    private static IEnumerator WaitBarValue(Game g, Component slider, float seconds)
+    {
+        float end = Time.realtimeSinceStartup + seconds;
+        float expected = (int)Property(g.experience, "CurrentExperience");
+        // An approximate intermediate value is not completion: the controller writes the exact target on completion.
+        while (Time.realtimeSinceStartup < end && (float)Property(slider, "value") != expected) yield return null;
+        Assert.That((float)Property(slider, "value"), Is.EqualTo(expected), "XP animation must reach its exact target before the deadline");
+    }
+    [UnityTest] public IEnumerator ManaPickupVisibleInkMatchesMaterialIconHeight()
+    {
+        yield return new EnterPlayMode();
+        yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/Game.unity", new LoadSceneParameters(LoadSceneMode.Single));
+        for (int i = 0; i < 15; i++) yield return null;
+        var g = SetupGame();
+        var labels = ShowPickupGeometrySamples(g);
+        yield return new WaitForSecondsRealtime(.65f);
+        var mana = PickupVisibleInk(labels[0], out var manaCap, out var manaPlus);
+        var crystal = PickupVisibleInk(labels[1], out var crystalCap, out var crystalPlus);
+        CaptureCloseUp(Camera.main, g.experience.transform, labels[0].transform.parent, "runtime-pickup-icon-size", 1280, 720);
+        Assert.That(mana.size.y / crystal.size.y, Is.EqualTo(1f).Within(.1f), "compare visible artwork, not transparent sprite quads");
+        Assert.That(mana.center.y, Is.EqualTo(manaCap.center.y).Within(manaCap.size.y * .25f), "larger mana stays vertically centered on the text");
+        yield return new ExitPlayMode();
+    }
+    [UnityTest] public IEnumerator PickupIconTextGapsAreCompactWithoutOverlapping()
+    {
+        yield return new EnterPlayMode();
+        yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/Game.unity", new LoadSceneParameters(LoadSceneMode.Single));
+        for (int i = 0; i < 15; i++) yield return null;
+        var g = SetupGame();
+        var labels = ShowPickupGeometrySamples(g);
+        yield return new WaitForSecondsRealtime(.65f);
+        foreach (var label in labels)
+        {
+            var ink = PickupVisibleInk(label, out var cap, out var plus);
+            float gap = (plus.min.x - ink.max.x) / cap.size.y;
+            Debug.Log("PICKUP_VISIBLE_GAP text=" + Property(label, "text") + " capFraction=" + gap);
+            Assert.That(gap, Is.InRange(0f, .3f), "icon-to-text gap must be compact and not overlap");
+        }
+        yield return new ExitPlayMode();
+    }
+    private static Component[] ShowPickupGeometrySamples(Game g)
+    {
+        var feedback = g.experience.GetComponentInChildren(TypeOf("FloatingTextController"), true);
+        string manaPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("ManaItem t:Prefab").Single());
+        var mana = AssetDatabase.LoadAssetAtPath<GameObject>(manaPath).GetComponentInChildren<SpriteRenderer>(true).sprite;
+        var crystal = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemy Materials/Spectral Crystal.prefab").GetComponentInChildren<SpriteRenderer>(true).sprite;
+        Call(feedback, "ShowPickup", "Mana", 10, mana);
+        Call(feedback, "ShowPickup", "Spectral Crystal", 3, crystal);
+        var panel = (Transform)Field(feedback, "pickupPanel");
+        var labels = Components(panel.gameObject, "TMPro.TextMeshProUGUI");
+        return new[] { labels.Single(l => ((string)Property(l, "text")).EndsWith("Mana")), labels.Single(l => ((string)Property(l, "text")).EndsWith("Spectral Crystal")) };
+    }
+    // Pixel alpha establishes visible artwork bounds; TMP quads include the transparent padding that caused this regression.
+    private static Bounds PickupVisibleInk(Component label, out Bounds cap, out Bounds plus)
+    {
+        Call(label, "ForceMeshUpdate", true, true);
+        var info = Property(label, "textInfo");
+        var chars = ((Array)Field(info, "characterInfo")).Cast<object>().Take((int)Field(info, "characterCount")).ToArray();
+        var sprite = chars.Single(c => Field(c, "elementType").ToString() == "Sprite" && (bool)Field(c, "isVisible"));
+        var glyph = Property(Field(sprite, "textElement"), "glyph");
+        var rect = Property(glyph, "glyphRect");
+        int x = (int)Property(rect, "x"), y = (int)Property(rect, "y");
+        int w = (int)Property(rect, "width"), h = (int)Property(rect, "height");
+        var texture = ((Sprite)Field(glyph, "sprite")).texture;
+        var previous = RenderTexture.active;
+        var target = RenderTexture.GetTemporary(texture.width, texture.height, 0, RenderTextureFormat.ARGB32);
+        var readable = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false);
+        int minX = w, minY = h, maxX = -1, maxY = -1;
+        try
+        {
+            Graphics.Blit(texture, target); RenderTexture.active = target;
+            readable.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0); readable.Apply(false, false);
+            var pixels = readable.GetPixels32();
+            for (int row = 0; row < h; row++) for (int col = 0; col < w; col++)
+            {
+                if (pixels[(y + row) * texture.width + x + col].a <= 16) continue;
+                minX = Mathf.Min(minX, col); minY = Mathf.Min(minY, row);
+                maxX = Mathf.Max(maxX, col); maxY = Mathf.Max(maxY, row);
+            }
+        }
+        finally
+        {
+            RenderTexture.active = previous; RenderTexture.ReleaseTemporary(target);
+            UnityEngine.Object.DestroyImmediate(readable);
+        }
+        Assert.That(maxX >= minX && maxY >= minY, Is.True, "glyph must contain actual visible pixels");
+        Bounds CharacterBounds(object character)
+        {
+            var result = new Bounds(); result.SetMinMax((Vector3)Field(character, "bottomLeft"), (Vector3)Field(character, "topRight")); return result;
+        }
+        cap = CharacterBounds(chars.First(c => Field(c, "elementType").ToString() == "Character" && (bool)Field(c, "isVisible") && char.IsUpper((char)Field(c, "character"))));
+        plus = CharacterBounds(chars.First(c => (char)Field(c, "character") == '+' && (bool)Field(c, "isVisible")));
+        var quad = CharacterBounds(sprite);
+        var ink = new Bounds();
+        ink.SetMinMax(quad.min + Vector3.Scale(quad.size, new Vector3((float)minX / w, (float)minY / h, 0)),
+            quad.min + Vector3.Scale(quad.size, new Vector3((float)(maxX + 1) / w, (float)(maxY + 1) / h, 0)));
+        Debug.Log("PICKUP_VISIBLE_INK text=" + Property(label, "text") + " pixels=" + (maxX - minX + 1) + "x" + (maxY - minY + 1) + " height=" + ink.size.y + " cap=" + cap.size.y);
+        return ink;
+    }
+    [UnityTest] public IEnumerator SimultaneousResourcePickupsStackAsEntriesWhoseTextStaysOnOneLine()
+    {
+        yield return new EnterPlayMode();
+        yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/Game.unity", new LoadSceneParameters(LoadSceneMode.Single));
+        for (int i = 0; i < 15; i++) yield return null;
+        var g = SetupGame();
+        var feedback = g.experience.GetComponentInChildren(TypeOf("FloatingTextController"), true);
+        string manaPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("ManaItem t:Prefab").Single());
+        var mana = AssetDatabase.LoadAssetAtPath<GameObject>(manaPath).GetComponentInChildren<SpriteRenderer>(true).sprite;
+        var crystal = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemy Materials/Spectral Crystal.prefab").GetComponentInChildren<SpriteRenderer>(true).sprite;
+        Call(feedback, "ShowPickup", "Mana", 10, mana);
+        Call(feedback, "ShowPickup", "Spectral Crystal", 3, crystal);
+        var sourceAsset = Field(feedback, "itemSpriteAsset");
+        foreach (var resource in new[] { "WindwalkerEssence", "VoltaicCore", "EternalEmber" })
+        {
+            int index = (int)Call(sourceAsset, "GetSpriteIndexFromName", resource);
+            Assert.That(index, Is.GreaterThanOrEqualTo(0));
+            var character = ((IList)Property(sourceAsset, "spriteCharacterTable"))[index];
+            var icon = (Sprite)Field(Property(character, "glyph"), "sprite");
+            Call(feedback, "ShowPickup", resource, 2, icon);
+        }
+        yield return new WaitForSecondsRealtime(.65f);
+        var panel = (Transform)Field(feedback, "pickupPanel");
+        var labels = Components(panel.gameObject, "TMPro.TextMeshProUGUI");
+        Assert.That(labels.Length, Is.EqualTo(5));
+        var manaLabel = labels.Single(l => ((string)Property(l, "text")).EndsWith("+10 Mana"));
+        var crystalLabel = labels.Single(l => ((string)Property(l, "text")).EndsWith("+3 Spectral Crystal"));
+        var centers = new List<Vector3>(); float capHeight = 0f;
+        foreach (var label in labels)
+        {
+            Call(label, "ForceMeshUpdate", true, true);
+            var info = Property(label, "textInfo");
+            Assert.That(Field(info, "lineCount"), Is.EqualTo(1), "icon, amount and name read on one line: " + Property(label, "text"));
+            var chars = ((Array)Field(info, "characterInfo")).Cast<object>().Take((int)Field(info, "characterCount")).Where(c => (bool)Field(c, "isVisible")).ToArray();
+            Assert.That(chars.Select(c => (int)Field(c, "lineNumber")).Distinct().Count(), Is.EqualTo(1), "no visible character drops to another line");
+            var letter = chars.First(c => Field(c, "elementType").ToString() == "Character" && char.IsUpper((char)Field(c, "character")));
+            var min = (Vector3)Field(letter, "bottomLeft"); var max = (Vector3)Field(letter, "topRight");
+            float letterCenter = ((min + max) * .5f).y, letterHeight = max.y - min.y;
+            foreach (var c in chars)
+            {
+                float center = (((Vector3)Field(c, "bottomLeft")).y + ((Vector3)Field(c, "topRight")).y) * .5f;
+                Assert.That(center, Is.EqualTo(letterCenter).Within(letterHeight * .6f), "every glyph and icon of an entry sits on the same line");
+            }
+            centers.Add(label.transform.TransformPoint((min + max) * .5f));
+            capHeight = Mathf.Max(capHeight, label.transform.TransformVector(max - min).y);
+        }
+        CaptureWorld(Camera.main, "runtime-pickups-stacked-single-line-entries", 1280, 720);
+        var rows = centers.Select(c => c.y).OrderBy(y => y).ToArray();
+        for (int i = 1; i < rows.Length; i++)
+            Assert.That(rows[i] - rows[i - 1], Is.GreaterThan(capHeight), "different resources stack one above the other without overlapping");
+        // Batchmode's Game view aspect is arbitrary; judge visibility at the same 16:9 framing as the capture.
+        Camera.main.aspect = 16f / 9f;
+        for (int i = 0; i < labels.Length; i++)
+        {
+            var bounds = (Bounds)Property(labels[i], "textBounds");
+            var min = labels[i].transform.TransformPoint(bounds.min); var max = labels[i].transform.TransformPoint(bounds.max);
+            Assert.That(Camera.main.WorldToViewportPoint(min).x, Is.GreaterThanOrEqualTo(0f), "the complete row stays visible");
+            Assert.That(Camera.main.WorldToViewportPoint(max).x, Is.LessThanOrEqualTo(1f), "the complete row stays visible");
+        }
+        Camera.main.ResetAspect();
+        Call(feedback, "ShowPickup", "Mana", 5, mana);
+        yield return new WaitForSecondsRealtime(.6f);
+        Assert.That(Components(panel.gameObject, "TMPro.TextMeshProUGUI").Length, Is.EqualTo(5), "repeated resources reuse their inline entry");
+        Assert.That(Property(manaLabel, "text"), Does.EndWith("+15 Mana"));
+        Assert.That(Property(crystalLabel, "text"), Does.EndWith("+3 Spectral Crystal"));
+        yield return new ExitPlayMode();
+    }
+    [UnityTest] public IEnumerator ManaPickupRendersItsSpriteCountsRepeatedGainsAndSettlesWithoutScaleDrift()
+    {
+        yield return new EnterPlayMode();
+        yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/Game.unity", new LoadSceneParameters(LoadSceneMode.Single));
+        for (int i = 0; i < 15; i++) yield return null;
+        var g = SetupGame();
+        var feedback = g.experience.GetComponentInChildren(TypeOf("FloatingTextController"), true);
+        Assert.That(feedback, Is.Not.Null);
+        string manaPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("ManaItem t:Prefab").Single());
+        var mana = AssetDatabase.LoadAssetAtPath<GameObject>(manaPath).GetComponentInChildren<SpriteRenderer>(true).sprite;
+        Call(feedback, "ShowPickup", "Mana", 1, mana);
+        yield return new WaitForSecondsRealtime(.4f);
+        var panel = (Transform)Field(feedback, "pickupPanel");
+        var label = Components(panel.gameObject, "TMPro.TextMeshProUGUI").Single();
+        Call(label, "ForceMeshUpdate", true, true);
+        var textInfo = Property(label, "textInfo");
+        var characters = ((Array)Field(textInfo, "characterInfo")).Cast<object>().Take((int)Field(textInfo, "characterCount")).ToArray();
+        Debug.Log("MANA_RENDER_PROBE sprite=" + mana.name + " resolved=" + Call(feedback, "ResolveSpriteName", mana.name) +
+            " text=" + Property(label, "text") + " active=" + label.gameObject.activeInHierarchy +
+            " enabled=" + ((Behaviour)label).enabled + " canvas=" + label.GetComponentInParent<Canvas>());
+        foreach (var character in characters)
+            Debug.Log("MANA_CHARACTER type=" + Field(character, "elementType") + " visible=" + Field(character, "isVisible") +
+                " spriteIndex=" + Field(character, "spriteIndex") + " asset=" + Field(character, "spriteAsset") +
+                " min=" + Field(character, "bottomLeft") + " max=" + Field(character, "topRight"));
+        // TMP 3.0.7 can overwrite spriteCount after parsing; require actual visible sprite geometry instead.
+        var sprites = characters.Where(c => Field(c, "elementType").ToString() == "Sprite" && (bool)Field(c, "isVisible")).ToArray();
+        Assert.That(sprites.Length, Is.EqualTo(1), "the mana icon must generate visible sprite geometry");
+        var spriteInfo = sprites.Single();
+        Assert.That((int)Field(spriteInfo, "spriteIndex"), Is.GreaterThanOrEqualTo(0));
+        var renderedGlyph = Property(Field(spriteInfo, "textElement"), "glyph");
+        Assert.That((Sprite)Field(renderedGlyph, "sprite") == mana, Is.True, "the pickup copy retains the actual mana artwork");
+        var sharedAsset = Field(feedback, "itemSpriteAsset");
+        int sharedIndex = (int)Call(sharedAsset, "GetSpriteIndexFromName", mana.name);
+        var sharedCharacter = ((IList)Property(sharedAsset, "spriteCharacterTable"))[sharedIndex];
+        var sharedRect = Property(Property(sharedCharacter, "glyph"), "glyphRect");
+        Assert.That(Property(sharedRect, "width"), Is.EqualTo(16), "the shared shop/HUD glyph must not be cropped");
+        Assert.That(Property(sharedRect, "height"), Is.EqualTo(16));
+        var scale = label.transform.localScale;
+        CaptureCloseUp(Camera.main, g.experience.transform, label.transform, "runtime-mana-pickup", 1280, 720);
+        var letterInfo = characters.First(c => (char)Field(c, "character") == 'M');
+        var spriteMin = (Vector3)Field(spriteInfo, "bottomLeft"); var spriteMax = (Vector3)Field(spriteInfo, "topRight");
+        var letterMin = (Vector3)Field(letterInfo, "bottomLeft"); var letterMax = (Vector3)Field(letterInfo, "topRight");
+        float iconCenter = (spriteMin.y + spriteMax.y) * .5f;
+        float textCenter = (letterMin.y + letterMax.y) * .5f;
+        float capHeight = letterMax.y - letterMin.y;
+        Assert.That(spriteMax.x, Is.GreaterThan(spriteMin.x), "sprite has rendered width");
+        Assert.That(spriteMax.y, Is.GreaterThan(spriteMin.y), "sprite has rendered height");
+        Assert.That(spriteMin.x, Is.GreaterThanOrEqualTo((float)Field(spriteInfo, "origin") - .001f), "mana icon must not draw left of its inline origin");
+        Debug.Log("MANA_ALIGNMENT iconCenter=" + iconCenter + " textCenter=" + textCenter + " capHeight=" + capHeight);
+        Assert.That(iconCenter, Is.EqualTo(textCenter).Within(capHeight * .25f), "mana icon must be vertically aligned with the text, not centered on its baseline");
+        Call(feedback, "ShowPickup", "Mana", 9, mana);
+        yield return new WaitForSecondsRealtime(.08f);
+        CaptureCloseUp(Camera.main, g.experience.transform, label.transform, "runtime-mana-counting", 1280, 720);
+        yield return new WaitForSecondsRealtime(.6f);
+        Assert.That((string)Property(label, "text"), Does.EndWith("+10 Mana"));
+        Assert.That(label.transform.localScale, Is.EqualTo(scale), "repeat restores the exact resting scale");
+        CaptureCloseUp(Camera.main, g.experience.transform, label.transform, "runtime-mana-settled", 1280, 720);
         yield return new ExitPlayMode();
     }
     [UnityTest] public IEnumerator RewardModalShowsAloneThenUpgradeCardsAfterContinue()
@@ -427,6 +690,194 @@ public class UpgradeUIArtPlayModeChecks
     }
     // Night gold feedback: each gold line starts at "+0", counts to its final text on unscaled time, and an invalid
     // designer format warns once per line (not on every counter step) and falls back to the default text.
+    [UnityTest] public IEnumerator ReenabledExperiencePresenterKeepsNightXpBehindCollectedFeedback()
+    {
+        yield return new EnterPlayMode();
+        yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/Game.unity", new LoadSceneParameters(LoadSceneMode.Single));
+        for (int i = 0; i < 15; i++) yield return null;
+        var g = SetupGame();
+        var bar = Find("ExperienceUIController"); var feedback = Find("FloatingTextController");
+        var slider = (Component)Field(bar, "xpSlider");
+        var levelText = Field(bar, "levelText"); var xpText = Field(bar, "xpText");
+        Call(g.experience, "AddExperience", 99);
+        yield return WaitBarValue(g, slider, 2f);
+        var oldLevel = Property(levelText, "text"); var oldXp = Property(xpText, "text"); var oldValue = Property(slider, "value");
+        Call(Find("DayCycleController"), "StartNight");
+        Call(Find("LevelManager"), "ForceEndNight");
+        int earnedXp = (int)Property(g.experience, "CurrentExperience");
+        int pending = (int)Property(g.experience, "PendingChoices");
+        Assert.That(Property(feedback, "IsShowingGoldFeedback"), Is.True);
+        Assert.That(earnedXp, Is.GreaterThan(99));
+        ((Behaviour)bar).enabled = false;
+        ((Behaviour)bar).enabled = true;
+        Assert.That(Property(levelText, "text"), Is.EqualTo(oldLevel), "re-enable must not reveal night levels during collected feedback");
+        Assert.That(Property(xpText, "text"), Is.EqualTo(oldXp)); Assert.That(Property(slider, "value"), Is.EqualTo(oldValue));
+        bar.gameObject.SetActive(false); bar.gameObject.SetActive(true);
+        Assert.That(Property(levelText, "text"), Is.EqualTo(oldLevel), "HUD re-enable keeps the same barrier");
+        Assert.That(Property(xpText, "text"), Is.EqualTo(oldXp)); Assert.That(Property(slider, "value"), Is.EqualTo(oldValue));
+        Assert.That(Property(bar, "IsPresentationBusy"), Is.True, "the current earned state remains queued, not lost");
+        Assert.That(Property(g.experience, "CurrentExperience"), Is.EqualTo(earnedXp));
+        Assert.That(Property(g.experience, "PendingChoices"), Is.EqualTo(pending));
+        // Reset must discard the deferred gain, even while the collected feedback is still playing.
+        Call(g.experience, "ResetProgression");
+        Assert.That(Property(bar, "IsPresentationBusy"), Is.False);
+        Assert.That(Property(g.indicator, "HasPendingPresentation"), Is.False);
+        Assert.That(Property(levelText, "text"), Is.EqualTo("LV. 1"));
+        Assert.That(Property(slider, "value"), Is.EqualTo(0f));
+        Call(g.experience, "AddExperience", 100);
+        Assert.That(Property(feedback, "IsShowingGoldFeedback"), Is.True);
+        Assert.That(Property(bar, "IsPresentationBusy"), Is.True);
+        Assert.That(Property(levelText, "text"), Is.EqualTo("LV. 1"));
+        float deadline = Time.realtimeSinceStartup + 12f;
+        while ((bool)Property(feedback, "IsShowingGoldFeedback") && Time.realtimeSinceStartup < deadline)
+        {
+            SkipTutorialIfActive();
+            Assert.That(Property(levelText, "text"), Is.EqualTo("LV. 1"));
+            Assert.That(Property(slider, "value"), Is.EqualTo(0f));
+            Assert.That(Choosing(g), Is.False);
+            yield return null;
+        }
+        Assert.That(Property(feedback, "IsShowingGoldFeedback"), Is.False);
+        yield return WaitForChoosing(g.flow, 5f, "fresh XP animates and opens its choice after gold; the reset gain never replays");
+        Assert.That(Property(levelText, "text"), Is.EqualTo("LV. " + Property(g.experience, "CurrentLevel")));
+        Assert.That(Property(slider, "value"), Is.EqualTo((float)(int)Property(g.experience, "CurrentExperience")));
+        Assert.That(Property(g.experience, "PendingChoices"), Is.EqualTo(1));
+        Call(g.experience, "ResetProgression");
+        yield return new ExitPlayMode();
+    }
+    [UnityTest] public IEnumerator NightFeedbackThenExperienceThenAllChoicesFinishBeforeSleepFadeWakeAndDoorOpen()
+    {
+        yield return new EnterPlayMode();
+        yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/Game.unity", new LoadSceneParameters(LoadSceneMode.Single));
+        for (int i = 0; i < 15; i++) yield return null;
+        var g = SetupGame();
+        var day = Find("DayCycleController"); var manager = Find("LevelManager");
+        var transition = Find("NightToDayTransitionController"); var feedback = Find("FloatingTextController");
+        var bar = Find("ExperienceUIController"); var inventory = Find("InventoryManager"); var rewards = Find("RewardsSystem");
+        Assert.That(transition, Is.Not.Null); Assert.That(feedback, Is.Not.Null); Assert.That(bar, Is.Not.Null);
+        var black = (Component)Field(transition, "blackScreen"); var slider = Field(bar, "xpSlider");
+        var goldPanel = (Transform)Field(feedback, "goldRewardPanel");
+        var xpLevelText = Field(bar, "levelText");
+        var animator = (Animator)Field(transition, "playerAnimator");
+        var door = Find("HouseDoor"); Assert.That(door, Is.Not.Null);
+        var doorAnimator = (Component)Field(door, "doorLockAnimator"); Assert.That(doorAnimator, Is.Not.Null);
+        var original = (UnityEngine.Object)Property(g.experience, "ProgressionData");
+        var progression = UnityEngine.Object.Instantiate(original);
+        SetField(progression, "experiencePerNight", 450); SetField(g.experience, "progressionData", progression);
+        // Keep a visible fade for the overlap regression, while avoiding unrelated camera/travel waits.
+        SetField(transition, "freeMovementDuration", .05f); SetField(transition, "cameraFocusTimeout", 0f);
+        SetField(transition, "beforeFadeDelay", .05f); SetField(transition, "fadeInDuration", 2f);
+        SetField(transition, "blackScreenDuration", .1f); SetField(transition, "fadeOutDuration", .1f);
+        try
+        {
+            Call(g.experience, "AddExperience", 99);
+            yield return WaitBarValue(g, (Component)slider, 2f);
+            Call(day, "StartNight");
+            int goldBefore = (int)Call(inventory, "GetGold");
+            int expectedGold = (int)Field(rewards, "rewardNoPlantsDestroyed") + (int)Field(rewards, "rewardHomeUntouched") + (int)Field(rewards, "rewardPlayerUnharmed");
+            Call(manager, "ForceEndNight"); // actual public completion path: spawner -> LevelManager -> grants/transition
+            Assert.That((int)Call(inventory, "GetGold"), Is.EqualTo(goldBefore + expectedGold), "gold is granted synchronously, not deferred for animation");
+            Assert.That(Property(g.experience, "CurrentExperience"), Is.EqualTo(549), "night XP is granted synchronously");
+            int pending = (int)Property(g.experience, "PendingChoices");
+            Assert.That(pending, Is.GreaterThanOrEqualTo(3), "one night can grant several levels");
+            Assert.That(goldPanel.childCount, Is.GreaterThan(0));
+            Assert.That(Property(transition, "IsTransitioning"), Is.True);
+            CaptureCloseUp(Camera.main, g.experience.transform, goldPanel, "runtime-night-feedback-before-transition", 1280, 720);
+            yield return new WaitForSecondsRealtime(.25f);
+            CaptureCloseUp(Camera.main, g.experience.transform, goldPanel, "runtime-night-collected-feedback", 1280, 720);
+            float deadline = Time.realtimeSinceStartup + 12f;
+            while (goldPanel.childCount > 0 && goldPanel.GetComponent<CanvasGroup>().alpha > .001f && Time.realtimeSinceStartup < deadline)
+            {
+                SkipTutorialIfActive();
+                Assert.That(Property(g.indicator, "IsPlaying"), Is.False, "collected feedback must finish before LvUp starts");
+                Assert.That(Property(xpLevelText, "text"), Is.EqualTo("LV. 1"), "XP presentation, not the earned XP data, waits for collected feedback");
+                Assert.That(Property(slider, "value"), Is.EqualTo(99f));
+                Assert.That(Choosing(g), Is.False);
+                Assert.That(animator.GetBool("isSleeping"), Is.False);
+                Assert.That(black.gameObject.activeSelf, Is.False);
+                yield return null;
+            }
+            Assert.That(goldPanel.childCount == 0 || goldPanel.GetComponent<CanvasGroup>().alpha <= .001f, Is.True, "collected feedback must finish before its deadline");
+            deadline = Time.realtimeSinceStartup + 2f;
+            while (!(bool)Property(g.indicator, "IsPlaying") && Time.realtimeSinceStartup < deadline) { SkipTutorialIfActive(); yield return null; }
+            Assert.That(Property(g.indicator, "IsPlaying"), Is.True, "LvUp starts after collected feedback");
+            Assert.That(Property(xpLevelText, "text"), Is.EqualTo("LV. " + Property(g.experience, "CurrentLevel")));
+            CaptureCloseUp(Camera.main, g.experience.transform, g.indicator.transform, "runtime-night-experience-after-collected", 1280, 720);
+            deadline = Time.realtimeSinceStartup + 5f;
+            while (((bool)Property(g.indicator, "IsPlaying") || (float)Property(slider, "value") != (float)(int)Property(g.experience, "CurrentExperience")) && Time.realtimeSinceStartup < deadline)
+            {
+                SkipTutorialIfActive();
+                Assert.That(Choosing(g), Is.False, "choices wait for XP and LvUp");
+                Assert.That(animator.GetBool("isSleeping"), Is.False);
+                Assert.That(black.gameObject.activeSelf, Is.False);
+                yield return null;
+            }
+            yield return WaitForChoosing(g.flow, 3f, "choices follow XP, before the night animation");
+            var backdrop = SessionBackdrop(g.presenter);
+            for (int step = 0; step < pending; step++)
+            {
+                yield return WaitIdle(g);
+                Assert.That(Property(g.flow, "WorldPhase").ToString(), Is.EqualTo("Night"));
+                Assert.That(animator.GetBool("isSleeping"), Is.False, "no collapse before all choices are completed");
+                Assert.That(black.gameObject.activeSelf, Is.False);
+                Assert.That(Property(g.reward, "IsVisible"), Is.True);
+                if (step == 0) yield return Capture(g.canvas, g.reward.gameObject, "runtime-night-selectable-reward-before-collapse", 1280, 720, false, true);
+                int beforeChoice = (int)Property(g.experience, "PendingChoices");
+                Click((Component)Field(g.reward, "continueButton"));
+                yield return WaitIdle(g);
+                Assert.That(animator.GetBool("isSleeping"), Is.False);
+                var cards = (Array)Field(g.level, "cards");
+                Click((Component)Field(cards.GetValue(0), "selectButton"));
+                yield return null;
+                Assert.That(Property(g.experience, "PendingChoices"), Is.EqualTo(beforeChoice - 1), "exactly one pending level is consumed per selection");
+            }
+            Assert.That(Choosing(g), Is.False);
+            yield return WaitBackdrop(backdrop, false);
+            bool sawSleep = false, sawFade = false, sawDay = false, capturedWake = false;
+            deadline = Time.realtimeSinceStartup + 12f;
+            while ((bool)Property(transition, "IsTransitioning") && Time.realtimeSinceStartup < deadline)
+            {
+                Assert.That(Property(g.experience, "PendingChoices"), Is.EqualTo(0));
+                Assert.That(Choosing(g), Is.False);
+                sawSleep |= animator.GetBool("isSleeping");
+                sawFade |= black.gameObject.activeInHierarchy && ((Color)Property(black, "color")).a > .001f;
+                bool isDay = Property(g.flow, "WorldPhase").ToString() == "Day";
+                sawDay |= isDay;
+                if (isDay)
+                {
+                    Assert.That(animator.GetBool("isSleeping"), Is.False, "day triggers waking");
+                    Assert.That(Call(doorAnimator, "IsShowingClosedState"), Is.True, "door opening waits until waking is visible and complete");
+                    if (!black.gameObject.activeSelf && !capturedWake)
+                    {
+                        capturedWake = true;
+                        CaptureCloseUp(Camera.main, g.experience.transform, door.transform, "runtime-night-day-wake-before-door", 1280, 720);
+                    }
+                }
+                yield return null;
+            }
+            Assert.That(Property(transition, "IsTransitioning"), Is.False, "night animation must finish before its deadline");
+            Assert.That(sawSleep && sawFade && sawDay, Is.True, "collapse, fade and day still run after the choices");
+            Assert.That(capturedWake, Is.True);
+            Assert.That(Property(g.flow, "WorldPhase").ToString(), Is.EqualTo("Day"));
+            Assert.That(black.gameObject.activeSelf, Is.False);
+            var doorSprites = (IList)Field(doorAnimator, "sprites");
+            var doorRenderer = doorAnimator.GetComponent<SpriteRenderer>();
+            deadline = Time.realtimeSinceStartup + 4f;
+            while (doorRenderer.sprite != (Sprite)doorSprites[0] && Time.realtimeSinceStartup < deadline) yield return null;
+            // An open lock may be an empty sprite; use Unity's object equality, not CLR reference identity.
+            Assert.That(doorRenderer.sprite == (Sprite)doorSprites[0], Is.True, "door opening finishes after the day wake");
+            Assert.That((Sprite)doorSprites[doorSprites.Count - 1] != null, Is.True, "the closed lock must have actual visible art");
+            CaptureCloseUp(Camera.main, g.experience.transform, door.transform, "runtime-night-day-door-open", 1280, 720);
+            Assert.That((int)Call(inventory, "GetGold"), Is.EqualTo(goldBefore + expectedGold), "presentation never grants gold twice");
+        }
+        finally
+        {
+            SetField(g.experience, "progressionData", original);
+            UnityEngine.Object.Destroy(progression);
+            Time.timeScale = 1f;
+        }
+        yield return new ExitPlayMode();
+    }
     [UnityTest] public IEnumerator NightGoldLinesCountFromZeroToTheirFinalTextAndWarnOncePerLineOnAnInvalidFormat()
     {
         yield return new EnterPlayMode();
@@ -688,11 +1139,13 @@ public class UpgradeUIArtPlayModeChecks
             Assert.That(limit.GetComponent<CanvasGroup>().alpha, Is.EqualTo(0f));
             Assert.That((string)Property(label, "text"), Is.EqualTo("Plant limit: +1 (5)"), "starts from the previous limit");
             Click((Component)Field(reward, "continueButton")); Assert.That(continued, Is.Zero);
-            float end = Time.realtimeSinceStartup + 3f, seedStart = -1f, limitStart = -1f; bool continuedWhileAnimating = false, sawPreviousLimit = false;
+            // Rows now finish individually and include reading gaps plus a final hold (about 3.1s for all three).
+            float end = Time.realtimeSinceStartup + 5f, seedStart = -1f, limitStart = -1f, seedSettled = -1f; bool continuedWhileAnimating = false, sawPreviousLimit = false;
             while (Time.realtimeSinceStartup < end && (bool)Property(reward, "IsAnimating"))
             {
                 float now = Time.realtimeSinceStartup;
                 if (seedStart < 0 && seed.GetComponent<CanvasGroup>().alpha > .02f) seedStart = now;
+                if (seedSettled < 0 && seed.GetComponent<CanvasGroup>().alpha >= .999f && Vector3.Distance(seedIcon.localScale, Vector3.one) < .001f) seedSettled = now;
                 if (limitStart < 0 && limit.GetComponent<CanvasGroup>().alpha > .02f) limitStart = now;
                 sawPreviousLimit |= (string)Property(label, "text") == "Plant limit: +1 (5)";
                 Click((Component)Field(reward, "continueButton")); continuedWhileAnimating |= continued > 0;
@@ -702,6 +1155,8 @@ public class UpgradeUIArtPlayModeChecks
             Assert.That(continuedWhileAnimating, Is.False, "Continue is blocked until the rows finish");
             Assert.That(seedStart, Is.GreaterThan(0f)); Assert.That(limitStart, Is.GreaterThan(0f));
             Assert.That(seedStart, Is.LessThanOrEqualTo(limitStart), "seed enters before the plant limit");
+            Assert.That(seedSettled, Is.GreaterThan(0f));
+            Assert.That(limitStart - seedSettled, Is.GreaterThanOrEqualTo((float)Field(reward, "rowReadingGap") - .1f), "there is a visible reading gap after the first row settles");
             Assert.That(sawPreviousLimit, Is.True);
             Assert.That((string)Property(label, "text"), Is.EqualTo("Plant limit: +1 (6)"));
             foreach (var row in new[] { seed, limit }) { Assert.That(row.transform.localScale, Is.EqualTo(Vector3.one)); Assert.That(row.GetComponent<CanvasGroup>().alpha, Is.EqualTo(1f)); }

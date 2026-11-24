@@ -34,7 +34,6 @@ public class DropEnemyMaterial : MonoBehaviour
             yield return null;
         }
 
-        SoundManager.Instance.PlayOneShot("PickUp");
         if (materialData != null && InventoryManager.Instance != null)
         {
             InventoryManager.Instance.AddMaterial(materialData.materialType, 1);
@@ -42,7 +41,12 @@ public class DropEnemyMaterial : MonoBehaviour
         var pickupHandler = player.GetComponentInChildren<FloatingTextController>();
         if (pickupHandler != null && materialData != null)
         {
+            // ShowPickup plays the (throttled) pickup sound.
             pickupHandler.ShowPickup(materialData.materialName, 1, materialData.materialIcon);
+        }
+        else
+        {
+            SoundManager.Instance?.PlayOneShot("PickUp");
         }
 
 

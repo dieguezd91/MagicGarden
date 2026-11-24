@@ -35,6 +35,7 @@ public class HouseDoor : MonoBehaviour
     private Transform player;
     private bool canEnterAtNight = true;
     private LevelManager levelManager;
+    private NightToDayTransitionController nightTransition;
 
     private bool hasEnteredOnce = false;
     private Coroutine tutorialCoroutine;
@@ -55,6 +56,7 @@ public class HouseDoor : MonoBehaviour
     private void Start()
     {
         levelManager = LevelManager.Instance;
+        nightTransition = FindObjectOfType<NightToDayTransitionController>();
 
         if (insideCollider != null) insideCollider.isTrigger = false;
         if (outsideCollider != null) outsideCollider.isTrigger = false;
@@ -81,6 +83,14 @@ public class HouseDoor : MonoBehaviour
 
     private void Update()
     {
+        // Day gameplay is already active under black; show the exterior opening only after the wake is visible.
+        if (pendingLockUpdate && (worldTransition == null || !worldTransition.IsInInterior) &&
+            (nightTransition == null || !nightTransition.IsTransitioning))
+        {
+            pendingLockUpdate = false;
+            if (GameFlowController.Instance != null)
+                UpdateLockVisual(GameFlowController.Instance.WorldPhase == GamePhase.Night);
+        }
         if (!waitingForPlayerToClearDoor || player == null || interactionTrigger == null)
             return;
 
@@ -129,7 +139,8 @@ public class HouseDoor : MonoBehaviour
             shouldBeLocked = true;
         }
 
-        if (worldTransition != null && worldTransition.IsInInterior)
+        if ((worldTransition != null && worldTransition.IsInInterior) ||
+            (newPhase == GamePhase.Day && nightTransition != null && nightTransition.IsTransitioning))
         {
             pendingLockUpdate = true;
         }
@@ -161,7 +172,7 @@ public class HouseDoor : MonoBehaviour
 
         if (!isInInterior)
         {
-            if (pendingLockUpdate)
+            if (pendingLockUpdate && (nightTransition == null || !nightTransition.IsTransitioning))
             {
                 pendingLockUpdate = false;
 
@@ -183,8 +194,13 @@ public class HouseDoor : MonoBehaviour
     private IEnumerator UpdateLockAfterExitDelay(bool shouldBeLocked)
     {
         yield return new WaitForSeconds(0.3f);
-
-        UpdateLockVisual(shouldBeLocked);
+        if (nightTransition != null && nightTransition.IsTransitioning)
+        {
+            pendingLockUpdate = true;
+            yield break;
+        }
+        if (GameFlowController.Instance != null)
+            UpdateLockVisual(GameFlowController.Instance.WorldPhase == GamePhase.Night);
     }
 
 

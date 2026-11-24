@@ -20,18 +20,31 @@ public class NightToDayTransitionController : MonoBehaviour
     [SerializeField] private float fadeInDuration = 1.5f;
     [SerializeField] private float blackScreenDuration = 1f;
     [SerializeField] private float fadeOutDuration = 0.8f;
+    [Tooltip("Seconds after fade-out reserved for visible waking before movement and the house-door opening are released.")]
+    [SerializeField, Min(0f)] private float wakeHoldDuration = 2.2f;
+
+    [Header("NIGHT REWARD PRESENTATION")]
+    [Tooltip("Optional gold feedback to wait for, including its reading hold and fade. Empty = find the active presenter.")]
+    [SerializeField] private FloatingTextController collectedFeedback;
+    [Tooltip("Optional XP bar to wait for after the gold feedback. Empty = find the active presenter.")]
+    [SerializeField] private ExperienceUIController experienceFeedback;
+    [Tooltip("Optional queued/playing LvUp indicator. Empty = find the active presenter.")]
+    [SerializeField] private LevelUpIndicator levelIndicator;
 
     [Header("LEVEL UP")]
     [SerializeField] private LevelUpPanelView levelUpPanel;
-    [SerializeField] private float levelUpReleaseBuffer = 0.25f;
+    [Tooltip("Unscaled quiet time after all feedback, choices, modal close and backdrop fade finish. 0 still waits for completion.")]
+    [SerializeField, Min(0f)] private float levelUpReleaseBuffer = 0.25f;
 
     [Header("ANIMATION EVENT")]
     [SerializeField] private UnityEvent onPlayerStoppedBeforeFade;
 
     private Coroutine transitionCoroutine;
     private bool isTransitioning;
+    private bool presentationCommitted;
     private static readonly int IsSleepingHash = Animator.StringToHash("isSleeping");
     public bool IsTransitioning => isTransitioning;
+    public bool IsPlayingAnimation => isActiveAndEnabled && presentationCommitted;
 
     private void Awake()
     {
@@ -45,7 +58,7 @@ public class NightToDayTransitionController : MonoBehaviour
 
     public void StartTransition()
     {
-        if (isTransitioning)
+        if (!isActiveAndEnabled || isTransitioning)
             return;
 
         if (GameFlowController.Instance == null ||
@@ -54,6 +67,10 @@ public class NightToDayTransitionController : MonoBehaviour
             return;
         }
 
+        if (collectedFeedback == null) collectedFeedback = FindObjectOfType<FloatingTextController>();
+        if (experienceFeedback == null) experienceFeedback = FindObjectOfType<ExperienceUIController>();
+        if (levelIndicator == null) levelIndicator = FindObjectOfType<LevelUpIndicator>();
+        presentationCommitted = false;
         isTransitioning = true;
         transitionCoroutine = StartCoroutine(TransitionRoutine());
     }
@@ -62,20 +79,27 @@ public class NightToDayTransitionController : MonoBehaviour
     {
         float clearTimer = 0f;
 
-        while (clearTimer < levelUpReleaseBuffer)
+        while (true)
         {
             bool levelUpVisible =
                 levelUpPanel != null && levelUpPanel.IsVisible;
 
             bool gameplayBlocked = UpgradeRuntime.GameplayBlocked;
 
-            if (levelUpVisible || gameplayBlocked)
+            var runtime = UpgradeRuntime.Current;
+            bool pending = (collectedFeedback != null && collectedFeedback.IsShowingGoldFeedback) ||
+                (experienceFeedback != null && experienceFeedback.IsPresentationBusy) ||
+                (levelIndicator != null && levelIndicator.HasPendingPresentation) ||
+                (runtime != null && runtime.HasPendingLevelPresentation);
+
+            if (levelUpVisible || gameplayBlocked || pending)
             {
                 clearTimer = 0f;
             }
             else
             {
                 clearTimer += Time.unscaledDeltaTime;
+                if (clearTimer >= Mathf.Max(0f, levelUpReleaseBuffer)) yield break;
             }
 
             yield return null;
@@ -87,6 +111,9 @@ public class NightToDayTransitionController : MonoBehaviour
 
         yield return WaitForLevelUpToFinish();
         yield return new WaitForSeconds(freeMovementDuration);
+        // Late gains during free movement get their turn too. Commit without yielding after the final clear.
+        yield return WaitForLevelUpToFinish();
+        presentationCommitted = true;
 
         if (playerMovement != null)
             playerMovement.SetDayTransitionBlocked(true);
@@ -126,7 +153,7 @@ public class NightToDayTransitionController : MonoBehaviour
         {
             DayCycleController.Instance.StartDay();
         }
-        else
+        else if (GameFlowController.Instance != null)
         {
             GameFlowController.Instance.SetPhase(GamePhase.Day);
         }
@@ -152,12 +179,40 @@ public class NightToDayTransitionController : MonoBehaviour
 
         if (playerMovement != null)
         {
-            yield return new WaitForSecondsRealtime(2.2f);
+            yield return new WaitForSecondsRealtime(Mathf.Max(0f, wakeHoldDuration));
             playerMovement.SetDayTransitionBlocked(false);
         }
 
+        presentationCommitted = false;
         isTransitioning = false;
         transitionCoroutine = null;
+    }
+
+    private void Update()
+    {
+        var flow = GameFlowController.Instance;
+        if (isTransitioning && flow != null && (flow.WorldPhase == GamePhase.GameOver || flow.WorldPhase == GamePhase.MainMenu))
+            CancelTransition();
+    }
+
+    private void OnDisable() => CancelTransition();
+
+    private void CancelTransition()
+    {
+        if (!isTransitioning && transitionCoroutine == null) return;
+        if (transitionCoroutine != null) StopCoroutine(transitionCoroutine);
+        transitionCoroutine = null;
+        presentationCommitted = false;
+        isTransitioning = false;
+        SetAlpha(0f);
+        if (blackScreen != null)
+        {
+            blackScreen.raycastTarget = false;
+            blackScreen.gameObject.SetActive(false);
+        }
+        if (playerMovement != null) playerMovement.SetDayTransitionBlocked(false);
+        if (moveCamera != null) moveCamera.EndDayTransitionFocus();
+        if (playerAnimator != null) playerAnimator.SetBool(IsSleepingHash, false);
     }
 
     private IEnumerator FadeScreen(float targetAlpha, float duration)

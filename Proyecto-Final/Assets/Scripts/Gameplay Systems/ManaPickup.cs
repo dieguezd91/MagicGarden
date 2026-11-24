@@ -44,13 +44,17 @@ public class ManaPickup : MonoBehaviour
         if (manaSystem != null)
         {
             manaSystem.AddMana(manaAmount);
-            SoundManager.Instance.PlayOneShot("PickUp");
         }
 
         var pickupHandler = player.GetComponentInChildren<FloatingTextController>();
         if (pickupHandler != null)
         {
+            // ShowPickup plays the (throttled) pickup sound.
             pickupHandler.ShowPickup("Mana", Mathf.RoundToInt(manaAmount), manaSprite);
+        }
+        else
+        {
+            SoundManager.Instance?.PlayOneShot("PickUp");
         }
 
         Destroy(gameObject);

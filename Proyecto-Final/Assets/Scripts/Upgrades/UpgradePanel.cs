@@ -31,6 +31,11 @@ public sealed class UpgradePanel : MonoBehaviour
     private readonly List<SpecialDefinition> shopDefinitions = new List<SpecialDefinition>();
     private readonly List<string> shopTargets = new List<string>();
     public bool IsShopOpen { get; private set; }
+    // Active objects include their closing animations, even after modal ownership has been released.
+    public bool HasLevelPresentation => isActiveAndEnabled &&
+        ((levelUpView != null && levelUpView.gameObject.activeInHierarchy) ||
+         (rewardView != null && rewardView.gameObject.activeInHierarchy) ||
+         (sessionBackdrop != null && sessionBackdrop.gameObject.activeInHierarchy));
     public bool IsReady => isActiveAndEnabled && levelUpView != null && levelUpView.IsConfigured && shopView != null && shopView.IsConfigured;
 
     private void Awake() => HideImmediate();

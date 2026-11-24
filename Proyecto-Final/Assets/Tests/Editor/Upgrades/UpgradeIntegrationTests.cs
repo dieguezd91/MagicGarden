@@ -29,6 +29,24 @@ public class UpgradeIntegrationTests
         foreach (var item in created) if (item != null) UnityEngine.Object.DestroyImmediate(item);
         created.Clear();
     }
+    [TestCase("pickupDisplayTime")]
+    [TestCase("fadeDuration")]
+    [TestCase("warningColor")]
+    public void PickupSharedFeelControlsHaveTooltips(string name)
+    {
+        var field = Production("FloatingTextController").GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.That(field, Is.Not.Null);
+        Assert.That(field.IsDefined(typeof(SerializeField), false), Is.True);
+        Assert.That(field.IsDefined(typeof(TooltipAttribute), false), Is.True);
+    }
+    [Test] public void IndicatorSoundHasADesignerEditableSelectorWithTheExistingDefault()
+    {
+        var field = Production("LevelUpIndicator").GetField("levelUpSound", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.That(field, Is.Not.Null, "The indicator sound needs a serialized selector");
+        Assert.That(field.IsDefined(typeof(SerializeField), false), Is.True);
+        Assert.That(field.IsDefined(typeof(TooltipAttribute), false), Is.True);
+        Assert.That(field.GetValue(Component("LevelUpIndicator")), Is.EqualTo("Level_Up"));
+    }
     // Night gold feedback: designers edit messages, colors and the gold line format in the Inspector.
     private static object Get(object instance, string field)
         => instance.GetType().GetField(field, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(instance);
@@ -65,7 +83,9 @@ public class UpgradeIntegrationTests
     [Test] public void NightGoldFeedbackAnimationIsEditableAndDefaultsToTheDesignedFeel()
     {
         var floating = Component("FloatingTextController");
-        Assert.That(Get(floating, "goldLineStagger"), Is.EqualTo(0.35f));
+        Assert.That(Get(floating, "goldLineStagger"), Is.EqualTo(0.3f));
+        Assert.That(Get(floating, "goldFeedbackDisplayTime"), Is.EqualTo(2f));
+        Assert.That(Get(floating, "goldFadeDuration"), Is.EqualTo(0.35f));
         Assert.That(Get(floating, "goldLineEnterDuration"), Is.EqualTo(0.3f));
         Assert.That(Get(floating, "goldLineStartScale"), Is.EqualTo(0.4f));
         Assert.That(Get(floating, "goldCountDuration"), Is.EqualTo(0.6f));
@@ -77,15 +97,118 @@ public class UpgradeIntegrationTests
     {
         var floating = Component("FloatingTextController");
         Assert.That(Call(floating, "GoldLineDelay", 0), Is.EqualTo(0f));
-        Assert.That((float)Call(floating, "GoldLineDelay", 2), Is.EqualTo(0.7f).Within(1e-5f));
+        Assert.That((float)Call(floating, "GoldLineDelay", 2), Is.EqualTo(2.4f).Within(1e-5f));
         Set(floating, "goldLineStagger", 0.5f);
-        Assert.That((float)Call(floating, "GoldLineDelay", 3), Is.EqualTo(1.5f).Within(1e-5f));
+        Assert.That((float)Call(floating, "GoldLineDelay", 3), Is.EqualTo(4.2f).Within(1e-5f));
         Assert.That(Call(floating, "CountedGold", 30, 0f), Is.EqualTo(0));
         Assert.That(Call(floating, "CountedGold", 30, 0.5f), Is.EqualTo(15));
         Assert.That(Call(floating, "CountedGold", 30, 1f), Is.EqualTo(30));
         Assert.That(Call(floating, "CountedGold", 30, 2f), Is.EqualTo(30), "progress is clamped");
         Assert.That(Call(floating, "FormatGoldCount", "Home Protected", 0), Is.EqualTo("<sprite name=\"GoldIcon\"> Home Protected\n+0 gold"));
         Assert.That(Call(floating, "FormatGoldCount", "Home Protected", 50), Is.EqualTo(Call(floating, "FormatGoldEntry", "Home Protected", 50)));
+    }
+    // Material pickup game feel: every timing, scale, color and sound is an Inspector field with a tooltip.
+    private static readonly string[] PickupFeelFields =
+    {
+        "pickupPopStartScale", "pickupPopDuration", "pickupPopEase", "pickupPunchScale", "pickupPunchDuration",
+        "pickupPunchVibrato", "pickupPunchElasticity", "pickupCountDuration", "pickupHighlightColor",
+        "pickupFlashDuration", "pickupSound", "pickupSoundInterval",
+    };
+    [Test] public void MaterialPickupFeelIsEditableAndDefaultsToTheDesignedFeel()
+    {
+        var floating = Component("FloatingTextController");
+        Assert.That(Get(floating, "pickupPopStartScale"), Is.EqualTo(0.5f));
+        Assert.That(Get(floating, "pickupPopDuration"), Is.EqualTo(0.3f));
+        Assert.That(Get(floating, "pickupDisplayTime"), Is.EqualTo(1.5f));
+        Assert.That(Get(floating, "fadeDuration"), Is.EqualTo(0.35f));
+        Assert.That(Get(floating, "pickupPopEase").ToString(), Is.EqualTo("OutBack"));
+        Assert.That(Get(floating, "pickupPunchScale"), Is.EqualTo(0.25f));
+        Assert.That(Get(floating, "pickupPunchDuration"), Is.EqualTo(0.25f));
+        Assert.That(Get(floating, "pickupPunchVibrato"), Is.EqualTo(2));
+        Assert.That(Get(floating, "pickupPunchElasticity"), Is.EqualTo(0.5f));
+        Assert.That(Get(floating, "pickupCountDuration"), Is.EqualTo(0.5f));
+        Assert.That(Get(floating, "pickupHighlightColor"), Is.EqualTo(new Color(1f, 0.92f, 0.45f)));
+        Assert.That(Get(floating, "pickupFlashDuration"), Is.EqualTo(0.35f));
+        Assert.That(Get(floating, "pickupSound"), Is.EqualTo("PickUp"));
+        Assert.That(Get(floating, "pickupSoundInterval"), Is.EqualTo(0.08f));
+    }
+    [TestCase("goldFeedbackDisplayTime")]
+    [TestCase("goldFadeDuration")]
+    [TestCase("goldLineStagger")]
+    [TestCase("goldLineEnterDuration")]
+    [TestCase("goldCountDuration")]
+    public void GoldPacingControlsAreSerializedWithTooltips(string name)
+    {
+        var field = Production("FloatingTextController").GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.That(field.IsDefined(typeof(SerializeField), false), Is.True);
+        Assert.That(field.IsDefined(typeof(TooltipAttribute), false), Is.True);
+    }
+    [Test] public void MaterialPickupFeelFieldsAreSerializedWithTooltips()
+    {
+        var type = Production("FloatingTextController");
+        foreach (var name in PickupFeelFields)
+        {
+            var field = type.GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.That(field, Is.Not.Null, name);
+            Assert.That(field.IsDefined(typeof(SerializeField), false), Is.True, name + " is serialized");
+            Assert.That(field.IsDefined(typeof(TooltipAttribute), false), Is.True, name + " has a tooltip");
+        }
+    }
+    [Test] public void MaterialPickupCounterGoesFromThePreviousTotalToTheNewOne()
+    {
+        var floating = Component("FloatingTextController");
+        Assert.That(Call(floating, "CountedValue", 3, 8, 0f), Is.EqualTo(3));
+        Assert.That(Call(floating, "CountedValue", 3, 8, 0.4f), Is.EqualTo(5));
+        Assert.That(Call(floating, "CountedValue", 3, 8, 1f), Is.EqualTo(8));
+        Assert.That(Call(floating, "CountedValue", 3, 8, -1f), Is.EqualTo(3), "progress is clamped");
+        Assert.That(Call(floating, "CountedValue", 3, 8, 2f), Is.EqualTo(8), "progress is clamped");
+        Assert.That(Call(floating, "CountedValue", 4, 4, 0.5f), Is.EqualTo(4));
+    }
+    [Test] public void MaterialPickupLineKeepsTheCurrentTextFormat()
+    {
+        var floating = Component("FloatingTextController");
+        Assert.That(Call(floating, "FormatPickupLine", "<sprite name=\"Bone\"> ", 3, "Bone"), Is.EqualTo("<sprite name=\"Bone\"> +3 Bone"));
+        Assert.That(Call(floating, "FormatPickupLine", "", 1, "Mana"), Is.EqualTo("+1 Mana"));
+    }
+    // "El mana no muestra el icono": the mana sprite (InventorySpriteSheet_6) is not in spriteMappings and
+    // TMP_SpriteAsset.spriteInfoList is legacy/empty, so the icon is found through the sprite asset itself.
+    private object SpriteAssetWith(params string[] names)
+    {
+        var assetType = Type.GetType("TMPro.TMP_SpriteAsset, Unity.TextMeshPro", true);
+        var glyphType = Type.GetType("TMPro.TMP_SpriteGlyph, Unity.TextMeshPro", true);
+        var characterType = Type.GetType("TMPro.TMP_SpriteCharacter, Unity.TextMeshPro", true);
+        var asset = ScriptableObject.CreateInstance(assetType); created.Add(asset);
+        var glyph = Activator.CreateInstance(glyphType);
+        ((System.Collections.IList)Get(asset, "m_SpriteGlyphTable")).Add(glyph);
+        var characters = (System.Collections.IList)Get(asset, "m_SpriteCharacterTable");
+        foreach (var name in names)
+        {
+            var character = Activator.CreateInstance(characterType, new object[] { 0xFFFEu, glyph });
+            characterType.GetProperty("name").SetValue(character, name);
+            characters.Add(character);
+        }
+        return asset;
+    }
+    [Test] public void PickupIconResolvesSpritesThatAreInTheSpriteAssetEvenWithoutAMapping()
+    {
+        var floating = Component("FloatingTextController");
+        Assert.That(Call(floating, "ResolveSpriteName", "InventorySpriteSheet_6"), Is.Null, "no sprite asset");
+        Set(floating, "itemSpriteAsset", SpriteAssetWith("GoldIcon", "InventorySpriteSheet_6"));
+        Assert.That(Call(floating, "ResolveSpriteName", "InventorySpriteSheet_6"), Is.EqualTo("InventorySpriteSheet_6"));
+        Assert.That(Call(floating, "ResolveSpriteName", "GoldIcon"), Is.EqualTo("GoldIcon"));
+        Assert.That(Call(floating, "ResolveSpriteName", "NotInTheAsset"), Is.Null);
+        Assert.That(Call(floating, "ResolveSpriteName", ""), Is.Null);
+    }
+    [Test] public void PickupIconMappingStillWinsOverTheSpriteAssetName()
+    {
+        var floating = Component("FloatingTextController");
+        Set(floating, "itemSpriteAsset", SpriteAssetWith("EternalEmber"));
+        var mappingType = Production("FloatingTextController").GetNestedType("SpriteMapping");
+        var mapping = Activator.CreateInstance(mappingType);
+        mappingType.GetField("originalSpriteName").SetValue(mapping, "EternalEmberEternalEmber");
+        mappingType.GetField("tmpSpriteName").SetValue(mapping, "EternalEmber");
+        ((System.Collections.IList)Get(floating, "spriteMappings")).Add(mapping);
+        Assert.That(Call(floating, "ResolveSpriteName", "EternalEmberEternalEmber"), Is.EqualTo("EternalEmber"));
     }
     [Test] public void InventoryInsufficientDuplicateCostsNeverPartiallySpend()
     {

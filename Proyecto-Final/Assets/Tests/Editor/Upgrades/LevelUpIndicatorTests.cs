@@ -115,7 +115,105 @@ public class LevelUpIndicatorTests
         Assert.That(icon.color.a, Is.EqualTo(1f).Within(.001f));
     }
 
-    private Component Rig(out Component experience, out SpriteRenderer icon)
+    [Test] public void PopSquashesWideAndShortOnLandingThenStretchesTallBeforeSettlingAtRest()
+    {
+        var indicator = Rig(out _, out _);
+        Call(indicator, "Play");
+        Call(indicator, "Tick", 0.12f); // landing at the pop peak
+        var scale = indicator.transform.localScale;
+        Assert.That(scale.x, Is.GreaterThan(1.15f), "still the wide peak");
+        Assert.That(scale.y, Is.LessThan(scale.x * 0.9f), "squashed: shorter than wide");
+        Assert.That(scale.y, Is.GreaterThan(0f));
+        Call(indicator, "Tick", 0.05f); // 85% of the pop: maximum stretch
+        scale = indicator.transform.localScale;
+        Assert.That(scale.y, Is.GreaterThan(scale.x * 1.1f), "stretched: taller than wide");
+        Call(indicator, "Tick", 0.03f); // end of the pop
+        scale = indicator.transform.localScale;
+        Assert.That(scale.x, Is.EqualTo(1f).Within(.001f));
+        Assert.That(scale.y, Is.EqualTo(1f).Within(.001f), "settles at the resting scale");
+        Assert.That(scale.z, Is.EqualTo(1f).Within(.001f));
+    }
+
+    [Test] public void PlayerPrefabLeavesAReadableHoldBeforeTheIndicatorFades()
+    {
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefab);
+        var indicator = prefab.GetComponentInChildren(Production("LevelUpIndicator"), true);
+        Assert.That(Field(indicator, "holdDuration"), Is.EqualTo(.9f));
+        Assert.That((float)Property(indicator, "Duration"), Is.EqualTo(1.9f).Within(.0001f));
+    }
+
+    [Test] public void SquashAndStretchDoNotAddTimeBeyondTheConfiguredPhases()
+    {
+        var indicator = Rig(out _, out var icon);
+        Assert.That((float)Property(indicator, "Duration"), Is.EqualTo(1.2f).Within(.0001f));
+        Call(indicator, "Play");
+        Call(indicator, "Tick", 1.19f);
+        Assert.That(Property(indicator, "IsPlaying"), Is.True);
+        Call(indicator, "Tick", 0.02f);
+        Assert.That(Property(indicator, "IsPlaying"), Is.False);
+        Assert.That(icon.enabled, Is.False);
+    }
+
+    [Test] public void StopRestoresTheExactRestScaleAfterASquashedPop()
+    {
+        var indicator = Rig(out _, out _);
+        Call(indicator, "Play");
+        Call(indicator, "Tick", 0.12f);
+        Assert.That(indicator.transform.localScale.y, Is.Not.EqualTo(indicator.transform.localScale.x).Within(.01f));
+        Call(indicator, "Stop");
+        Assert.That(indicator.transform.localScale, Is.EqualTo(Vector3.one));
+        Assert.That(indicator.transform.localPosition, Is.EqualTo(new Vector3(0, 1.5f, 0)));
+    }
+
+    [Test] public void RingIsHiddenAtRestAppearsAtThePopPeakExpandsAndFades()
+    {
+        var indicator = RigWithRing(out var ring);
+        Assert.That(ring.enabled, Is.False, "hidden at rest");
+        Call(indicator, "Play");
+        Assert.That(ring.enabled, Is.False, "hidden before the peak");
+        Call(indicator, "Tick", 0.1f);
+        Assert.That(ring.enabled, Is.False, "hidden while the icon is still growing");
+        Call(indicator, "Tick", 0.03f); // just past the pop peak
+        Assert.That(ring.enabled, Is.True);
+        float alpha = ring.color.a, size = ring.transform.lossyScale.x;
+        Assert.That(alpha, Is.InRange(0.5f, 0.9f));
+        Assert.That(ring.transform.lossyScale.y, Is.EqualTo(size).Within(.001f), "stays round while the icon is squashed");
+        Call(indicator, "Tick", 0.1f);
+        Assert.That(ring.enabled, Is.True);
+        Assert.That(ring.transform.lossyScale.x, Is.GreaterThan(size), "expands");
+        Assert.That(ring.color.a, Is.LessThan(alpha), "fades");
+        Assert.That(ring.transform.lossyScale.y, Is.EqualTo(ring.transform.lossyScale.x).Within(.001f));
+        Call(indicator, "Tick", 0.3f); // past the 0.35s ring while the icon keeps playing
+        Assert.That(Property(indicator, "IsPlaying"), Is.True);
+        Assert.That(ring.enabled, Is.False, "the ring is over");
+    }
+
+    [Test] public void StopHidesAndResetsTheRingAndTheDurationIsUnaffected()
+    {
+        var indicator = RigWithRing(out var ring);
+        Call(indicator, "Play");
+        Call(indicator, "Tick", 0.18f);
+        Assert.That(ring.enabled, Is.True);
+        Call(indicator, "Stop");
+        Assert.That(ring.enabled, Is.False);
+        Assert.That(ring.color.a, Is.EqualTo(0f));
+        Assert.That(ring.transform.localScale, Is.EqualTo(new Vector3(3f, 3f, 1f)), "back to its start scale");
+        Assert.That((float)Property(indicator, "Duration"), Is.EqualTo(1.2f).Within(.0001f));
+        Call(indicator, "Play");
+        Assert.That(ring.enabled, Is.False, "a restarted burst waits for the peak again");
+        Call(indicator, "Tick", 5f);
+        Assert.That(Property(indicator, "IsPlaying"), Is.False);
+        Assert.That(ring.enabled, Is.False);
+    }
+
+    private Component RigWithRing(out SpriteRenderer ring)
+    {
+        var indicator = Rig(out _, out _, withRing: true);
+        ring = (SpriteRenderer)Field(indicator, "ring");
+        return indicator;
+    }
+
+    private Component Rig(out Component experience, out SpriteRenderer icon, bool withRing = false)
     {
         var player = new GameObject("Indicator test player"); created.Add(player);
         experience = player.AddComponent(Production("PlayerExperienceSystem"));
@@ -126,6 +224,16 @@ public class LevelUpIndicatorTests
         icon = child.AddComponent<SpriteRenderer>();
         var indicator = child.AddComponent(Production("LevelUpIndicator"));
         SetField(indicator, "experience", experience); SetField(indicator, "icon", icon);
+        // Motion tests use a fixed phase schedule; designer pacing is checked against the production prefab above.
+        SetField(indicator, "popDuration", .2f); SetField(indicator, "riseDuration", .4f);
+        SetField(indicator, "holdDuration", .35f); SetField(indicator, "fadeDuration", .25f);
+        SetField(indicator, "ringDuration", .35f);
+        if (withRing)
+        {
+            var ringObject = new GameObject("Ring"); ringObject.transform.SetParent(child.transform, false);
+            ringObject.transform.localScale = new Vector3(3f, 3f, 1f);
+            SetField(indicator, "ring", ringObject.AddComponent<SpriteRenderer>());
+        }
         Call(indicator, "Awake"); Call(indicator, "OnEnable");
         return indicator;
     }

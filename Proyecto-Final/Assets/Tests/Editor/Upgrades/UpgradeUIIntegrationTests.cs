@@ -276,14 +276,14 @@ public class UpgradeUIIntegrationTests
         Call(view, "Hide");
         Assert.That(Property(view, "IsVisible"), Is.False);
     }
-    [Test] public void RewardCardRowAnimationsAreDesignerEditableWithSnappyDefaults()
+    [Test] public void RewardCardRowAnimationsAreDesignerEditableWithReadablePauses()
     {
         var view = Clone("LevelUpReward", "LevelUpRewardView");
         var serialized = new SerializedObject(view);
         var defaults = new (string name, float value)[]
         {
-            ("rowStagger", .1f), ("rowDuration", .2f), ("rowStartScale", .6f), ("iconBounceScale", 1.25f), ("iconBounceDuration", .3f),
-            ("plantLimitCountDuration", .35f), ("plantLimitPunchScale", 1.3f), ("plantLimitPunchDuration", .25f),
+            ("rowReadingGap", .35f), ("finalHoldDuration", .5f), ("rowDuration", .25f), ("rowStartScale", .6f), ("iconBounceScale", 1.25f), ("iconBounceDuration", .3f),
+            ("plantLimitCountDuration", .5f), ("plantLimitPunchScale", 1.3f), ("plantLimitPunchDuration", .25f),
         };
         foreach (var (name, value) in defaults)
         {
@@ -291,8 +291,11 @@ public class UpgradeUIIntegrationTests
             Assert.That(property, Is.Not.Null, name);
             Assert.That(property.floatValue, Is.EqualTo(value).Within(1e-4f), name);
             var field = view.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(field.GetCustomAttributes(typeof(SerializeField), false), Is.Not.Empty, name + " is serialized");
             Assert.That(field.GetCustomAttributes(typeof(TooltipAttribute), false), Is.Not.Empty, name + " has a tooltip");
         }
+        Assert.That(serialized.FindProperty("tween.openDuration").floatValue, Is.EqualTo(.3f));
+        Assert.That(serialized.FindProperty("tween.closeDuration").floatValue, Is.EqualTo(.25f));
         Assert.That(serialized.FindProperty("rowEase"), Is.Not.Null);
         Assert.That(Field(view, "rowEase").ToString(), Is.EqualTo("OutBack"));
         Assert.That(view.GetType().GetField("rowEase", BindingFlags.Instance | BindingFlags.NonPublic).GetCustomAttributes(typeof(TooltipAttribute), false), Is.Not.Empty);
@@ -303,6 +306,7 @@ public class UpgradeUIIntegrationTests
         var slots = new[] { (GameObject)Field(view, "seedSlot"), (GameObject)Field(view, "spellSlot"), (GameObject)Field(view, "plantLimitSlot") };
         var icons = new[] { ((Component)Field(view, "seedIcon")).transform, ((Component)Field(view, "spellIcon")).transform };
         var plantLimit = (Component)Field(view, "plantLimitLabel");
+        var positions = Array.ConvertAll(slots, slot => ((RectTransform)slot.transform).anchoredPosition);
         foreach (var slot in slots) slot.transform.localScale = Vector3.one * .3f; // left over from a previous animation
         foreach (var icon in icons) icon.localScale = Vector3.one * 2f;
         plantLimit.transform.localScale = Vector3.one * 1.5f;
@@ -314,6 +318,9 @@ public class UpgradeUIIntegrationTests
             Assert.That(slot.transform.localScale, Is.EqualTo(Vector3.one), slot.name);
             if (slot.TryGetComponent(out CanvasGroup rowGroup)) Assert.That(rowGroup.alpha, Is.EqualTo(1f), slot.name);
         }
+        for (int i = 0; i < slots.Length; i++)
+            Assert.That(((RectTransform)slots[i].transform).anchoredPosition, Is.EqualTo(positions[i]), "row layout stays authored");
+        Assert.That(Property(Field(view, "continueButton"), "interactable"), Is.True);
         foreach (var icon in icons) Assert.That(icon.localScale, Is.EqualTo(Vector3.one));
         Assert.That(plantLimit.transform.localScale, Is.EqualTo(Vector3.one));
         Assert.That((string)Property(plantLimit, "text"), Is.EqualTo("Plant limit: +1 (9)"), "the final value, not the previous limit");
@@ -408,6 +415,55 @@ public class UpgradeUIIntegrationTests
         Assert.That(backdrop, Is.Not.Null);
         Assert.That(backdrop.GetType().Name, Is.EqualTo("UIBackdrop"));
         Assert.That(backdrop.transform.IsChildOf(root.transform), Is.True);
+    }
+    private const string HudPath = "Assets/Prefabs/UI/Canvas/Game/Panel HUD.prefab";
+    private static readonly string[] ExperienceBarFields =
+        { "fillGraphic", "punchTarget", "fillDuration", "fillEase", "punchStrength", "punchDuration", "punchMinInterval", "fullFlashColor", "fullFlashDuration", "fullHoldDuration" };
+    private Component Hud()
+    {
+        var root = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(HudPath));
+        created.Add(root);
+        return root.GetComponentInChildren(Production("ExperienceUIController"), true);
+    }
+    [Test] public void ExperienceBarFeelIsDesignerEditableWithSafeDefaultsAndTheFillIsWired()
+    {
+        var bar = Hud(); Assert.That(bar, Is.Not.Null);
+        foreach (var name in ExperienceBarFields)
+        {
+            var field = bar.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(field, Is.Not.Null, name);
+            Assert.That(field.GetCustomAttribute<SerializeField>(), Is.Not.Null, name + " is serialized");
+            Assert.That(field.GetCustomAttribute<TooltipAttribute>(), Is.Not.Null, name + " has a tooltip");
+        }
+        Assert.That((float)Field(bar, "fillDuration"), Is.EqualTo(.5f));
+        Assert.That((float)Field(bar, "fullHoldDuration"), Is.EqualTo(.3f), "the full bar has a reading hold before resetting");
+        Assert.That((float)Field(bar, "punchStrength"), Is.GreaterThan(0f));
+        Assert.That((float)Field(bar, "punchDuration"), Is.GreaterThan(0f));
+        Assert.That((float)Field(bar, "punchMinInterval"), Is.GreaterThan(0f), "the punch is throttled by default");
+        Assert.That((float)Field(bar, "fullFlashDuration"), Is.GreaterThan(0f));
+        var slider = (Component)Field(bar, "xpSlider"); var fill = (Component)Field(bar, "fillGraphic");
+        Assert.That(fill, Is.Not.Null, "Panel HUD wires the fill graphic");
+        Assert.That(fill.gameObject, Is.SameAs(((Component)Property(slider, "fillRect")).gameObject), "it is the slider's own Fill");
+    }
+    // HandleExperienceChanged is the private OnExperienceChanged handler; Call only finds public methods.
+    private static void HandleExperience(Component bar, int level, int currentXp, int requiredXp) =>
+        bar.GetType().GetMethod("HandleExperienceChanged", BindingFlags.Instance | BindingFlags.NonPublic)
+            .Invoke(bar, new object[] { level, currentXp, requiredXp });
+    [Test] public void ExperienceBarSnapsToExactValuesOutsidePlayMode()
+    {
+        var bar = Hud(); var slider = (Component)Field(bar, "xpSlider");
+        var levelText = (Component)Field(bar, "levelText"); var xpText = (Component)Field(bar, "xpText");
+        var scale = slider.transform.localScale;
+        HandleExperience(bar, 2, 150, 250);
+        Assert.That(Property(levelText, "text"), Is.EqualTo("LV. 2")); Assert.That(Property(xpText, "text"), Is.EqualTo("150 / 250 XP"));
+        Assert.That(Property(slider, "minValue"), Is.EqualTo(0f)); Assert.That(Property(slider, "maxValue"), Is.EqualTo(250f));
+        Assert.That(Property(slider, "value"), Is.EqualTo(150f));
+        HandleExperience(bar, 3, 400, 0);
+        Assert.That(Property(levelText, "text"), Is.EqualTo("LV. 3")); Assert.That(Property(xpText, "text"), Is.EqualTo("400 XP (MAX)"));
+        Assert.That(Property(slider, "maxValue"), Is.EqualTo(1f)); Assert.That(Property(slider, "value"), Is.EqualTo(1f));
+        HandleExperience(bar, 1, 0, 100);
+        Assert.That(Property(slider, "maxValue"), Is.EqualTo(100f)); Assert.That(Property(slider, "value"), Is.EqualTo(0f), "a reset snaps back");
+        Assert.That(slider.transform.localScale, Is.EqualTo(scale), "no punch outside Play Mode");
     }
     [Test] public void UnwiredViewsRejectDisplayWithoutConstructingFallbackObjects()
     {

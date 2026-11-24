@@ -527,6 +527,16 @@ MonoBehaviour:
     closeDuration: 0.25
     closeEase: 26
     hiddenScale: 0.85
+  rowReadingGap: 0.35
+  finalHoldDuration: 0.5
+  rowDuration: 0.25
+  rowStartScale: 0.6
+  rowEase: 27
+  iconBounceScale: 1.25
+  iconBounceDuration: 0.3
+  plantLimitCountDuration: 0.5
+  plantLimitPunchScale: 1.3
+  plantLimitPunchDuration: 0.25
 --- !u!1 &5716666479761597509
 GameObject:
   m_ObjectHideFlags: 0
