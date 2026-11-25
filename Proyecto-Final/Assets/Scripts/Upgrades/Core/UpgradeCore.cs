@@ -31,6 +31,12 @@ namespace MagicGarden
         public float Ratio(Stat stat) => ratios != null && (int)stat >= 0 && (int)stat < ratios.Length ? ratios[(int)stat] : 0;
     }
     [Serializable] public class Cost { public int material; public int amount; }
+    [Serializable] public class SpecialCostOverride
+    {
+        public string targetId;
+        public int priorStacks;
+        public Cost[] costs;
+    }
     [Serializable] public class Effect { public EffectKind kind; public float value; }
     [Serializable] public class SpecialDefinition
     {
@@ -41,6 +47,7 @@ namespace MagicGarden
         public int maxStacks;
         public string[] prerequisites;
         public Cost[] costs;
+        public SpecialCostOverride[] costOverrides;
         public Effect[] effects;
     }
     [Serializable] public class Balance
@@ -133,6 +140,18 @@ namespace MagicGarden
             a[(int)offer.Rule.stat] = Math.Min(1000000, a[(int)offer.Rule.stat] + offer.Rarity.bonus);
             s[(int)offer.Rule.stat]++;
             return true;
+        }
+        public Cost[] CostsFor(SpecialDefinition definition, Target target)
+        {
+            if (definition == null) return null;
+            if (target != null && !string.IsNullOrEmpty(target.Id) && definition.costOverrides != null)
+            {
+                int priorStacks = SpecialStacks(definition.id, target.Id);
+                foreach (var entry in definition.costOverrides)
+                    if (entry != null && entry.targetId == target.Id && entry.priorStacks == priorStacks)
+                        return entry.costs;
+            }
+            return definition.costs;
         }
         public bool CanBuy(SpecialDefinition definition, Target target)
         {

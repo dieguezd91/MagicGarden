@@ -190,6 +190,156 @@ public class UpgradeUIIntegrationTests
         foreach (Component row in rows) Assert.That(row.gameObject.activeSelf, Is.False);
         Assert.That(((Component)Field(view, "emptyLabel")).gameObject.activeSelf, Is.True);
     }
+    [TestCase("storm-rose")]
+    [TestCase("expanded-blast")]
+    [TestCase("other-attack-plant")]
+    [TestCase("master-volley")]
+    public void CauldronUsesTheTargetAndPurchaseLevelForLabelsEligibilityAndSpending(string recipe)
+    {
+        var inventory = NewComponent("InventoryManager");
+        var flow = NewComponent("GameFlowController");
+        var spells = NewComponent("SpellInventory");
+        var runtime = flow.gameObject.AddComponent(Production("UpgradeRuntime"));
+        var presenter = NewComponent("UpgradePanel");
+        var shop = Clone("SpecialUpgradePanel", "SpecialUpgradePanelView");
+        var serialized = new SerializedObject(presenter);
+        serialized.FindProperty("levelUpView").objectReferenceValue = Clone("LevelUpPanel", "LevelUpPanelView");
+        serialized.FindProperty("shopView").objectReferenceValue = shop;
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+        Assert.That(Call(presenter, "Initialize", runtime), Is.True);
+        SetField(runtime, "panel", presenter);
+        // Round-trip the same draft model that the balance editor saves.
+        var draft = JsonUtility.FromJson<Balance>(Resources.Load<TextAsset>("MagicGardenBalance").text);
+        var balance = JsonUtility.FromJson<Balance>(JsonUtility.ToJson(draft));
+        runtime.GetType().GetProperty("Balance").SetValue(runtime, balance);
+        var state = (RunState)Property(runtime, "State");
+
+        const int spectral = 1, windwalker = 2, voltaic = 3, ember = 4, stellar = 5, heart = 14, gold = 15;
+        int[] tracked = { spectral, windwalker, voltaic, ember, stellar, heart, gold };
+        object Material(int id) => Enum.ToObject(Production("MaterialType"), id);
+        void Add(int material, int amount) => Call(inventory, "AddMaterial", Material(material), amount);
+        int[] Wallet() => Array.ConvertAll(tracked, id => (int)Call(inventory, "GetResourceAmount", Material(id)));
+
+        // EditMode does not run the singleton Awake methods. Swap and restore the scene dependencies for this test only.
+        var instances = new[] { inventory, flow, spells };
+        var singletons = Array.ConvertAll(instances, component => component.GetType().GetField(
+            component == inventory ? "_instance" : "<Instance>k__BackingField", BindingFlags.NonPublic | BindingFlags.Static));
+        var previous = Array.ConvertAll(singletons, field => field.GetValue(null));
+        try
+        {
+            for (int i = 0; i < singletons.Length; i++) singletons[i].SetValue(null, instances[i]);
+            SetField(flow, "currentPhase", Enum.Parse(Production("GamePhase"), "Day"));
+            bool area = recipe == "expanded-blast", other = recipe == "other-attack-plant", master = recipe == "master-volley";
+            string definitionId = area ? "wide-explosion" : master ? "branching-volley-master" : "branching-volley";
+            var definition = Array.Find(balance.specials, special => special.id == definitionId);
+            string targetId;
+            if (area)
+            {
+                var spell = AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Scriptables/Spells/Spell_Area.asset");
+                var unlock = spells.GetType().GetMethod("UnlockSpell", new[] { Production("SpellDataSO") });
+                Assert.That(unlock.Invoke(spells, new object[] { spell }), Is.True);
+                targetId = (string)Property(spell, "UpgradeTargetId");
+                Assert.That(targetId, Is.EqualTo("spell:2"));
+            }
+            else
+            {
+                string plantName = other ? "Astral Water Lily" : "Storm Rose";
+                var plantPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/Prefabs/Plants/Hybrid/{plantName}.prefab");
+                var plant = UnityEngine.Object.Instantiate(plantPrefab); created.Add(plant);
+                targetId = (string)Property(View(plant, "AttackPlant"), "UpgradeId");
+                Assert.That(targetId, Is.EqualTo(other ? "plant:AstralWaterLily" : "plant:StormRose"));
+            }
+            Call(runtime, "RefreshTargets");
+            var target = (Target)Call(runtime, "FindTarget", targetId);
+            Assert.That(target, Is.Not.Null);
+            if (master) Assert.That(state.Buy(Array.Find(balance.specials, special => special.id == "branching-volley"), target), Is.True);
+            var effect = definition.effects[0];
+            float startingEffect = state.Effect(targetId, effect.kind);
+
+            void Row(string materials, bool affordable, int stacks)
+            {
+                Call(presenter, "ShowShop");
+                var rows = (IList)Field(shop, "rows");
+                Component match = null;
+                foreach (Component row in rows)
+                    if (row.gameObject.activeSelf && Equals(Property(Field(row, "targetLabel"), "text"), target.Name) &&
+                        Equals(Property(Field(row, "nameLabel"), "text"), definition.displayName)) match = row;
+                Assert.That(match, Is.Not.Null, "target recipe row");
+                Assert.That(Property(Field(match, "costsLabel"), "text"), Is.EqualTo("<sprite name=\"GoldIcon\"> 200/200 + " + materials));
+                Assert.That(Property(Field(match, "stacksLabel"), "text"), Is.EqualTo($"{stacks}/{definition.maxStacks}"));
+                Assert.That(Property(Field(match, "purchaseButton"), "interactable"), Is.EqualTo(affordable));
+            }
+            void Attempt(bool succeeds, int stacks, params int[] spent)
+            {
+                int[] before = Wallet();
+                Assert.That(Call(runtime, "CanPurchase", definition, target), Is.EqualTo(succeeds));
+                Assert.That(Call(runtime, "Purchase", definition, targetId), Is.EqualTo(succeeds));
+                for (int i = 0; i < spent.Length; i += 2) before[Array.IndexOf(tracked, spent[i])] -= spent[i + 1];
+                Assert.That(Wallet(), Is.EqualTo(before));
+                Assert.That(state.SpecialStacks(definition.id, targetId), Is.EqualTo(stacks));
+                Assert.That(state.Effect(targetId, effect.kind), Is.EqualTo(startingEffect + stacks * effect.value).Within(.0001f));
+            }
+
+            Call(inventory, "SetGold", 200);
+            if (area)
+            {
+                Add(ember, 2); Add(spectral, 2);
+                Row("<sprite name=\"EternalEmber\"> 2/3 + <sprite name=\"SpectralCrystal\"> 2/2", false, 0);
+                Attempt(false, 0);
+                Add(ember, 1);
+                Row("<sprite name=\"EternalEmber\"> 3/3 + <sprite name=\"SpectralCrystal\"> 2/2", true, 0);
+                Attempt(true, 1, gold, 200, ember, 3, spectral, 2);
+                Call(inventory, "SetGold", 200); Add(ember, 5); Add(spectral, 4);
+                Row("<sprite name=\"EternalEmber\"> 5/5 + <sprite name=\"SpectralCrystal\"> 4/4 + BossHeart 0/1", false, 1);
+                Attempt(false, 1);
+                Add(heart, 1);
+                Row("<sprite name=\"EternalEmber\"> 5/5 + <sprite name=\"SpectralCrystal\"> 4/4 + BossHeart 1/1", true, 1);
+                Attempt(true, 2, gold, 200, ember, 5, spectral, 4, heart, 1);
+            }
+            else if (other)
+            {
+                for (int stack = 0; stack < 2; stack++)
+                {
+                    Call(inventory, "SetGold", 200); Add(windwalker, 3); Add(voltaic, 2);
+                    Row("<sprite name=\"WindwalkerEssence\"> 3/3 + <sprite name=\"VoltaicCore\"> 2/2", true, stack);
+                    Attempt(true, stack + 1, gold, 200, windwalker, 3, voltaic, 2);
+                }
+            }
+            else if (master)
+            {
+                Add(voltaic, 5);
+                Row("<sprite name=\"VoltaicCore\"> 5/5", true, 0);
+                Attempt(true, 1, gold, 200, voltaic, 5);
+            }
+            else
+            {
+                Add(stellar, 4);
+                Row("StellarFragment 4/5", false, 0);
+                Attempt(false, 0);
+                Add(stellar, 1);
+                Row("StellarFragment 5/5", true, 0);
+                Attempt(true, 1, gold, 200, stellar, 5);
+                Call(inventory, "SetGold", 200); Add(stellar, 7);
+                Row("StellarFragment 7/7 + BossHeart 0/1", false, 1);
+                Attempt(false, 1);
+                Add(heart, 1);
+                Row("StellarFragment 7/7 + BossHeart 1/1", true, 1);
+                Attempt(true, 2, gold, 200, stellar, 7, heart, 1);
+            }
+        }
+        finally
+        {
+            for (int i = 0; i < singletons.Length; i++) singletons[i].SetValue(null, previous[i]);
+        }
+    }
+    private Component NewComponent(string name)
+    {
+        var root = new GameObject("Cauldron test " + name); created.Add(root);
+        return root.AddComponent(Production(name));
+    }
+    private static void SetField(object target, string name, object value) =>
+        target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
+
     [Test] public void PresenterInitializationIsIdempotentAndMissingReferencesRejectSafely()
     {
         var root = new GameObject("Test presenter"); created.Add(root);

@@ -132,7 +132,26 @@ internal sealed class UpgradeBalanceWindow : EditorWindow
         Field(special, "prerequisites");
         Field(special, "effects");
 
-        var costs = special.FindPropertyRelative("costs");
+        DrawCosts(special);
+        var overrides = special.FindPropertyRelative("costOverrides");
+        overrides.isExpanded = EditorGUILayout.Foldout(overrides.isExpanded, "Target and Purchase Cost Overrides", true);
+        if (!overrides.isExpanded) return;
+        using (new EditorGUI.IndentLevelScope())
+        {
+            EditorGUILayout.LabelField("An exact target ID and prior stack count (0 for the first purchase) replace the default costs.",
+                EditorStyles.wordWrappedLabel);
+            DrawEntries(overrides, "targetId", entry =>
+            {
+                Field(entry, "targetId");
+                Field(entry, "priorStacks");
+                DrawCosts(entry);
+            });
+        }
+    }
+
+    private static void DrawCosts(SerializedProperty parent)
+    {
+        var costs = parent.FindPropertyRelative("costs");
         costs.isExpanded = EditorGUILayout.Foldout(costs.isExpanded, "Costs", true);
         if (!costs.isExpanded) return;
         using (new EditorGUI.IndentLevelScope())

@@ -318,23 +318,27 @@ public sealed class UpgradeRuntime : MonoBehaviour
     }
     public void CloseShop() => panel?.CloseShop();
     public void PanelDisabled() => ReleaseChoice(false); // the panel is already going away: no close tween
-    public bool CanPurchase(SpecialDefinition definition, Target target)
+    public bool CanPurchase(SpecialDefinition definition, Target target) =>
+        CanPurchaseWithCosts(definition, target, State.CostsFor(definition, target));
+
+    private bool CanPurchaseWithCosts(SpecialDefinition definition, Target target, Cost[] costs)
     {
         return !buying && !choosing && target != null && FindTarget(target.Id) != null &&
             State.CanBuy(definition, target) && InventoryManager.Instance != null &&
-            InventoryManager.Instance.HasCosts(definition.costs);
+            InventoryManager.Instance.HasCosts(costs);
     }
     public bool Purchase(SpecialDefinition definition, string targetId)
     {
         if (!isActiveAndEnabled || buying || choosing || panel == null || !panel.IsShopOpen || GameFlowController.Instance.CurrentPhase != GamePhase.Day) return false;
         RefreshTargets();
         var target = FindTarget(targetId);
-        if (!CanPurchase(definition, target)) return false;
+        var costs = State.CostsFor(definition, target);
+        if (!CanPurchaseWithCosts(definition, target, costs)) return false;
         buying = true;
         try
         {
             // Commit upgrade before resource notifications; transaction rejects reentrant spending.
-            return InventoryManager.Instance.TrySpendCosts(definition.costs, () => State.Buy(definition, target));
+            return InventoryManager.Instance.TrySpendCosts(costs, () => State.Buy(definition, target));
         }
         finally { buying = false; }
     }

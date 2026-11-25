@@ -139,8 +139,9 @@ public sealed class UpgradePanel : MonoBehaviour
             {
                 if (definition.capability != target.Capability) continue;
                 var requirements = new List<string>();
-                foreach (var cost in definition.costs)
+                foreach (var cost in runtime.State.CostsFor(definition, target) ?? System.Array.Empty<Cost>())
                 {
+                    if (cost == null) continue;
                     var inventory = InventoryManager.Instance;
                     var type = (MaterialType)cost.material;
                     string name = inventory != null ? inventory.GetMaterialName(type) : type.ToString();
