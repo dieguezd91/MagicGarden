@@ -180,7 +180,7 @@ public sealed class DailyLoadoutEquippedHudTests
         Assert.That(((Image)F.Field(p, "slotBackground")).color, Is.EqualTo(new Color(.42f, .44f, .46f, 1)));
         Assert.That(((Image)F.Field(s, "slotBackground")).color, Is.EqualTo(Color.white));
         Assert.That(s.transform.localScale, Is.EqualTo(new Vector3(1.2f, 1.2f, 1)));
-        Assert.That(((CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup")).alpha, Is.EqualTo(1));
+        Assert.That(((CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup")).alpha, Is.Zero);
         Assert.That(((CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup")).alpha, Is.EqualTo(1));
     }
 
@@ -203,8 +203,7 @@ public sealed class DailyLoadoutEquippedHudTests
         Assert.That(spells.gameObject.activeInHierarchy, Is.True);
         var pg = (CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup");
         var sg = (CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup");
-        Assert.That(pg.alpha, Is.GreaterThan(0)); Assert.That(sg.alpha, Is.GreaterThan(0));
-        Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(sg.alpha, Is.EqualTo(1));
+        Assert.That(pg.alpha, Is.EqualTo(night ? 0 : 1)); Assert.That(sg.alpha, Is.EqualTo(night ? 1 : 0));
         Assert.That(pg.interactable, Is.EqualTo(!night)); Assert.That(pg.blocksRaycasts, Is.EqualTo(!night));
         Assert.That(sg.interactable, Is.EqualTo(night)); Assert.That(sg.blocksRaycasts, Is.EqualTo(night));
     }
@@ -316,16 +315,16 @@ public sealed class DailyLoadoutEquippedHudTests
     }
 
     [Test]
-    public void PhaseVisibilityKeepsBothCategoriesVisibleAndOnlyTheMatchingCategoryInteractive()
+    public void OnlyTheCurrentPhaseEquipmentIsVisibleAndInteractive()
     {
         var plants = f.Hud(true); var spells = f.Hud(false);
         var pg = (CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup");
         var sg = (CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup");
         Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(pg.interactable, Is.True);
-        Assert.That(sg.alpha, Is.EqualTo(1)); Assert.That(sg.interactable, Is.False);
+        Assert.That(sg.alpha, Is.Zero); Assert.That(sg.interactable, Is.False);
         Assert.That(sg.blocksRaycasts, Is.False);
         F.Call(f.Days, "StartNight");
-        Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(pg.blocksRaycasts, Is.False);
+        Assert.That(pg.alpha, Is.Zero); Assert.That(pg.blocksRaycasts, Is.False);
         Assert.That(pg.interactable, Is.False);
         Assert.That(sg.alpha, Is.EqualTo(1)); Assert.That(sg.interactable, Is.True);
         Assert.That(F.HudSlot(plants, true, 0).gameObject.activeSelf, Is.True);
@@ -333,19 +332,19 @@ public sealed class DailyLoadoutEquippedHudTests
         F.Call(f.Days, "StartDay");
         Assert.That(pg.alpha, Is.EqualTo(1)); Assert.That(pg.interactable, Is.True);
         Assert.That(pg.blocksRaycasts, Is.True);
-        Assert.That(sg.alpha, Is.EqualTo(1)); Assert.That(sg.interactable, Is.False);
+        Assert.That(sg.alpha, Is.Zero); Assert.That(sg.interactable, Is.False);
         Assert.That(sg.blocksRaycasts, Is.False);
     }
 
     [Test]
-    public void PhaseTintDoesNotMakeTheEquipmentGroupsTransparent()
+    public void RepeatedPhaseChangesRestoreOnlyTheDayGroup()
     {
         var plants = f.Hud(true); var spells = f.Hud(false);
         for (int i = 0; i < 3; i++)
         {
             F.Call(f.Days, "StartNight"); F.Call(f.Days, "StartDay");
             Assert.That(((CanvasGroup)F.Field(plants, "seedSlotsCanvasGroup")).alpha, Is.EqualTo(1));
-            Assert.That(((CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup")).alpha, Is.EqualTo(1));
+            Assert.That(((CanvasGroup)F.Field(spells, "spellSlotsCanvasGroup")).alpha, Is.Zero);
         }
     }
     [TestCase(1920, 1080)]
@@ -353,7 +352,7 @@ public sealed class DailyLoadoutEquippedHudTests
     [TestCase(2560, 1440)]
     [TestCase(960, 600)]
     [TestCase(1024, 768)]
-    public void SavedEquipmentGroupsAreSeparatedAndFitScaledTargetViewport(int width, int height)
+    public void SavedEquipmentGroupsSharePositionsAndFitScaledTargetViewport(int width, int height)
     {
         var root = PrefabUtility.LoadPrefabContents("Assets/Prefabs/UI/Canvas/Canvas Game UI.prefab");
         try
@@ -367,10 +366,9 @@ public sealed class DailyLoadoutEquippedHudTests
             Assert.That(plants.anchorMax, Is.EqualTo(plants.anchorMin));
             Assert.That(spells.anchorMax, Is.EqualTo(spells.anchorMin));
             float left = plants.anchoredPosition.x + plants.rect.xMin;
-            float plantRight = plants.anchoredPosition.x + plants.rect.xMax;
-            float spellLeft = spells.anchoredPosition.x + spells.rect.xMin;
+            Assert.That(spells.anchoredPosition, Is.EqualTo(plants.anchoredPosition));
             float right = spells.anchoredPosition.x + spells.rect.xMax;
-            Assert.That(plantRight, Is.LessThan(spellLeft));
+            Assert.That(spells.rect, Is.EqualTo(plants.rect));
             float scale = Mathf.Pow(2f, Mathf.Lerp(Mathf.Log(width / scaler.referenceResolution.x, 2f),
                 Mathf.Log(height / scaler.referenceResolution.y, 2f), scaler.matchWidthOrHeight));
             Assert.That(left * scale, Is.GreaterThanOrEqualTo(-width / 2f));
@@ -450,8 +448,8 @@ public sealed class DailyLoadoutEquippedHudTests
             type.GetMethod("ConfigureCanvas").Invoke(null, new object[] { root });
             var plantRect = (RectTransform)seed.transform;
             var spellRect = (RectTransform)spell.transform;
-            Assert.That(plantRect.anchoredPosition.x, Is.EqualTo(-165f));
-            Assert.That(spellRect.anchoredPosition.x, Is.EqualTo(165f));
+            Assert.That(plantRect.anchoredPosition, Is.EqualTo(new Vector2(0f, 72f)));
+            Assert.That(spellRect.anchoredPosition, Is.EqualTo(plantRect.anchoredPosition));
             Assert.That(plantRect.sizeDelta, Is.EqualTo(new Vector2(310f, 100f)));
             Assert.That(spellRect.sizeDelta, Is.EqualTo(new Vector2(310f, 100f)));
             Assert.That(plantRect.anchoredPosition.y, Is.EqualTo(spellRect.anchoredPosition.y));

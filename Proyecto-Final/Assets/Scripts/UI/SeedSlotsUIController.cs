@@ -145,8 +145,7 @@ public class SeedSlotsUIController : UIControllerBase
         bool active = gameFlowController != null && gameFlowController.CurrentPhase == GamePhase.Day;
         if (seedSlotsCanvasGroup != null)
         {
-            // Location owns root visibility; opaque per-slot tints own phase presentation.
-            seedSlotsCanvasGroup.alpha = 1f;
+            seedSlotsCanvasGroup.alpha = active ? 1f : 0f;
             seedSlotsCanvasGroup.interactable = active;
             seedSlotsCanvasGroup.blocksRaycasts = active;
         }

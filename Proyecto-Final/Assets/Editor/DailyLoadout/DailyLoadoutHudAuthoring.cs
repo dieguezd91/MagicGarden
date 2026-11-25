@@ -69,7 +69,7 @@ public static class DailyLoadoutHudAuthoring
         }
         finally { PrefabUtility.UnloadPrefabContents(root); }
         ValidateGame(true);
-        Debug.Log("Equipment HUD wired: three existing plant slots on the left, three spell slots on the right. " +
+        Debug.Log("Equipment HUD wired: three shared positions for daytime plants and nighttime spells. " +
             "No slots, art or inventory resources created/replaced. Run HUD tests and the Game checklist.");
     }
 
@@ -80,15 +80,15 @@ public static class DailyLoadoutHudAuthoring
         var owner = root.GetComponentInChildren<UIManager>(true);
         Configure(owner.SeedSlots, "seedSlots");
         Configure(owner.SpellSlots, "spellSlotUIs");
-        ConfigureLayout(owner.SeedSlots, -165f);
-        ConfigureLayout(owner.SpellSlots, 165f);
+        ConfigureLayout(owner.SeedSlots);
+        ConfigureLayout(owner.SpellSlots);
     }
-    private static void ConfigureLayout(Component controller, float x)
+    private static void ConfigureLayout(Component controller)
     {
         var rect = (RectTransform)controller.transform;
         rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, 0f);
         rect.sizeDelta = new Vector2(310f, 100f); // Three existing 100-wide slots, spacing 5.
-        rect.anchoredPosition = new Vector2(x, 72f); // A 20-unit gap between categories.
+        rect.anchoredPosition = new Vector2(0f, 72f);
         PrefabUtility.RecordPrefabInstancePropertyModifications(rect);
     }
     private static void Configure(Component controller, string field)
@@ -120,9 +120,8 @@ public static class DailyLoadoutHudAuthoring
             // Prefab Canvas roots can have zero scale before the native Canvas initializes.
             // Compare in the shared HUD parent's space, not collapsed world coordinates.
             if (plantRect.parent != spellRect.parent ||
-                plantRect.localPosition.x + plantRect.rect.xMax * plantRect.localScale.x >=
-                spellRect.localPosition.x + spellRect.rect.xMin * spellRect.localScale.x)
-                throw new InvalidOperationException("Plant HUD must remain left of the spell HUD without overlap.");
+                plantRect.anchoredPosition != spellRect.anchoredPosition || plantRect.rect != spellRect.rect)
+                throw new InvalidOperationException("Plant and spell slots must occupy the same three HUD positions.");
         }
     }
     private static void ValidateSlots(Component controller, string field, string group, bool configured)

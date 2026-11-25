@@ -75,8 +75,7 @@ public class SpellSlotsUIController : UIControllerBase
         bool active = flow != null && flow.CurrentPhase == GamePhase.Night;
         if (spellSlotsCanvasGroup != null)
         {
-            // Location owns root visibility; opaque per-slot tints own phase presentation.
-            spellSlotsCanvasGroup.alpha = 1f;
+            spellSlotsCanvasGroup.alpha = active ? 1f : 0f;
             spellSlotsCanvasGroup.interactable = active;
             spellSlotsCanvasGroup.blocksRaycasts = active;
         }

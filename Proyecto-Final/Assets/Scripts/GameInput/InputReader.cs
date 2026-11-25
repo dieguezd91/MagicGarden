@@ -103,7 +103,7 @@ public class InputReader : MonoBehaviour
 
     private void ReadSlotKeys()
     {
-        for (int i = 0; i < 9; i++)
+        for (int i = 0; i < 3; i++)
         {
             if (Input.GetKeyDown(KeyCode.Alpha1 + i) || Input.GetKeyDown(KeyCode.Keypad1 + i))
             {

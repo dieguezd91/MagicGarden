@@ -80,8 +80,8 @@ InputReader.OnSlotSelected (keys 1–3: plants by day, spells by night) / existi
   Standalone SeedSlot storage presentation/callbacks and `SeedInventory.SwapSlots`
   remain available; they do not grant equipment admission.
 - Only the seed HUD is visible in Day; only the spell HUD is visible in Night.
-  The outgoing bar hides immediately and stops receiving input; only the incoming
-  bar fades in, so the two never overlap. Other phases hide both bars.
+  Both use the same three fixed HUD positions. The outgoing category hides immediately
+  and stops receiving input. Other phases hide both bars.
   No runtime slot/hierarchy generation or numeric-key polling was added.
 
 ## Execution and payment boundaries

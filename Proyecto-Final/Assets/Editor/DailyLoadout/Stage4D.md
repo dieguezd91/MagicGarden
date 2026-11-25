@@ -44,8 +44,8 @@ empty spell positions; no click-bridge runtime pass or confirmed new defect is c
 ## Manual Game.unity acceptance
 
 1. Start a new Run: the Day seed bar shows three empty positions and the spell bar
-   is hidden. At Night only the spell bar is visible. The outgoing bar disappears
-   immediately even during a fade: the bars must never overlap. Hidden bars cannot
+   is hidden. At Night the same three positions show spells instead of plants.
+   Switching back to Day restores the plants in place. Hidden bars cannot
    receive clicks. Resources/catalog unlocks remain available.
 2. Open the Sacred Tree Loadout: Plant 1 is selected and the initial two unlocked
    plant options are visible immediately. Option status text is only `Available`
