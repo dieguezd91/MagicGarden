@@ -5085,6 +5085,13 @@ MonoBehaviour:
   flashDuration: 0.1
   numberOfFlashes: 3
   flashColor: {r: 1, g: 0, b: 0, a: 0.5}
+  punchOnDamage: 1
+  punchPlants: 1
+  punchScale: 0.15
+  punchDuration: 0.2
+  punchVibrato: 6
+  punchMinInterval: 0.1
+  punchTarget: {fileID: 0}
   onDeath:
     m_PersistentCalls:
       m_Calls: []
@@ -5099,7 +5106,7 @@ MonoBehaviour:
   lootTable:
   - name: BossHeart
     itemPrefab: {fileID: 1768544347340343859, guid: 6e5cf5dfd5e5d05449e7ddfe43c96b0d, type: 3}
-    dropChance: 0
+    dropChance: 100
   dropScatterDistance: 0.5
   explosionForce: 3
   dotSoundCooldown: 0.2

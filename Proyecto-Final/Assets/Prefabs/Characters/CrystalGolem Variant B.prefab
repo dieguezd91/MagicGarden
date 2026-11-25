@@ -5219,7 +5219,7 @@ MonoBehaviour:
   manaDropChance: 10
   lootTable:
   - name: BossHeart
-    itemPrefab: {fileID: 1768544347340343859, guid: 6e5cf5dfd5e5d05449e7ddfe43c96b0d, type: 3}
+    itemPrefab: {fileID: 1768544347340343859, guid: 00093646bc65a6744a868955a21380aa, type: 3}
     dropChance: 100
   dropScatterDistance: 0.5
   explosionForce: 3
