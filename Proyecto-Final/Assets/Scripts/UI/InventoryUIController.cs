@@ -23,8 +23,14 @@ public class InventoryUIController : UIControllerBase
 
     protected override void CacheReferences()
     {
+        // Fallback when the reference is not wired: look the panel up by its InventoryUI component.
+        // (It used to search by an "InventoryPanel" tag that the project never defined, which throws.)
         if (inventoryPanel == null)
-            inventoryPanel = GameObject.FindGameObjectWithTag("InventoryPanel");
+        {
+            if (inventoryUI == null) inventoryUI = FindObjectOfType<InventoryUI>(true);
+            if (inventoryUI != null) inventoryPanel = inventoryUI.gameObject;
+            else Debug.LogWarning("InventoryUIController: no inventory panel assigned or found; the inventory will not open.", this);
+        }
 
         if (inventoryUI == null && inventoryPanel != null)
             inventoryUI = inventoryPanel.GetComponent<InventoryUI>();

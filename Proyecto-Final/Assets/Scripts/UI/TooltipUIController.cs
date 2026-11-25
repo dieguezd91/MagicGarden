@@ -9,6 +9,9 @@ public class TooltipUIController : UIControllerBase
     [SerializeField] private TextMeshProUGUI seedNameText;
     [SerializeField] private TextMeshProUGUI seedDescriptionText;
     [SerializeField] private Image fullyGrownImage;
+    [Tooltip("Spell/attack icons are drawn smaller than plant pictures in the picture box.")]
+    [SerializeField] private Vector2 spellIconSize = new Vector2(64f, 64f);
+    private Vector2 plantPictureSize = new Vector2(-1f, -1f);
     [SerializeField] private Vector2 tooltipOffset = new Vector2(0f, 120f);
 
     [Header("Backgrounds")]
@@ -17,9 +20,13 @@ public class TooltipUIController : UIControllerBase
     [SerializeField] private Sprite toolBackground;
     [SerializeField] private Sprite seedBackground;
     [SerializeField] private Sprite spellBackground;
-    [Tooltip("Tools have no picture box (UISprites_12C), so their description spans the whole body: this is its x and width then.")]
-    [SerializeField] private float wideDescriptionX = 0f;
-    [SerializeField] private float wideDescriptionWidth = 540f;
+    [Header("Tool tooltip (9-sliced UISprites_12C)")]
+    [Tooltip("Tools have no picture box, so their panel is narrower and the description spans the whole body.")]
+    [SerializeField] private float toolPanelWidth = 360f;
+    [Tooltip("Sprite pixels drawn at the same 5 units as the other tooltips: 6.25 canvas units per sprite pixel (100 / 16 PPU) / 5.")]
+    [SerializeField] private float toolSliceMultiplier = 1.25f;
+    [Tooltip("Space between the panel edge and the name/description, on each side.")]
+    [SerializeField] private float toolTextInset = 15f;
 
     [SerializeField] private Canvas rootCanvas;
     private RectTransform canvasRect;
@@ -36,10 +43,16 @@ public class TooltipUIController : UIControllerBase
 
     private SpellSlot currentSpellData;
 
-    // The description's authored box (left of the picture), restored for seeds and spells.
+    // The authored layout (seeds and spells: full panel, description left of the picture), restored after a tool tooltip.
     private RectTransform descriptionRect;
     private Vector2 descriptionPosition;
     private Vector2 descriptionSize;
+    private RectTransform nameRect;
+    private Vector2 nameSize;
+    private float panelWidth;
+    private Image.Type panelImageType;
+    private float panelSliceMultiplier;
+    private bool layoutCached;
 
     protected override void CacheReferences()
     {
@@ -48,6 +61,11 @@ public class TooltipUIController : UIControllerBase
             descriptionRect = seedDescriptionText.rectTransform;
             descriptionPosition = descriptionRect.anchoredPosition;
             descriptionSize = descriptionRect.sizeDelta;
+        }
+        if (nameRect == null && seedNameText != null)
+        {
+            nameRect = seedNameText.rectTransform;
+            nameSize = nameRect.sizeDelta;
         }
         if (rootCanvas == null) rootCanvas = GetComponentInParent<Canvas>(true);
         if (tooltipPanel != null) tooltipRect = tooltipPanel.GetComponent<RectTransform>();
@@ -128,14 +146,43 @@ public class TooltipUIController : UIControllerBase
     }
 
 
+    // Plants keep the picture box's authored size; spell icons use spellIconSize.
+    private void SetPictureSize(bool spell)
+    {
+        RectTransform rect = fullyGrownImage.rectTransform;
+        if (plantPictureSize.x < 0f) plantPictureSize = rect.sizeDelta;
+        rect.sizeDelta = spell ? spellIconSize : plantPictureSize;
+    }
+
     // Background and description box go together: tools fill the whole body, seeds and spells leave the picture box free.
     private void SetBackground(Sprite sprite)
     {
+        if (!layoutCached && tooltipRect != null && background != null)
+        {
+            panelWidth = tooltipRect.sizeDelta.x;
+            panelImageType = background.type;
+            panelSliceMultiplier = background.pixelsPerUnitMultiplier;
+            layoutCached = true;
+        }
+
         if (background != null && sprite != null) background.sprite = sprite;
-        if (descriptionRect == null) return;
-        bool wide = sprite != null && sprite == toolBackground;
-        descriptionRect.anchoredPosition = wide ? new Vector2(wideDescriptionX, descriptionPosition.y) : descriptionPosition;
-        descriptionRect.sizeDelta = wide ? new Vector2(wideDescriptionWidth, descriptionSize.y) : descriptionSize;
+        bool tool = sprite != null && sprite == toolBackground;
+
+        if (layoutCached)
+        {
+            background.type = tool ? Image.Type.Sliced : panelImageType;
+            background.pixelsPerUnitMultiplier = tool ? toolSliceMultiplier : panelSliceMultiplier;
+            tooltipRect.sizeDelta = new Vector2(tool ? toolPanelWidth : panelWidth, tooltipRect.sizeDelta.y);
+        }
+
+        float textWidth = toolPanelWidth - toolTextInset * 2f;
+        if (nameRect != null)
+            nameRect.sizeDelta = tool ? new Vector2(textWidth, nameSize.y) : nameSize;
+        if (descriptionRect != null)
+        {
+            descriptionRect.anchoredPosition = tool ? new Vector2(0f, descriptionPosition.y) : descriptionPosition;
+            descriptionRect.sizeDelta = tool ? new Vector2(textWidth, descriptionSize.y) : descriptionSize;
+        }
     }
 
     // Seed tooltips show whatever tool is active: a seed slot that is greyed out still describes its seed.
@@ -323,6 +370,7 @@ public class TooltipUIController : UIControllerBase
         {
             fullyGrownImage.sprite = data.fullyGrownSprite;
             fullyGrownImage.preserveAspect = true;
+            SetPictureSize(false);
             fullyGrownImage.gameObject.SetActive(true);
         }
         else
@@ -464,6 +512,7 @@ public class TooltipUIController : UIControllerBase
             {
                 fullyGrownImage.sprite = spell.spellIcon;
                 fullyGrownImage.preserveAspect = true;
+                SetPictureSize(true);
                 fullyGrownImage.gameObject.SetActive(true);
             }
             else
