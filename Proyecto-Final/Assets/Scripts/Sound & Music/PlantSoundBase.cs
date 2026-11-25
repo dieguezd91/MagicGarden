@@ -9,6 +9,8 @@ public class PlantSoundBase : MonoBehaviour
     public SoundClipData harvested;
     public SoundClipData attack;
     public SoundClipData hurt;
+    [Tooltip("Played instead of Hurt for fire and ice hits.")]
+    public SoundClipData hurtBurn;
     public SoundClipData die;
     public SoundClipData grown;
     [Tooltip("Plant-specific hit (e.g. saw bite, electric hit). Projectile hits use the projectile's impactSound.")]
@@ -20,10 +22,15 @@ public class PlantSoundBase : MonoBehaviour
     public float loopFullVolumeDistance = 1.5f;
     [Tooltip("Loop is silent beyond this many units (~2-3 characters away).")]
     public float loopSilentDistance = 4f;
+    [Tooltip("Seconds the loop takes to fade in when it starts (or comes back while fading out).")]
+    public float loopFadeIn = 0.6f;
+    [Tooltip("Seconds the loop takes to fade out after it is asked to stop.")]
+    public float loopFadeOut = 1.5f;
 
     private AudioSource loopSource;
+    private float loopGain;
+    private float loopTarget;
 
-    // Dictionary for runtime access
     private Dictionary<PlantSoundType, SoundClipData> soundDictionary;
 
     public void Initialize()
@@ -37,8 +44,15 @@ public class PlantSoundBase : MonoBehaviour
             { PlantSoundType.Hurt, hurt },
             { PlantSoundType.Die, die },
             { PlantSoundType.Grown, grown },
-            { PlantSoundType.Hit, hit }
+            { PlantSoundType.Hit, hit },
+            { PlantSoundType.HurtBurn, hurtBurn }
         };
+    }
+
+    public bool HasClip(PlantSoundType soundType)
+    {
+        var data = GetSound(soundType);
+        return data != null && data.clips != null && data.clips.Length > 0;
     }
 
     public SoundClipData GetSound(PlantSoundType soundType)
@@ -48,9 +62,6 @@ public class PlantSoundBase : MonoBehaviour
         return soundData;
     }
 
-    /// <summary>
-    /// Plays the sound for the given PlantSoundType using SoundManager's pooling system.
-    /// </summary>
     public void PlaySound(PlantSoundType soundType, SoundSourceType sourceType = SoundSourceType.Global, Transform parent = null)
     {
         var soundData = GetSound(soundType);
@@ -62,29 +73,65 @@ public class PlantSoundBase : MonoBehaviour
 
     public void PlayLoop()
     {
-        // Safe to call every frame: only (re)starts when our source stopped or was taken by another clip.
+        loopTarget = 1f;
         if (IsOwnLoop(loopSource) && loopSource.isPlaying) return;
         if (SoundManager.Instance == null || loop == null) return;
         loopSource = SoundManager.Instance.PlayClip(loop, SoundSourceType.Localized, transform);
         if (loopSource != null)
         {
-            // Ambient plant loops (electric hum) are a close-up detail: fully positional, short range.
             loopSource.spatialBlend = 1f;
             loopSource.rolloffMode = AudioRolloffMode.Linear;
             loopSource.minDistance = loopFullVolumeDistance;
             loopSource.maxDistance = loopSilentDistance;
+            loopGain = 0f;
+            loopSource.volume = 0f;
         }
     }
 
     public void StopLoop()
     {
-        // The pooled source may already have been reused for another clip.
-        if (IsOwnLoop(loopSource)) loopSource.Stop();
-        loopSource = null;
+        loopTarget = 0f;
+    }
+
+    // Pause, game over and the level-up screen stop time (or block gameplay) but not audio, so loops are muted
+    // while that lasts. Muted rather than paused: the SoundManager pool reuses sources that are not playing.
+    public static bool GameFrozen => Time.timeScale <= 0f || UpgradeRuntime.GameplayBlocked;
+
+    private void Update()
+    {
+        if (loopSource == null) return;
+        if (!IsOwnLoop(loopSource))
+        {
+            loopSource = null;
+            loopGain = 0f;
+            return;
+        }
+
+        if (GameFrozen)
+        {
+            loopSource.volume = 0f;
+            return;
+        }
+
+        float seconds = loopTarget > loopGain ? loopFadeIn : loopFadeOut;
+        loopGain = seconds > 0f ? Mathf.MoveTowards(loopGain, loopTarget, Time.deltaTime / seconds) : loopTarget;
+        loopSource.volume = loop.volume * loopGain;
+
+        if (loopGain <= 0f && loopTarget <= 0f)
+        {
+            loopSource.Stop();
+            loopSource = null;
+        }
     }
 
     private bool IsOwnLoop(AudioSource source) =>
         source != null && source.loop && loop?.clips != null && System.Array.IndexOf(loop.clips, source.clip) >= 0;
 
-    private void OnDisable() => StopLoop();
+    private void OnDisable()
+    {
+        if (IsOwnLoop(loopSource)) loopSource.Stop();
+        loopSource = null;
+        loopGain = 0f;
+        loopTarget = 0f;
+    }
 }

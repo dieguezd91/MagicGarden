@@ -222,7 +222,26 @@ public class Plant : MonoBehaviour
         if (plantLifeController.currentHealth <= 0f) return; // killing blow: the die sound plays instead
         if (Time.time < nextHurtSoundTime) return;
         nextHurtSoundTime = Time.time + (damageType == LifeController.DamageType.DamageOverTime ? 0.6f : 0.3f);
-        PlaySound(PlantSoundType.Hurt);
+        bool burn = plantLifeController.LastDamageElement != LifeController.DamageElement.Normal
+                    && _soundBase != null && _soundBase.HasClip(PlantSoundType.HurtBurn);
+        PlantSoundType type = burn ? PlantSoundType.HurtBurn : PlantSoundType.Hurt;
+        if (isActiveAndEnabled) StartCoroutine(PlaySoundAfter(type, HurtSoundDelay));
+        else PlaySound(type);
+    }
+
+    private const float HurtSoundDelay = 0.1f;
+
+    private System.Collections.IEnumerator PlaySoundAfter(PlantSoundType type, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (plantLifeController != null && plantLifeController.IsAlive())
+            PlaySound(type);
+    }
+
+    private System.Collections.IEnumerator PlayDieSoundAfter(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        PlaySound(PlantSoundType.Die);
     }
 
     private void HandleHealthChanged(float currentHealth, float maxHealth)
@@ -356,7 +375,8 @@ public class Plant : MonoBehaviour
             healthBar.gameObject.SetActive(false);
         }
 
-        SoundBase.PlaySound(PlantSoundType.Die, SoundSourceType.Localized, transform);
+        if (isActiveAndEnabled) StartCoroutine(PlayDieSoundAfter(HurtSoundDelay));
+        else PlaySound(PlantSoundType.Die);
         TilePlantingSystem.Instance.UnregisterPlantAt(tilePosition);
         RewardsSystem.Instance?.NotifyPlantDestroyed();
     }

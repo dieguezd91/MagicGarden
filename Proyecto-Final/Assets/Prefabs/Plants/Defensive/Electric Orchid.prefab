@@ -223,7 +223,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   floatingDamagePrefab: {fileID: 8011744024934345175, guid: b18d5e020de9918429f62b516be2ef30, type: 3}
-  zapSoundInterval: 1.2
 --- !u!95 &3571993964666859570
 Animator:
   serializedVersion: 5
@@ -292,7 +291,16 @@ MonoBehaviour:
   hurt:
     clips:
     - {fileID: 8300000, guid: ad8829dd6d25bd144bc66597635d1f3c, type: 3}
-    volume: 0.4
+    volume: 0.75
+    pitch: 1
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  hurtBurn:
+    clips:
+    - {fileID: 8300000, guid: d5c2bcfe73080f64aaf5b6f6fc8b7ee0, type: 3}
+    volume: 0.75
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -301,38 +309,43 @@ MonoBehaviour:
   die:
     clips:
     - {fileID: 8300000, guid: a7ec90936d27af940a4048bcd8ac2ea0, type: 3}
-    volume: 0.4
+    volume: 0.85
     pitch: 1
     pitchVariation: 0.1
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
   grown:
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 896700b1a2f94d7468d0c163c0063d50, type: 3}
+    - {fileID: 8300000, guid: 338d547ff7d49e141abc3de468052a7d, type: 3}
+    volume: 0.45
     pitch: 1
     pitchVariation: 0.1
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
   hit:
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 04ef33e1ab9a9ab428753072ad6cf9e3, type: 3}
+    - {fileID: 8300000, guid: debf87092e3ec1840b12b3293ca668ce, type: 3}
+    volume: 0.5
     pitch: 1
     pitchVariation: 0.1
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
   loop:
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 7f14fb2d743228e40bbc87b9ef38ec5e, type: 3}
+    volume: 0.25
     pitch: 1
     pitchVariation: 0.1
-    loop: 0
+    loop: 1
     randomizeClip: 1
     cooldownTime: 0
-  loopFullVolumeDistance: 1.5
-  loopSilentDistance: 4
+  loopFullVolumeDistance: 2
+  loopSilentDistance: 6
 --- !u!1 &7379102786083762827
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,6 +7,6 @@ public enum PlantSoundType
     Hurt,
     Die,
     Grown,
-    Hit
+    Hit,
+    HurtBurn
 }
-

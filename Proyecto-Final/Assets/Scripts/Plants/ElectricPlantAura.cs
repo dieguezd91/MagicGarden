@@ -17,9 +17,17 @@ public class ElectricPlantAura : Plant
     [SerializeField] private GameObject floatingDamagePrefab;
 
     [Header("Sound")]
-    [Tooltip("Seconds between zap/hit sounds, shared by every orchid so several don't stack.")]
-    [SerializeField] private float zapSoundInterval = 1.2f;
-    private static float lastZapSoundTime = float.MinValue;
+    [Tooltip("The hum keeps going this long after the last enemy is hit, so it does not flicker between damage ticks.")]
+    [SerializeField] private float humReleaseSeconds = 0.5f;
+    [Tooltip("Each enemy in the aura plays the hit sound on contact and then again every this many seconds while it stays inside.")]
+    [SerializeField] private float enemyHitSoundInterval = 0.45f;
+    [Tooltip("Minimum seconds between any two hit sounds, shared by every orchid, so a crowd does not turn into noise.")]
+    [SerializeField] private float minHitSoundSpacing = 0.08f;
+    private static float lastHitSoundTime = float.MinValue;
+    private readonly System.Collections.Generic.Dictionary<LifeController, float> nextEnemyHitSound = new();
+    private readonly System.Collections.Generic.List<LifeController> staleEnemies = new();
+    private bool attacking;
+    private float lastHitTime = float.MinValue;
 
     public void Describe(MagicGarden.Target target)
     {
@@ -36,14 +44,13 @@ public class ElectricPlantAura : Plant
     private void OnDisable()
     {
         StopAllCoroutines();
+        attacking = false;
     }
 
     private IEnumerator AreaRoutine()
     {
         while (true)
         {
-            // Hum only once grown, matching when the plant is "on".
-            if (IsFullyGrown() && SoundBase != null) SoundBase.PlayLoop();
             ApplyAreaEffects();
 
             yield return new WaitForSeconds(areaCheckInterval);
@@ -56,6 +63,7 @@ public class ElectricPlantAura : Plant
         if (!IsFullyGrown() || UpgradeRuntime.GameplayBlocked)
         {
             SetAttackAnimation(false);
+            UpdateAttackSound(false);
             return;
         }
 
@@ -77,20 +85,62 @@ public class ElectricPlantAura : Plant
             if (enemyLife == null || !enemyLife.IsAlive())
                 continue;
 
-            enemyLife.TakeDamage(damage, LifeController.DamageType.DamageOverTime); // ticks every 0.1 s
+            enemyLife.TakeDamage(damage, LifeController.DamageType.DamageOverTime);
             hitAny = true;
 
             ShowDamageText(enemyLife.transform, damage);
+            PlayEnemyHitSound(enemyLife);
         }
 
         SetAttackAnimation(hitAny);
+        UpdateAttackSound(hitAny);
+        ForgetEnemiesOutOfRange();
+    }
 
-        // Damage ticks every areaCheckInterval; sound only once per zapSoundInterval across all orchids.
-        // Time.time < last covers a stale static after an editor play session without domain reload.
-        if (hitAny && (Time.time - lastZapSoundTime >= zapSoundInterval || Time.time < lastZapSoundTime))
+    private void PlayEnemyHitSound(LifeController enemy)
+    {
+        float now = Time.time;
+        if (nextEnemyHitSound.TryGetValue(enemy, out float next) && now < next)
+            return;
+        if (now - lastHitSoundTime < minHitSoundSpacing && now >= lastHitSoundTime)
+            return;
+
+        nextEnemyHitSound[enemy] = now + enemyHitSoundInterval;
+        lastHitSoundTime = now;
+        if (SoundBase != null)
+            SoundBase.PlaySound(PlantSoundType.Hit, SoundSourceType.Localized, enemy.transform);
+    }
+
+    private void ForgetEnemiesOutOfRange()
+    {
+        if (nextEnemyHitSound.Count == 0) return;
+        float range = Upgraded(MagicGarden.Stat.Area, radius) + 0.5f;
+        staleEnemies.Clear();
+        foreach (var pair in nextEnemyHitSound)
         {
-            lastZapSoundTime = Time.time;
-            PlaySound(Random.value < 0.6f ? PlantSoundType.Attack : PlantSoundType.Hit);
+            if (pair.Key == null || !pair.Key.IsAlive() ||
+                (pair.Key.transform.position - transform.position).sqrMagnitude > range * range)
+                staleEnemies.Add(pair.Key);
+        }
+        foreach (var enemy in staleEnemies)
+            nextEnemyHitSound.Remove(enemy);
+    }
+
+    private void UpdateAttackSound(bool hitAny)
+    {
+        bool alive = plantLife == null || plantLife.IsAlive();
+        if (hitAny && alive)
+        {
+            lastHitTime = Time.time;
+            attacking = true;
+            if (SoundBase != null) SoundBase.PlayLoop();
+            return;
+        }
+
+        if (attacking && (!alive || Time.time - lastHitTime >= humReleaseSeconds))
+        {
+            attacking = false;
+            if (SoundBase != null) SoundBase.StopLoop();
         }
     }
 
