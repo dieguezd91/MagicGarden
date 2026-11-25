@@ -93,7 +93,9 @@ public class PiercingSpell : Spell
             currentDamage *= RitualBuffManager.Instance.GetDamageMultiplier();
         }
 
+        bool wasAlive = life.IsAlive();
         life.TakeDamage(currentDamage);
+        lastHitKilled = wasAlive && !life.IsAlive(); // kill shake/hitstop like ApplyDamage
 
         ShowDamageText(collision.transform, currentDamage);
         PlayImpactEffects(collision.transform.position);

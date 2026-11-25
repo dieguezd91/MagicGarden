@@ -18,9 +18,25 @@ public class FireSpell : Spell
     [SerializeField] private SoundClipData flameEndSound;
     [SerializeField] private float hitSoundInterval = 0.12f;
 
+    [Header("HIT FEEDBACK")]
+    [Tooltip("Show the floating damage number on each hit. Ticks add up into one number per enemy. Off = no numbers.")]
+    [SerializeField] private bool showDamageNumbers = true;
+    [Tooltip("Spawn impact particles on hit (uses the Impact Particles Prefab). Off = no particles.")]
+    [SerializeField] private bool spawnImpactParticles = true;
+    [Tooltip("Minimum seconds between impact particle bursts, shared by every flame (the stream ticks ~20 times per second). 0 = a burst on every tick.")]
+    [SerializeField] private float impactParticleInterval = 0.12f;
+    [Tooltip("Knockback pushed on a burning enemy per tick, along the flame direction. Small on purpose: it repeats every tick. 0 = no knockback.")]
+    [SerializeField] private float hitKnockback = 3f;
+
     private AudioSource flameLoopSource;
     // Shared by every flame projectile: ~20 flames/s would otherwise stack sizzles.
     private static float lastHitSoundTime = float.MinValue;
+    // Same rule for the impact particles: one burst per interval for the whole stream.
+    private static float lastImpactParticlesTime = float.MinValue;
+
+    // A tick every 0.05 s: a hitstop or camera shake per tick would freeze/shake the screen continuously.
+    protected override bool AllowsHitStop => false;
+    protected override bool AllowsImpactShake => false;
 
     public override MagicGarden.Target DescribeUpgradeTarget(string id, string displayName)
     {
@@ -167,6 +183,34 @@ public class FireSpell : Spell
             StopFlameLoop();
     }
 
+    // Particles only, throttled. The impact sound keeps its own throttle in OnTriggerEnter2D and
+    // the base camera shake is deliberately skipped (see AllowsImpactShake).
+    protected override void PlayImpactEffects(Vector3 position)
+    {
+        if (!spawnImpactParticles || impactParticlesPrefab == null) return;
+
+        // Time.time < last covers a stale static after an editor play session without domain reload.
+        if (Time.time - lastImpactParticlesTime < impactParticleInterval && Time.time >= lastImpactParticlesTime) return;
+        lastImpactParticlesTime = Time.time;
+
+        var particles = Instantiate(impactParticlesPrefab, position, Quaternion.identity);
+        var ps = particles.GetComponent<ParticleSystem>();
+        Destroy(particles, ps != null ? ps.main.duration : 1.5f);
+    }
+
+    protected override void ApplyKnockback(Collider2D target)
+    {
+        if (hitKnockback <= 0f) return;
+
+        var knockback = target.GetComponent<KnockbackReceiver>();
+        if (knockback == null) return;
+
+        Vector2 direction = rb != null && rb.velocity.sqrMagnitude > 0.0001f
+            ? rb.velocity.normalized
+            : (Vector2)(target.transform.position - transform.position);
+        knockback.ApplyKnockback(direction, Upgraded(MagicGarden.Stat.Knockback, hitKnockback));
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (!isActive || !isProjectile)
@@ -186,6 +230,11 @@ public class FireSpell : Spell
                 }
 
                 life.TakeDamage(damage);
+
+                if (showDamageNumbers)
+                    ShowDamageText(collision.transform, damage);
+                PlayImpactEffects(collision.transform.position);
+                ApplyKnockback(collision);
 
                 // Time.time < last covers a stale static after an editor play session without domain reload.
                 if (Time.time - lastHitSoundTime >= hitSoundInterval || Time.time < lastHitSoundTime)

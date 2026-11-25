@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -39,6 +40,20 @@ public class LifeController : MonoBehaviour
     public float flashDuration = 0.1f;
     public int numberOfFlashes = 3;
     public Color flashColor = new Color(1f, 0f, 0f, 0.5f);
+
+    [Header("HIT PUNCH")]
+    [Tooltip("Enemies pop in size when they take damage. Untick to disable.")]
+    public bool punchOnDamage = true;
+    [Tooltip("Scale added by the punch (0.15 = +15%). 0 disables it.")]
+    public float punchScale = 0.15f;
+    [Tooltip("Punch duration in seconds.")]
+    public float punchDuration = 0.2f;
+    [Tooltip("How many times the punch oscillates.")]
+    public int punchVibrato = 6;
+    [Tooltip("Minimum real seconds between two punches, so rapid ticks do not shake the sprite constantly.")]
+    public float punchMinInterval = 0.1f;
+    [Tooltip("Transform that gets punched. Empty = this object.")]
+    [SerializeField] private Transform punchTarget;
 
     [Header("EVENTS")]
     public UnityEvent onDeath;
@@ -158,6 +173,8 @@ public class LifeController : MonoBehaviour
             {
                 StartCoroutine(FlashRoutine());
             }
+
+            if (isEnemy) TryPunch();
         }
 
         onHealthChanged?.Invoke(currentHealth, maxHealth);
@@ -249,6 +266,38 @@ public class LifeController : MonoBehaviour
             }
         }
     }
+
+    private Tween punchTween;
+    private Vector3 punchBaseScale;
+    private float lastPunchTime = float.NegativeInfinity;
+
+    // Always restarts from the stored base scale, so repeated punches never leave the scale drifted.
+    private void TryPunch()
+    {
+        if (!punchOnDamage || punchScale <= 0f || punchDuration <= 0f) return;
+        var target = punchTarget != null ? punchTarget : transform;
+        if (Time.unscaledTime - lastPunchTime < punchMinInterval) return;
+        lastPunchTime = Time.unscaledTime;
+
+        KillPunch();
+        punchBaseScale = target.localScale;
+        punchTween = target.DOPunchScale(Vector3.one * punchScale, punchDuration, Mathf.Max(1, punchVibrato), 1f)
+            .SetUpdate(true).SetLink(gameObject)
+            .OnComplete(() => { if (target != null) target.localScale = punchBaseScale; });
+    }
+
+    private void KillPunch()
+    {
+        if (punchTween == null || !punchTween.IsActive()) { punchTween = null; return; }
+        var target = punchTarget != null ? punchTarget : transform;
+        punchTween.Kill();
+        punchTween = null;
+        if (target != null) target.localScale = punchBaseScale;
+    }
+
+    void OnDisable() => KillPunch();
+
+    void OnDestroy() => KillPunch();
 
     IEnumerator FlashRoutine()
     {

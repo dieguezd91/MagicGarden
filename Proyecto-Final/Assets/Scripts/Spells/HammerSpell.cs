@@ -9,7 +9,10 @@ public class HammerSpell : Spell
 
     [Header("VFX")]
     [SerializeField] private GameObject slashEffectPrefab;
+    [Tooltip("Seconds the slam VFX lives before it is destroyed. Also the spell's own lifetime.")]
     [SerializeField] private float effectDuration = 0.5f;
+    [Tooltip("Scale of the slam VFX (1 = prefab size). 0 = no slam VFX; an empty Slash Effect Prefab disables it too.")]
+    [SerializeField] private float effectScale = 1f;
 
     public override MagicGarden.Target DescribeUpgradeTarget(string id, string displayName)
     {
@@ -71,13 +74,21 @@ public class HammerSpell : Spell
 
     private void ShowHammerEffect()
     {
-        if (slashEffectPrefab == null) return;
+        if (slashEffectPrefab == null || effectScale <= 0f) return;
 
         GameObject effect = Instantiate(
             slashEffectPrefab,
             transform.position,
             Quaternion.identity
         );
+        effect.transform.localScale *= effectScale;
+
+        // Existing particle prefabs may have Play On Awake off (DestructionParticles does).
+        foreach (ParticleSystem particles in effect.GetComponentsInChildren<ParticleSystem>())
+        {
+            if (!particles.isPlaying)
+                particles.Play();
+        }
 
         Destroy(effect, effectDuration);
     }

@@ -12,6 +12,14 @@ public class BasicAreaSpell : Spell
     [SerializeField] private GameObject explosionEffectPrefab;
     [SerializeField] private float explosionEffectDuration;
 
+    [Header("EXPLOSION FEEL")]
+    [Tooltip("Camera shake intensity of the explosion itself. 0 disables the shake.")]
+    [SerializeField] private float explosionShakeIntensity = 0.5f;
+    [Tooltip("Camera shake duration of the explosion, in seconds.")]
+    [SerializeField] private float explosionShakeDuration = 0.4f;
+    [Tooltip("Slow-motion freeze when the spell explodes, in real seconds. 0 disables it.")]
+    [SerializeField] private float explosionHitStopDuration = 0.06f;
+
     public override MagicGarden.Target DescribeUpgradeTarget(string id, string displayName)
     {
         var target = base.DescribeUpgradeTarget(id, displayName);
@@ -80,9 +88,13 @@ public class BasicAreaSpell : Spell
 
         ShowExplosionEffect();
 
-        if (Time.timeScale > 0f && CameraShaker.Instance != null)
+        if (Time.timeScale > 0f)
         {
-            CameraShaker.Instance.Shake(0.5f, 0.4f);
+            if (AllowsImpactShake && explosionShakeIntensity > 0f && explosionShakeDuration > 0f && CameraShaker.Instance != null)
+                CameraShaker.Instance.Shake(explosionShakeIntensity, explosionShakeDuration);
+
+            if (AllowsHitStop && explosionHitStopDuration > 0f)
+                HitStop.Request(explosionHitStopDuration);
         }
 
         Destroy(gameObject);

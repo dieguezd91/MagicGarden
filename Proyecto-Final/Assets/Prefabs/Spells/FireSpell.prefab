@@ -51,8 +51,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 0
   lifeTime: 3
-  floatingDamagePrefab: {fileID: 0}
-  impactParticlesPrefab: {fileID: 0}
+  floatingDamagePrefab: {fileID: 8011744024934345175, guid: b18d5e020de9918429f62b516be2ef30, type: 3}
+  impactParticlesPrefab: {fileID: 491567316690014037, guid: ee269b145022c494b8a6424f16134fdc, type: 3}
   castSound:
     clips:
     - {fileID: 8300000, guid: 0dc0b2a6feba47e3940b3dd8cd975ba0, type: 3}

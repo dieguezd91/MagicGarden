@@ -65,7 +65,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   knockbackForce: 10
-  slashEffectPrefab: {fileID: 0}
+  slashEffectPrefab: {fileID: 491567316690014037, guid: b4718f9f977adb740a54a6ea904ae4f7, type: 3}
   effectDuration: 0.5
   castSound:
     clips:

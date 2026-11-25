@@ -12,6 +12,20 @@ public abstract class Spell : MonoBehaviour
     [SerializeField] protected GameObject floatingDamagePrefab;
     [SerializeField] protected GameObject impactParticlesPrefab;
 
+    [Header("IMPACT FEEL")]
+    [Tooltip("Camera shake intensity on hit. 0 disables the shake.")]
+    [SerializeField] protected float impactShakeIntensity = 0.3f;
+    [Tooltip("Camera shake duration on hit, in seconds.")]
+    [SerializeField] protected float impactShakeDuration = 0.25f;
+    [Tooltip("Brief slow-motion freeze on hit, in real seconds. 0 disables it.")]
+    [SerializeField] protected float hitStopDuration = 0.05f;
+    [Tooltip("Camera shake intensity when the hit kills the target. 0 disables the shake.")]
+    [SerializeField] protected float killShakeIntensity = 0.5f;
+    [Tooltip("Camera shake duration when the hit kills the target, in seconds.")]
+    [SerializeField] protected float killShakeDuration = 0.3f;
+    [Tooltip("Slow-motion freeze when the hit kills the target, in real seconds. 0 disables it.")]
+    [SerializeField] protected float killHitStopDuration = 0.09f;
+
     [Header("SOUND")]
     [Tooltip("Played when cast. Empty = the shared \"ShootSpell\" sound.")]
     [SerializeField] protected SoundClipData castSound;
@@ -75,11 +89,51 @@ public abstract class Spell : MonoBehaviour
         }
 
         var life = target.GetComponent<LifeController>();
+        bool wasAlive = life != null && life.IsAlive();
         life?.TakeDamage(dmg);
+        lastHitKilled = wasAlive && !life.IsAlive();
 
         ShowDamageText(target.transform, dmg);
         PlayImpactEffects(target.transform.position);
         ApplyKnockback(target);
+    }
+
+    // Set by ApplyDamage right before ShowDamageText/PlayImpactEffects run, so they can react to a killing blow.
+    protected bool lastHitKilled;
+
+    // Subclasses with very frequent hits (damage ticks) turn these off.
+    protected virtual bool AllowsHitStop => true;
+    protected virtual bool AllowsImpactShake => true;
+
+    protected readonly struct ImpactFeel
+    {
+        public readonly float shakeIntensity;
+        public readonly float shakeDuration;
+        public readonly float hitStop;
+
+        public ImpactFeel(float shakeIntensity, float shakeDuration, float hitStop)
+        {
+            this.shakeIntensity = shakeIntensity;
+            this.shakeDuration = shakeDuration;
+            this.hitStop = hitStop;
+        }
+    }
+
+    protected ImpactFeel GetImpactFeel(bool killed) => killed
+        ? new ImpactFeel(killShakeIntensity, killShakeDuration, killHitStopDuration)
+        : new ImpactFeel(impactShakeIntensity, impactShakeDuration, hitStopDuration);
+
+    // Shake + hitstop for one hit; each part is skipped when its value is 0 or the spell does not allow it.
+    protected void PlayImpactFeel(bool killed)
+    {
+        if (Time.timeScale <= 0f) return;
+        var feel = GetImpactFeel(killed);
+
+        if (AllowsImpactShake && feel.shakeIntensity > 0f && feel.shakeDuration > 0f && CameraShaker.Instance != null)
+            CameraShaker.Instance.Shake(feel.shakeIntensity, feel.shakeDuration);
+
+        if (AllowsHitStop && feel.hitStop > 0f)
+            HitStop.Request(feel.hitStop);
     }
 
     protected virtual void ShowDamageText(Transform target, float dmg)
@@ -105,6 +159,7 @@ public abstract class Spell : MonoBehaviour
     protected virtual void PlayImpactEffects(Vector3 position)
     {
         PlayImpactSound();
+        PlayImpactFeel(lastHitKilled);
         if (impactParticlesPrefab == null) return;
 
         var particles = Instantiate(impactParticlesPrefab, position, Quaternion.identity);
@@ -114,11 +169,6 @@ public abstract class Spell : MonoBehaviour
             Destroy(particles, ps.main.duration);
         else
             Destroy(particles, 1.5f);
-
-        if (Time.timeScale > 0f && CameraShaker.Instance != null)
-        {
-            CameraShaker.Instance.Shake(0.3f, 0.25f);
-        }
     }
 
     protected virtual void ApplyKnockback(Collider2D target)

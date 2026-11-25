@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -11,7 +12,42 @@ public class ManaUIController : UIControllerBase
     [SerializeField] private Gradient manaGradient;
     [SerializeField] private TextMeshProUGUI manaText;
 
+    [Header("Spend Pulse (mana decreases)")]
+    [Tooltip("Master switch: when off, spending mana plays no pulse.")]
+    [SerializeField] private bool spendPulseEnabled = true;
+    [Tooltip("Transform that gets the punch. Empty uses the mana bar.")]
+    [SerializeField] private Transform spendPunchTarget;
+    [Tooltip("Extra scale of the spend punch (0.08 = grows 8% and returns). 0 disables the punch.")]
+    [SerializeField, Min(0f)] private float spendPunchStrength = 0.08f;
+    [Tooltip("Seconds the spend punch lasts (unscaled time).")]
+    [SerializeField, Min(0f)] private float spendPunchDuration = 0.25f;
+    [Tooltip("Color the mana fill flashes towards when mana is spent.")]
+    [SerializeField] private Color spendFlashColor = Color.white;
+    [Tooltip("Seconds the fill flash lasts (unscaled time). 0 disables the flash.")]
+    [SerializeField, Min(0f)] private float spendFlashDuration = 0.2f;
+    [Tooltip("Minimum seconds between two pulses, so continuous spending cannot chain them.")]
+    [SerializeField, Min(0f)] private float spendPulseMinInterval = 0.08f;
+
     private ManaSystem manaSystem;
+    private float lastMana = -1f;
+    private float lastMax = -1f;
+    private float lastPulseTime = float.NegativeInfinity;
+    private Tween punchTween;
+    private Vector3 punchBaseScale;
+    private Tween flashTween;
+    private float flashAmount;
+    private Color fillBaseColor;
+
+    private void OnDisable()
+    {
+        KillPulse();
+    }
+
+    protected override void OnDestroy()
+    {
+        KillPulse();
+        base.OnDestroy();
+    }
 
     protected override void CacheReferences()
     {
@@ -48,6 +84,11 @@ public class ManaUIController : UIControllerBase
 
     private void HandleManaChanged(float current, float max)
     {
+        // Only a real spend pulses: regeneration, refills and max-mana changes do not.
+        bool spent = lastMana >= 0f && current < lastMana - 0.0001f && Mathf.Approximately(max, lastMax);
+        lastMana = current;
+        lastMax = max;
+
         if (manaBar != null)
         {
             manaBar.maxValue = max;
@@ -57,6 +98,7 @@ public class ManaUIController : UIControllerBase
         float percentage = max > 0f ? Mathf.Clamp01(current / max) : 0f;
         UpdateManaFillColor(percentage);
         UpdateManaText(current, max);
+        if (spent) TrySpendPulse();
     }
 
     public void UpdateMana()
@@ -69,6 +111,8 @@ public class ManaUIController : UIControllerBase
 
         manaBar.maxValue = max;
         manaBar.value = current;
+        lastMana = current;
+        lastMax = max;
 
         UpdateManaFillColor(percentage);
         UpdateManaText(current, max);
@@ -82,7 +126,79 @@ public class ManaUIController : UIControllerBase
     private void UpdateManaFillColor(float percentage)
     {
         if (manaFillImage != null && manaGradient != null)
-            manaFillImage.color = manaGradient.Evaluate(percentage);
+        {
+            fillBaseColor = manaGradient.Evaluate(percentage);
+            manaFillImage.color = flashTween != null ? Color.Lerp(fillBaseColor, spendFlashColor, flashAmount) : fillBaseColor;
+        }
+    }
+
+    private void TrySpendPulse()
+    {
+        if (!spendPulseEnabled || !isActiveAndEnabled || !Application.isPlaying) return;
+        if (Time.unscaledTime - lastPulseTime < spendPulseMinInterval) return;
+        lastPulseTime = Time.unscaledTime;
+        PulseCount++;
+        StartPunch();
+        StartFlash();
+    }
+
+    /// <summary>How many spend pulses have started (diagnostics and tests).</summary>
+    public int PulseCount { get; private set; }
+
+    private void StartPunch()
+    {
+        Transform target = spendPunchTarget != null ? spendPunchTarget : (manaBar != null ? manaBar.transform : null);
+        if (target == null || spendPunchStrength <= 0f || spendPunchDuration <= 0f) return;
+        KillPunch();
+        punchBaseScale = target.localScale;
+        punchTween = target.DOPunchScale(Vector3.one * spendPunchStrength, spendPunchDuration, 1, 1f)
+            .SetUpdate(true).SetLink(gameObject)
+            .OnComplete(() => { if (target != null) target.localScale = punchBaseScale; punchTween = null; });
+    }
+
+    private void StartFlash()
+    {
+        if (manaFillImage == null || spendFlashDuration <= 0f) return;
+        KillFlash();
+        if (manaGradient == null) fillBaseColor = manaFillImage.color;
+        flashAmount = 1f;
+        manaFillImage.color = Color.Lerp(fillBaseColor, spendFlashColor, flashAmount);
+        flashTween = DOVirtual.Float(1f, 0f, spendFlashDuration, v =>
+            {
+                flashAmount = v;
+                if (manaFillImage != null) manaFillImage.color = Color.Lerp(fillBaseColor, spendFlashColor, v);
+            })
+            .SetEase(Ease.OutQuad).SetUpdate(true).SetLink(gameObject)
+            .OnComplete(() => { EndFlash(); flashTween = null; });
+    }
+
+    private void KillPunch()
+    {
+        if (punchTween == null) return;
+        punchTween.Kill();
+        punchTween = null;
+        Transform target = spendPunchTarget != null ? spendPunchTarget : (manaBar != null ? manaBar.transform : null);
+        if (target != null) target.localScale = punchBaseScale;
+    }
+
+    private void KillFlash()
+    {
+        if (flashTween == null) return;
+        flashTween.Kill();
+        flashTween = null;
+        EndFlash();
+    }
+
+    private void EndFlash()
+    {
+        flashAmount = 0f;
+        if (manaFillImage != null) manaFillImage.color = fillBaseColor;
+    }
+
+    private void KillPulse()
+    {
+        KillPunch();
+        KillFlash();
     }
 
     private void UpdateManaText(float current, float max)

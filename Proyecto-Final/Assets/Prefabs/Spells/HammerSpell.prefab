@@ -75,7 +75,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   knockbackForce: 300
-  slashEffectPrefab: {fileID: 0}
+  slashEffectPrefab: {fileID: 5616090614877505374, guid: 6e9097bb7cee85a47b445307b352b9a6, type: 3}
   effectDuration: 0.5
 --- !u!212 &5485593592241934130
 SpriteRenderer:

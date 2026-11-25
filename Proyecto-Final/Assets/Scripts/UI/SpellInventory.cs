@@ -50,6 +50,13 @@ public class SpellInventory : MonoBehaviour
     public event Action<int> onSpellSlotSelected;
     public event Action<int> onCooldownUpdated;
     public event Action OnSpellInventoryChanged;
+    /// <summary>Raised with the inventory index of the spell whose cast was refused because it is on cooldown.</summary>
+    public event Action<int> OnCastBlockedByCooldown;
+
+    public void NotifyCastBlockedByCooldown(int slotIndex)
+    {
+        OnCastBlockedByCooldown?.Invoke(slotIndex);
+    }
 
     private void Awake()
     {

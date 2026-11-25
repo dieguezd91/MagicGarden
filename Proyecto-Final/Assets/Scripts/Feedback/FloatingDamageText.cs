@@ -15,12 +15,25 @@ public class FloatingDamageText : MonoBehaviour
     public float minScale = 0.5f;
     public float maxScale = 1f;
 
+    [Header("KILL POP")]
+    [Tooltip("The number pops when the hit kills its target. Untick to disable.")]
+    public bool popOnKill = true;
+    [Tooltip("Scale multiplier at the instant of the kill, before it settles.")]
+    public float killPopScale = 1.8f;
+    [Tooltip("Scale multiplier the number keeps after the pop (1 = same size as a normal hit).")]
+    public float killSettleScale = 1.3f;
+    [Tooltip("Seconds the pop takes to settle (real time). 0 skips the pop and uses the settle scale directly.")]
+    public float killPopDuration = 0.25f;
+
     private TextMeshProUGUI textMesh;
     private Transform target;
     private float totalDamage = 0f;
     private float lastHitTime;
     private float spawnTime;
     private bool isFadingOut = false;
+    private LifeController targetLife;
+    private bool killed;
+    private float killTime;
 
     private Vector3 initialWorldPosition;
 
@@ -32,6 +45,7 @@ public class FloatingDamageText : MonoBehaviour
     public void Initialize(Transform target)
     {
         this.target = target;
+        targetLife = target != null ? target.GetComponent<LifeController>() : null;
         transform.SetParent(target, worldPositionStays: true);
         transform.localPosition = offset;
 
@@ -55,7 +69,7 @@ public class FloatingDamageText : MonoBehaviour
 
         Color dynamicColor = Color.Lerp(startColor, endColor, tDamage);
 
-        float currentScale = Mathf.Lerp(minScale, maxScale, tDamage);
+        float currentScale = Mathf.Lerp(minScale, maxScale, tDamage) * KillScaleMultiplier();
         transform.localScale = Vector3.one * currentScale;
 
         float totalFloatDistance = sinceSpawn * floatSpeed;
@@ -98,9 +112,24 @@ public class FloatingDamageText : MonoBehaviour
         }
     }
 
+    // 1 for a normal hit. After a kill: starts at killPopScale and eases down to killSettleScale.
+    private float KillScaleMultiplier()
+    {
+        if (!killed) return 1f;
+        if (killPopDuration <= 0f) return killSettleScale;
+        float t = Mathf.Clamp01((Time.unscaledTime - killTime) / killPopDuration);
+        float eased = 1f - (1f - t) * (1f - t) * (1f - t);
+        return Mathf.Lerp(killPopScale, killSettleScale, eased);
+    }
+
     public void AddDamage(float dmg)
     {
         totalDamage += dmg;
+        if (popOnKill && !killed && targetLife != null && !targetLife.IsAlive())
+        {
+            killed = true;
+            killTime = Time.unscaledTime;
+        }
         textMesh.text = totalDamage.ToString("F0");
         lastHitTime = Time.time;
 

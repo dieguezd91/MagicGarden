@@ -10,6 +10,14 @@ public class PlayerSpellController : MonoBehaviour
     [SerializeField] private int baseHandSortingOrder = 0;
     [SerializeField] private GameObject handObject;
 
+    [Header("Cooldown Refusal Feedback")]
+    [Tooltip("Notify the spell HUD and play a sound when a cast is refused because the spell is on cooldown. Turn off to disable the feedback.")]
+    [SerializeField] private bool cooldownBlockedFeedback = true;
+    [Tooltip("SoundManager sound played when a cast is refused for cooldown. Leave empty for no sound.")]
+    [SerializeField] private string cooldownBlockedSoundName = "UI_Loadout_Reject";
+    [Tooltip("Minimum seconds between two cooldown-refusal feedbacks, so a held attack button does not repeat it every frame.")]
+    [SerializeField, Min(0f)] private float cooldownBlockedFeedbackInterval = 0.4f;
+
     private SpellType currentSpellType = SpellType.Range;
     private InputReader input;
     private bool fireSpellActive = false;
@@ -115,9 +123,34 @@ public class PlayerSpellController : MonoBehaviour
             nextNoManaSoundTime = Time.time + 0.4f; // attack may be held/repeated
             SoundManager.Instance?.Play("Player_Spell_No_Mana");
         }
+        else if (!IsOutOfMana() && IsRefusedByCooldown())
+        {
+            GiveCooldownBlockedFeedback();
+        }
     }
 
     private float nextNoManaSoundTime;
+    private float nextCooldownBlockedFeedbackTime;
+
+    // True only when the cooldown is the sole reason the cast is refused (mana, phase, loadout etc. keep their own behavior).
+    private bool IsRefusedByCooldown()
+    {
+        if (SpellInventory.Instance == null) return false;
+        SpellSlot slot = SpellInventory.Instance.GetSelectedSpellSlot();
+        return slot != null && slot.isUnlocked && slot.currentCooldown > 0f && CanCastSpell(true);
+    }
+
+    /// <summary>Tells the HUD slot to show its blocked cue and plays the refusal sound, throttled. Never changes casting rules.</summary>
+    public void GiveCooldownBlockedFeedback()
+    {
+        if (!cooldownBlockedFeedback || SpellInventory.Instance == null) return;
+        if (Time.time < nextCooldownBlockedFeedbackTime) return;
+        nextCooldownBlockedFeedbackTime = Time.time + cooldownBlockedFeedbackInterval;
+
+        if (!string.IsNullOrEmpty(cooldownBlockedSoundName))
+            SoundManager.Instance?.PlayOneShot(cooldownBlockedSoundName);
+        SpellInventory.Instance.NotifyCastBlockedByCooldown(SpellInventory.Instance.GetSelectedSlotIndex());
+    }
 
     private bool IsOutOfMana()
     {
@@ -183,7 +216,7 @@ public class PlayerSpellController : MonoBehaviour
         CastSpell();
     }
 
-    private bool CanCastSpell()
+    private bool CanCastSpell(bool ignoreCooldown = false)
     {
         if (UpgradeRuntime.GameplayBlocked) return false;
         if (!TutorialManager.Allows(TutorialAction.CastSpell)) return false;
@@ -206,7 +239,7 @@ public class PlayerSpellController : MonoBehaviour
 
         if (selectedSpell == null || !selectedSpell.isUnlocked) return false;
 
-        if (selectedSpell.currentCooldown > 0f) return false;
+        if (!ignoreCooldown && selectedSpell.currentCooldown > 0f) return false;
 
         if (manaSystem != null && manaSystem.GetCurrentMana() < selectedSpell.manaCost)
             return false;
