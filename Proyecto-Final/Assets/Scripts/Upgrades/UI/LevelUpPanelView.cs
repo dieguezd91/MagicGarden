@@ -58,7 +58,11 @@ public sealed class LevelUpPanelView : MonoBehaviour
         bool fresh = !root.activeSelf || tween.IsClosing;
         closing = false;
         root.SetActive(true);
-        if (fresh) tween.Open(Content, Group);
+        if (fresh)
+        {
+            tween.Open(Content, Group);
+            UpgradeUiSounds.PanelOpen();
+        }
         EventSystem.current?.SetSelectedGameObject(empty ? continueButton.gameObject : cards[0].SelectButton.gameObject);
         return true;
     }
@@ -76,6 +80,7 @@ public sealed class LevelUpPanelView : MonoBehaviour
         if (root == null || tween.IsClosing) return;
         if (!Application.isPlaying || !root.activeInHierarchy) { HideImmediate(); return; }
         tween.Close(Content, Group, Finish);
+        UpgradeUiSounds.PanelClose();
     }
     public void HideImmediate()
     {

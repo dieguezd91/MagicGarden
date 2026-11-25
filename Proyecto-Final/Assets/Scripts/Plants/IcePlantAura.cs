@@ -17,6 +17,14 @@ public class IceAuraPlant : Plant
 
     [Header("DAMAGE")]
     [SerializeField] private float damage = 3f;
+
+    [Header("Sound")]
+    [Tooltip("Each damage tick plays the hit sound on the enemy. Minimum seconds between any two hit sounds, shared by every Ice Thorn, so a crowd does not turn into noise.")]
+    [SerializeField] private float minHitSoundSpacing = 0.08f;
+    private static float lastHitSoundTime = float.MinValue;
+    [Tooltip("The blizzard loop keeps playing this long after the last enemy leaves the aura, then fades out.")]
+    [SerializeField] private float loopReleaseDelay = 0.6f;
+    private float lastEnemyInAuraTime = float.MinValue;
     [SerializeField] private float damageInterval = 1f;
 
     [Header("VISUAL")]
@@ -185,6 +193,13 @@ public class IceAuraPlant : Plant
                 );
 
                 ShowDamageText(enemy.transform, currentDamage);
+
+                if (Time.time - lastHitSoundTime >= minHitSoundSpacing || Time.time < lastHitSoundTime)
+                {
+                    lastHitSoundTime = Time.time;
+                    if (SoundBase != null)
+                        SoundBase.PlaySound(PlantSoundType.Hit, SoundSourceType.Localized, enemy.transform);
+                }
             }
 
             float currentDamageInterval = UpgradedCooldown(damageInterval);
@@ -237,6 +252,19 @@ public class IceAuraPlant : Plant
         if (animator != null)
         {
             animator.SetBool("Attack", hasEnemies);
+        }
+
+        if (SoundBase != null)
+        {
+            if (hasEnemies)
+            {
+                lastEnemyInAuraTime = Time.time;
+                SoundBase.PlayLoop();
+            }
+            else if (!isAlive || Time.time - lastEnemyInAuraTime >= loopReleaseDelay)
+            {
+                SoundBase.StopLoop();
+            }
         }
 
         if (auraVisualInstance != null)

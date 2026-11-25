@@ -150,7 +150,7 @@ MonoBehaviour:
   _enableHoverSound: 1
   _onHoverSound: {fileID: 8300000, guid: 5d17f8d8078e2b54ab62ba6755295363, type: 3}
   _enableClickSound: 1
-  _onClickSound: {fileID: 8300000, guid: 5f6fb209a6b10634fa7939155960acba, type: 3}
+  _onClickSound: {fileID: 8300000, guid: d6a976ee327cf834d9e2edebcd950802, type: 3}
   _enableDisabledClickSound: 1
   _onDisabledClickSound: {fileID: 8300000, guid: 75ac255b508adda48b7ea92c0ef8e7b7, type: 3}
   _enableDisabledHoverSound: 1

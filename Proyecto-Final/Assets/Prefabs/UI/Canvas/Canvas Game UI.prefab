@@ -690,19 +690,35 @@ MonoBehaviour:
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
-  pauseOpen:
+  gameInventoryBookPageFlip:
     clips:
-    - {fileID: 8300000, guid: ad5d42d1512d9a1459fee08fce01d238, type: 3}
-    volume: 0.45
+    - {fileID: 8300000, guid: a3a0ac211ff771449ae996310e4e7a9c, type: 3}
+    volume: 0.48
+    pitch: 1
+    pitchVariation: 0.06
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  gameInventoryBookSamePage:
+    clips:
+    - {fileID: 8300000, guid: f4d036594bdd4b47b25cfd00caa2bb2c, type: 3}
+    volume: 0.52
+    pitch: 1
+    pitchVariation: 0.05
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  pauseOpen:
+    clips: []
+    volume: 0.35
     pitch: 1
     pitchVariation: 0.1
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
   pauseClose:
-    clips:
-    - {fileID: 8300000, guid: 02ba376e25976314e95dfd3ef2685f85, type: 3}
-    volume: 0.45
+    clips: []
+    volume: 0.21
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -723,6 +739,53 @@ MonoBehaviour:
     volume: 0.4
     pitch: 1
     pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  levelUpOpen:
+    clips:
+    - {fileID: 8300000, guid: 55be5ffb32894c2a84a8f0357bb152ae, type: 3}
+    volume: 0.47
+    pitch: 1
+    pitchVariation: 0.05
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  levelUpClose:
+    clips:
+    - {fileID: 8300000, guid: b57235266c80493a8f99a3a2dbb4c9e7, type: 3}
+    volume: 0.72
+    pitch: 1
+    pitchVariation: 0.05
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  levelUpRewardOpen:
+    clips:
+    - {fileID: 8300000, guid: f4e3a15af33c42aa912fbb16690f717e, type: 3}
+    volume: 0.62
+    pitch: 1
+    pitchVariation: 0.05
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  levelUpRewardItem:
+    clips:
+    - {fileID: 8300000, guid: e4b80324b1014418b6a1f0417efd1585, type: 3}
+    - {fileID: 8300000, guid: 553b4e2a596647ef832588f5939c7b03, type: 3}
+    - {fileID: 8300000, guid: fecd7090044f40c3ba17edfa6a5d2590, type: 3}
+    volume: 0.58
+    pitch: 1
+    pitchVariation: 0.08
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  levelUpRewardClose:
+    clips:
+    - {fileID: 8300000, guid: 75504e11164c4554b37432c5e22c91be, type: 3}
+    volume: 0.62
+    pitch: 1
+    pitchVariation: 0.05
     loop: 0
     randomizeClip: 1
     cooldownTime: 0

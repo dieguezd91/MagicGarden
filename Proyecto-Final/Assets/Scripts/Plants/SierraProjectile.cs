@@ -21,6 +21,15 @@ public class SierraProjectile : Spell
     [Header("VFX")]
     [SerializeField] private ParticleSystem attackParticles;
 
+    [Header("SAW SOUND")]
+    [Tooltip("Loops while the saw is grinding an enemy. Must have Loop on.")]
+    [SerializeField] private SoundClipData grindLoopSound;
+    [Tooltip("The impact (bite) sound plays on contact and again every this many seconds while grinding.")]
+    [SerializeField] private float biteInterval = 0.6f;
+    private AudioSource grindSource;
+    private float grindVolume;
+    private float nextBiteTime;
+
     private ProjectileState state = ProjectileState.Idle;
 
     private SierraPlant ownerPlant;
@@ -97,6 +106,9 @@ public class SierraProjectile : Spell
 
     private void Update()
     {
+        if (IsOwnGrindSource())
+            grindSource.volume = PlantSoundBase.GameFrozen ? 0f : grindVolume;
+
         if (UpgradeRuntime.GameplayBlocked)
             return;
 
@@ -214,6 +226,46 @@ public class SierraProjectile : Spell
         if (attackParticles != null)
             attackParticles.Play();
 
+        PlayImpactSound();
+        nextBiteTime = Time.time + biteInterval;
+        StartGrindLoop();
+    }
+
+    private void StartGrindLoop()
+    {
+        StopGrindLoop();
+        if (SoundManager.Instance == null || grindLoopSound == null || grindLoopSound.GetClip() == null) return;
+        grindSource = SoundManager.Instance.PlayClip(grindLoopSound, SoundSourceType.Localized, transform);
+        if (grindSource != null)
+        {
+            grindSource.loop = true;
+            grindVolume = grindSource.volume;
+        }
+    }
+
+    private void UpdateGrindSound()
+    {
+        if (IsOwnGrindSource())
+        {
+            Vector3 p = grindSource.transform.position;
+            grindSource.transform.position = new Vector3(transform.position.x, transform.position.y, p.z);
+        }
+
+        if (biteInterval > 0f && Time.time >= nextBiteTime)
+        {
+            nextBiteTime = Time.time + biteInterval;
+            PlayImpactSound();
+        }
+    }
+
+    private bool IsOwnGrindSource() =>
+        grindSource != null && grindSource.loop && grindLoopSound?.clips != null &&
+        System.Array.IndexOf(grindLoopSound.clips, grindSource.clip) >= 0;
+
+    private void StopGrindLoop()
+    {
+        if (IsOwnGrindSource()) grindSource.Stop();
+        grindSource = null;
     }
 
     private void UpdateAttached()
@@ -234,6 +286,8 @@ public class SierraProjectile : Spell
             );
         }
 
+        UpdateGrindSound();
+
         attachedTime += deltaTime;
 
         if (attachedTime >= attackDuration)
@@ -246,6 +300,7 @@ public class SierraProjectile : Spell
             return;
 
         state = ProjectileState.Returning;
+        StopGrindLoop();
 
         attachedTargetLife = null;
         initialTarget = null;
@@ -312,6 +367,8 @@ public class SierraProjectile : Spell
 
     private void OnDestroy()
     {
+        StopGrindLoop();
+
         if (attackParticles != null)
         {
             attackParticles.Stop(

@@ -8,6 +8,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4696120000059815133, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: _onHoverSound
+      value: 
+      objectReference: {fileID: 8300000, guid: a812fe7fe2244d38ae5675bf801a3ea6, type: 3}
+    - target: {fileID: 4696120000059815133, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: _onClickSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 485933aa4fb84058a4f8837abe20e33b, type: 3}
     - target: {fileID: 564081831426989095, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
       value: 0

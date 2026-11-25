@@ -30,6 +30,7 @@ public sealed class SpecialUpgradeItemView : MonoBehaviour, ISelectHandler
         index = row; purchased = callback;
         purchaseButton.onClick.RemoveListener(Purchase);
         purchaseButton.onClick.AddListener(Purchase);
+        UpgradeUiSounds.AddHover(purchaseButton);
         icon.sprite = data.Icon; icon.enabled = data.Icon != null;
         targetLabel.text = data.Target; nameLabel.text = data.Name; descriptionLabel.text = data.Description;
         costsLabel.text = data.Costs; prerequisitesLabel.text = data.Prerequisites; stacksLabel.text = data.Stacks;

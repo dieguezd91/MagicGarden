@@ -138,9 +138,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _volume: 0.4
   _enableHoverSound: 1
-  _onHoverSound: {fileID: 8300000, guid: 5b375280484403b4d953df3a8aed2a6e, type: 3}
+  _onHoverSound: {fileID: 8300000, guid: cf24f33398d67144ab5a3d46836f9113, type: 3}
   _enableClickSound: 1
-  _onClickSound: {fileID: 8300000, guid: cf24f33398d67144ab5a3d46836f9113, type: 3}
+  _onClickSound: {fileID: 0}
   _enableDisabledClickSound: 0
   _onDisabledClickSound: {fileID: 0}
   _enableDisabledHoverSound: 0

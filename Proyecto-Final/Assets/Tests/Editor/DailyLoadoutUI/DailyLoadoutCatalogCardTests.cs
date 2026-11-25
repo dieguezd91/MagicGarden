@@ -83,20 +83,29 @@ public sealed class DailyLoadoutCatalogCardTests
             var options = Options(f.View, plants);
             for (int i = 0; i < options.Length; i++) options[i].gameObject.SetActive(i == 0);
             RefreshGrid(content);
-            Assert.That(scroll.vertical, Is.False, "A fully visible row cannot scroll");
-            foreach (var option in options) option.gameObject.SetActive(true);
-            RefreshGrid(content);
-            Assert.That(content.rect.height, Is.GreaterThan(scroll.viewport.rect.height));
-            Assert.That(scroll.vertical, Is.True);
-            scroll.verticalNormalizedPosition = 0; scroll.velocity = new Vector2(0, 400);
+            Assert.That(scroll.horizontal, Is.False, "A strip that fits cannot scroll");
+            Assert.That(scroll.vertical, Is.False);
+            var extras = new System.Collections.Generic.List<GameObject>();
+            try
+            {
+                foreach (var option in options) option.gameObject.SetActive(true);
+                var template = ((Component)F.Property(f.View, "OptionPrefab")).gameObject;
+                for (int i = 0; i < 12; i++) { var extra = UnityEngine.Object.Instantiate(template, content); extra.SetActive(true); extras.Add(extra); }
+                RefreshGrid(content);
+                Assert.That(content.rect.width, Is.GreaterThan(scroll.viewport.rect.width));
+                Assert.That(content.rect.height, Is.LessThanOrEqualTo(scroll.viewport.rect.height + 1), "All cards stay on one row");
+                Assert.That(scroll.horizontal, Is.True); Assert.That(scroll.vertical, Is.False);
+                scroll.horizontalNormalizedPosition = 1; scroll.velocity = new Vector2(400, 0);
+            }
+            finally { foreach (var extra in extras) UnityEngine.Object.DestroyImmediate(extra); }
             for (int i = 0; i < options.Length; i++) options[i].gameObject.SetActive(i == 0);
             RefreshGrid(content);
-            Assert.That(scroll.vertical, Is.False); Assert.That(scroll.velocity, Is.EqualTo(Vector2.zero));
-            Assert.That(content.anchoredPosition.y, Is.EqualTo(0).Within(.01f));
+            Assert.That(scroll.horizontal, Is.False); Assert.That(scroll.velocity, Is.EqualTo(Vector2.zero));
+            Assert.That(content.anchoredPosition.x + content.rect.width * .5f,
+                Is.EqualTo(scroll.viewport.rect.width * .5f).Within(1f), "A strip that fits is centred");
             var before = content.anchoredPosition;
             ExecuteEvents.Execute(scroll.gameObject, new PointerEventData(null) { scrollDelta = new Vector2(0, -1) }, ExecuteEvents.scrollHandler);
             Assert.That(content.anchoredPosition, Is.EqualTo(before));
-            Assert.That(scroll.horizontal, Is.False);
         }
     }
 

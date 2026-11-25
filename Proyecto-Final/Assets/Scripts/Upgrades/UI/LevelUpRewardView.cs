@@ -110,6 +110,7 @@ public sealed class LevelUpRewardView : MonoBehaviour
         root.SetActive(true);
         PrepareRows();
         tween.Open(Content, Group, StartRows);
+        UpgradeUiSounds.RewardOpen();
         EventSystem.current?.SetSelectedGameObject(continueButton.gameObject);
         return true;
     }
@@ -135,6 +136,7 @@ public sealed class LevelUpRewardView : MonoBehaviour
         KillRows(true);
         if (!Application.isPlaying || !root.activeInHierarchy) { Finish(); return; }
         tween.Close(Content, Group, Finish);
+        UpgradeUiSounds.RewardClose();
     }
 
     private void Finish()
@@ -192,6 +194,7 @@ public sealed class LevelUpRewardView : MonoBehaviour
         foreach (var slot in ActiveRows())
         {
             var group = RowGroup(slot);
+            sequence.InsertCallback(at, UpgradeUiSounds.RewardItem);
             sequence.Insert(at, slot.transform.DOScale(1f, enter).SetEase(rowEase));
             sequence.Insert(at, group.DOFade(1f, enter).SetEase(Ease.OutQuad));
             if (slot == seedSlot) AddIconBounce(sequence, seedIcon, at);

@@ -283,19 +283,26 @@ MonoBehaviour:
     randomizeClip: 1
     cooldownTime: 0
   attack:
-    clips:
-    - {fileID: 8300000, guid: baf6316ad449c0243ab5b3b32a3a327b, type: 3}
-    - {fileID: 8300000, guid: 50ddf1f0d8eaa8c4da3a2704d7411508, type: 3}
-    volume: 0.35
+    clips: []
+    volume: 1
     pitch: 1
-    pitchVariation: 0.08
+    pitchVariation: 0.1
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
   hurt:
     clips:
     - {fileID: 8300000, guid: ad8829dd6d25bd144bc66597635d1f3c, type: 3}
-    volume: 0.4
+    volume: 0.75
+    pitch: 1
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  hurtBurn:
+    clips:
+    - {fileID: 8300000, guid: d5c2bcfe73080f64aaf5b6f6fc8b7ee0, type: 3}
+    volume: 0.75
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -304,7 +311,7 @@ MonoBehaviour:
   die:
     clips:
     - {fileID: 8300000, guid: a7ec90936d27af940a4048bcd8ac2ea0, type: 3}
-    volume: 0.4
+    volume: 0.85
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -321,23 +328,28 @@ MonoBehaviour:
     randomizeClip: 1
     cooldownTime: 0
   hit:
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: d76de409033c49a458da9b76dde9f84c, type: 3}
+    - {fileID: 8300000, guid: 97b7fd8f74cfb354890d24d8ddba4f0d, type: 3}
+    volume: 0.35
     pitch: 1
     pitchVariation: 0.1
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
   loop:
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 1567d608350249d6a2c23ffbcf2b4bc7, type: 3}
+    volume: 0.35
     pitch: 1
     pitchVariation: 0.1
-    loop: 0
+    loop: 1
     randomizeClip: 1
     cooldownTime: 0
-  loopFullVolumeDistance: 1.5
-  loopSilentDistance: 4
+  loopFullVolumeDistance: 2
+  loopSilentDistance: 6
+  loopFadeIn: 0.6
+  loopFadeOut: 1.5
 --- !u!1 &8655348444936873391
 GameObject:
   m_ObjectHideFlags: 0

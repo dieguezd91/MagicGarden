@@ -319,7 +319,7 @@ public class FireSpell : Spell
         ReleaseFireSpell();
 
         StopFlameLoop();
-        SoundManager.Instance?.PlayClip(flameEndSound, SoundSourceType.Localized, transform);
+        SoundManager.Instance?.PlayClip(flameEndSound, SoundSourceType.Global, transform);
         StartCooldown();
 
         // The stream ends but its particles are not cut: stop emitting and let them finish before the emitter goes away.

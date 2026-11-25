@@ -32,6 +32,7 @@ public sealed class SpecialUpgradePanelView : MonoBehaviour
         scroll.StopMovement();
         closeButton.onClick.RemoveListener(Close);
         closeButton.onClick.AddListener(Close);
+        UpgradeUiSounds.AddHover(closeButton);
         // The only runtime visual instantiation: an already-authored shop item prefab.
         while (rows.Count < items.Count) rows.Add(Instantiate(itemPrefab, content, false));
         for (int i = 0; i < rows.Count; i++)
@@ -93,7 +94,11 @@ public sealed class SpecialUpgradePanelView : MonoBehaviour
         SetOffset(offset);
     }
     private void Purchase(int index) => Purchased?.Invoke(index);
-    private void Close() => Closed?.Invoke();
+    private void Close()
+    {
+        UpgradeUiSounds.Click();
+        Closed?.Invoke();
+    }
     public void Hide()
     {
         if (scroll != null) scroll.StopMovement();

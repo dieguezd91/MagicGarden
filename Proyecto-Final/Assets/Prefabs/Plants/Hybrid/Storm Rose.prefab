@@ -376,7 +376,16 @@ MonoBehaviour:
   hurt:
     clips:
     - {fileID: 8300000, guid: ad8829dd6d25bd144bc66597635d1f3c, type: 3}
-    volume: 0.4
+    volume: 0.75
+    pitch: 1
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
+  hurtBurn:
+    clips:
+    - {fileID: 8300000, guid: d5c2bcfe73080f64aaf5b6f6fc8b7ee0, type: 3}
+    volume: 0.75
     pitch: 1
     pitchVariation: 0.1
     loop: 0
@@ -385,7 +394,7 @@ MonoBehaviour:
   die:
     clips:
     - {fileID: 8300000, guid: a7ec90936d27af940a4048bcd8ac2ea0, type: 3}
-    volume: 0.4
+    volume: 0.85
     pitch: 1
     pitchVariation: 0.1
     loop: 0

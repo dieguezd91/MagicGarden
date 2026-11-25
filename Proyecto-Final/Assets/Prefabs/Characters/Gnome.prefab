@@ -5276,7 +5276,7 @@ MonoBehaviour:
   die:
     clips:
     - {fileID: 8300000, guid: 46df699cec8795c48a74a2e6c26bea1d, type: 3}
-    volume: 0.5
+    volume: 0.3
     pitch: 1
     pitchVariation: 0.05
     loop: 0

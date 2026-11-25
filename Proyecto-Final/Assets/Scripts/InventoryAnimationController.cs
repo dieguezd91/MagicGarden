@@ -135,7 +135,7 @@ public class InventoryAnimationController : MonoBehaviour
         isAnimating = true;
         pendingPage = newPage;
 
-        UIManager.Instance?.InterfaceSounds?.PlaySound(InterfaceSoundType.MenuButtonClick);
+        UIManager.Instance?.InterfaceSounds?.PlaySound(InterfaceSoundType.GameInventoryBookPageFlip);
 
         bookAnimator.Play(pageFlipStateName, 0, 0f);
 

@@ -19,6 +19,10 @@ public class PlayerRespawnController : MonoBehaviour
     [SerializeField] private SoundClipData slimeStepSound;
     [SerializeField] private float slimeStepInterval = 0.35f;
     [SerializeField] private SoundClipData reviveSound;
+    [Tooltip("Animation event on PlayerSleep (frame 1): sleepy breath, tips over and lands in the leaves.")]
+    [SerializeField] private SoundClipData sleepSound;
+    [Tooltip("Animation event on PlayerWakeUp (frame 1): stirs, springs up and shakes its head.")]
+    [SerializeField] private SoundClipData wakeUpSound;
 
     private Rigidbody2D rb;
     private float nextSlimeStepTime;
@@ -61,7 +65,12 @@ public class PlayerRespawnController : MonoBehaviour
     // Animation event on "Player Death" (frame 11): the body breaks and the ghost appears.
     public void PlayGhostSound() => PlaySound(ghostSound);
 
-    private void PlaySound(SoundClipData data) => SoundManager.Instance?.PlayClip(data, SoundSourceType.Localized, transform);
+    // Non-positional: the camera is moving to frame the player during the night-to-day transition.
+    public void PlaySleepSound() => SoundManager.Instance?.PlayClip(sleepSound, SoundSourceType.Global, transform);
+    public void PlayWakeUpSound() => SoundManager.Instance?.PlayClip(wakeUpSound, SoundSourceType.Global, transform);
+
+    // The player's own sounds play centred at full level (2D, stereo kept): the camera follows the player anyway.
+    private void PlaySound(SoundClipData data) => SoundManager.Instance?.PlayClip(data, SoundSourceType.Global, transform);
 
     public void BeginRespawn()
     {

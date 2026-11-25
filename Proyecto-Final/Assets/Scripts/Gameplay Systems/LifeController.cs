@@ -61,6 +61,7 @@ public class LifeController : MonoBehaviour
     public UnityEvent onDeath;
     public UnityEvent<float, float> onHealthChanged;
     public UnityEvent<float, DamageType> onDamaged;
+    public DamageElement LastDamageElement { get; private set; }
 
     [Header("MANA DROP")]
     [SerializeField] private GameObject manaPickupPrefab;
@@ -124,6 +125,7 @@ public class LifeController : MonoBehaviour
     public void TakeDamage(float damage, DamageType damageType = DamageType.SingleTick, DamageElement damageElement = DamageElement.Normal)
     {
         if (isDead || UpgradeRuntime.GameplayBlocked) return;
+        LastDamageElement = damageElement;
         if (isPlayer && PlayerInvulnerable) return;
 
         currentHealth -= damage;
@@ -259,7 +261,6 @@ public class LifeController : MonoBehaviour
         {
             if (hasDeathAnimation && animator != null && animator.runtimeAnimatorController != null)
             {
-                Debug.Log("me mori");
                 animator.SetTrigger("Death");
             }
             else
