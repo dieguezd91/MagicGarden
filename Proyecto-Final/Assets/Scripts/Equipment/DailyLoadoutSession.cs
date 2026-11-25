@@ -101,6 +101,14 @@ public sealed class DailyLoadoutSession : IDisposable
         return true;
     }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    /// <summary>Cheat only: lets today's loadout be confirmed again.</summary>
+    public void ReopenTodayForCheat()
+    {
+        if (!disposed) state.ReopenTodayForCheat();
+    }
+#endif
+
     public void DiscardDraft()
     {
         if (!disposed) state.DiscardDraft();

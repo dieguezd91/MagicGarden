@@ -105,6 +105,14 @@ namespace MagicGarden.Loadout
             return true;
         }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        /// <summary>Cheat only: gives today's single confirmation back so the loadout can be changed again.</summary>
+        public void ReopenTodayForCheat()
+        {
+            if (IsInitialized && IsDay) HasConfirmedToday = false;
+        }
+#endif
+
         public void DiscardDraft()
         {
             Array.Copy(committedPlants, draftPlants, SlotsPerCategory);

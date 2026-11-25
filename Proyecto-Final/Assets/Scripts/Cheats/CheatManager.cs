@@ -1,6 +1,8 @@
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using MagicGarden.Loadout;
 using UnityEngine;
 
 // All game cheats in one place. Installs itself on play (no scene setup needed).
@@ -45,6 +47,11 @@ public class CheatManager : MonoBehaviour
         Instance = this;
         hotkeysEnabled = PlayerPrefs.GetInt(PrefsPrefix + "Hotkeys", 1) == 1;
 
+        // Quick start
+        Add("Quick start / reroll loadout (tests on)", KeyCode.F2, () => StartCoroutine(QuickStart()));
+        Add("Back to normal play (tests off)", KeyCode.F3, TestTogglesOff);
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += ResetQuickStart;
+
         // Enemies / nights
         Add("Kill alive enemies (bosses too)", KeyCode.K, KillAliveEnemies);
         Add("Spawn & kill whole horde (loot)", KeyCode.N, SpawnAndKillAll);
@@ -69,12 +76,19 @@ public class CheatManager : MonoBehaviour
 
         // Garden / tutorial
         Add("Grow all plants", KeyCode.G, GrowAllPlants);
+        Add("Remove all planted plants (soil stays tilled)", KeyCode.F4, RemoveAllPlants);
         Add("Skip tutorial step", KeyCode.T, SkipTutorialStep);
     }
 
     private void OnDestroy()
     {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= ResetQuickStart;
         if (Instance == this) Instance = null;
+    }
+
+    private void ResetQuickStart(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        quickStartDone = false;
     }
 
     private void Add(string name, KeyCode key, Action run, Func<bool> isOn = null)
@@ -228,6 +242,24 @@ public class CheatManager : MonoBehaviour
         FindObjectOfType<EnemiesSpawner>()?.SpawnRemainingAndKillAll();
     }
 
+    private static void RemoveAllPlants()
+    {
+        var tiles = TilePlantingSystem.Instance;
+        if (tiles == null) return;
+        int removed = 0;
+        foreach (var cell in new List<Vector3Int>(tiles.GetAllPlantedTiles()))
+        {
+            Plant plant = tiles.GetPlantAt(cell);
+            tiles.UnregisterPlantAt(cell);
+            if (plant != null)
+            {
+                Destroy(plant.gameObject);
+                removed++;
+            }
+        }
+        Debug.Log($"[Cheats] Removed {removed} plants.");
+    }
+
     private static void GrowAllPlants()
     {
         foreach (var plant in FindObjectsOfType<Plant>())
@@ -279,6 +311,167 @@ public class CheatManager : MonoBehaviour
         if (tutorial != null && tutorial.IsTutorialActive())
             tutorial.CompleteCurrentStep();
     }
+
+    #region Quick start
+
+    private const int QuickStartSeeds = 10;
+    private const int QuickStartGardenSize = 4;
+
+    private bool quickStartDone;
+
+    // First press in a run: no tutorial, everything unlocked, tilled garden, test toggles on, random loadout.
+    // Later presses: test toggles back on and a new random loadout (garden and plants are left alone).
+    private IEnumerator QuickStart()
+    {
+        bool first = !quickStartDone;
+        quickStartDone = true;
+
+        if (first)
+        {
+            var tutorial = TutorialManager.Instance;
+            if (tutorial != null && tutorial.IsTutorialActive())
+                tutorial.SkipTutorial();
+            UnlockAll();
+        }
+
+        TestTogglesOn();
+
+        yield return null; // let the tutorial completion and the unlock rebuild settle
+
+        EquipRandomLoadout();
+        if (first && !DigGarden(QuickStartGardenSize)) DigGarden(3);
+        RestoreLifeAndMana();
+    }
+
+    private static void TestTogglesOn()
+    {
+        LifeController.PlayerInvulnerable = true;
+        SpellInventory.FastCooldowns = true;
+        if (!ManaSystem.InfiniteMana) ToggleInfiniteMana();
+    }
+
+    // Only the test toggles: loadout, seeds, garden, plants and unlocks stay as they are.
+    private static void TestTogglesOff()
+    {
+        LifeController.PlayerInvulnerable = false;
+        SpellInventory.FastCooldowns = false;
+        ManaSystem.InfiniteMana = false;
+    }
+
+    private static void EquipRandomLoadout()
+    {
+        var unlocks = FindObjectOfType<PlayerContentUnlockSystem>();
+        var xp = FindObjectOfType<PlayerExperienceSystem>();
+        var session = unlocks != null ? unlocks.Loadout : null;
+        if (session == null || xp == null || xp.ProgressionData == null) return;
+        session.ReopenTodayForCheat();
+        if (!session.CanConfigure)
+        {
+            Debug.Log("[Cheats] Loadout not changed: the loadout can only be changed by day.");
+            return;
+        }
+
+        var catalog = new MagicGarden.LoadoutUI.DailyLoadoutCatalog();
+        catalog.Refresh(xp.ProgressionData, unlocks);
+        var plants = Shuffled(catalog.Plants);
+        var spells = Shuffled(catalog.Spells);
+
+        int slots = DailyLoadoutState<SeedsEnum, SpellDataSO>.SlotsPerCategory;
+        for (int i = 0; i < slots; i++)
+        {
+            session.TrySetDraftPlant(i, SeedsEnum.None);
+            session.TrySetDraftSpell(i, null);
+        }
+        for (int i = 0; i < slots; i++)
+        {
+            session.TrySetDraftPlant(i, i < plants.Count ? plants[i].seedType : SeedsEnum.None);
+            session.TrySetDraftSpell(i, i < spells.Count ? spells[i] : null);
+        }
+
+        if (!session.TryConfirm())
+        {
+            Debug.Log("[Cheats] Random loadout was rejected.");
+            return;
+        }
+
+        for (int i = 0; i < slots && i < plants.Count; i++)
+            StockSeeds(plants[i]);
+
+        var presenter = FindObjectOfType<MagicGarden.LoadoutUI.DailyLoadoutPresenter>();
+        if (presenter != null && presenter.IsOpen) presenter.Close();
+    }
+
+    private static void StockSeeds(PlantDataSO plant)
+    {
+        var seeds = SeedInventory.Instance;
+        if (seeds == null || plant == null) return;
+        seeds.TryGrantUnlockedPlant(plant, QuickStartSeeds);
+        for (int i = 0; i < seeds.PlantSlotsCount; i++)
+        {
+            var slot = seeds.GetPlantSlot(i);
+            if (slot == null || slot.seedType != plant.seedType) continue;
+            if (slot.seedCount < QuickStartSeeds) seeds.AddSeedsToSlot(i, QuickStartSeeds - slot.seedCount);
+            return;
+        }
+    }
+
+    private static List<T> Shuffled<T>(IReadOnlyList<T> source)
+    {
+        var list = new List<T>(source);
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int j = UnityEngine.Random.Range(0, i + 1);
+            (list[i], list[j]) = (list[j], list[i]);
+        }
+        return list;
+    }
+
+    // Tills a size x size block of diggable ground, the closest one to the player that fits completely.
+    private static bool DigGarden(int size)
+    {
+        var abilities = FindObjectOfType<PlayerAbilitySystem>();
+        var tiles = TilePlantingSystem.Instance;
+        if (abilities == null || tiles == null || abilities.tilledSoilTile == null) return false;
+
+        var map = tiles.PlantingTilemap;
+        Vector3Int playerCell = map.WorldToCell(abilities.transform.position);
+        int houseLayer = LayerMask.NameToLayer("House");
+
+        bool Diggable(Vector3Int cell)
+        {
+            if (cell == playerCell || tiles.GetPlantAt(cell) != null) return false;
+            RaycastHit2D hit = Physics2D.Raycast(map.GetCellCenterWorld(cell), Vector2.zero, Mathf.Infinity, abilities.diggableLayer);
+            return hit.collider != null && hit.collider.gameObject.layer != houseLayer;
+        }
+
+        const int searchRadius = 30;
+        for (int ring = 1; ring <= searchRadius; ring++)
+        {
+            for (int dx = -ring; dx <= ring; dx++)
+            for (int dy = -ring; dy <= ring; dy++)
+            {
+                if (Mathf.Max(Mathf.Abs(dx), Mathf.Abs(dy)) != ring) continue;
+                var origin = playerCell + new Vector3Int(dx, dy, 0) - new Vector3Int(size / 2, size / 2, 0);
+
+                bool fits = true;
+                for (int x = 0; x < size && fits; x++)
+                for (int y = 0; y < size && fits; y++)
+                    fits = Diggable(origin + new Vector3Int(x, y, 0));
+                if (!fits) continue;
+
+                for (int x = 0; x < size; x++)
+                for (int y = 0; y < size; y++)
+                    map.SetTile(origin + new Vector3Int(x, y, 0), abilities.tilledSoilTile);
+                Debug.Log($"[Cheats] Tilled a {size}x{size} garden at {origin}.");
+                return true;
+            }
+        }
+
+        Debug.Log($"[Cheats] No free {size}x{size} diggable area found near the player.");
+        return false;
+    }
+
+    #endregion
     #endregion
 }
 #endif
