@@ -59,14 +59,14 @@ casting controller still enforces readiness.
 ## One input route for numbers and clicks
 
 ```text
-InputReader.OnSlotSelected (plants 1–3 / spells 4–6) / existing HUD slot click
+InputReader.OnSlotSelected (keys 1–3: plants by day, spells by night) / existing HUD slot click
   -> PlayerAbilitySystem.TrySelectEquipmentPosition
   -> EquipmentGameplaySelection.TrySelectPosition
   -> resolve committed position 0..2 to current inventory entry
   -> original inventory SelectSlot and selection events
 ```
 
-- Day keys 1–3 select equipped plants; Night keys 4–6 select equipped spells.
+- Keys 1–3 select equipped plants during the day and equipped spells at night.
 - Keys from the inactive category are ignored. HUD clicks keep their category-local positions.
 - Higher numeric positions are rejected regardless of storage capacity.
 - An empty position is ignored: it cannot select itself or clear the current selection,

@@ -221,10 +221,9 @@ public class PlayerAbilitySystem : MonoBehaviour
     {
         var flow = GameFlowController.Instance;
         if (flow == null) return;
-        if (keyIndex >= 0 && keyIndex < 3 && flow.CurrentPhase == GamePhase.Day)
+        if (keyIndex < 0 || keyIndex >= 3) return;
+        if (flow.CurrentPhase == GamePhase.Day || flow.CurrentPhase == GamePhase.Night)
             TrySelectEquipmentPosition(keyIndex);
-        else if (keyIndex >= 3 && keyIndex < 6 && flow.CurrentPhase == GamePhase.Night)
-            TrySelectEquipmentPosition(keyIndex - 3);
     }
 
     // Keyboard shortcuts translate categories above; HUD clicks retain local positions and these same action gates.
@@ -237,7 +236,7 @@ public class PlayerAbilitySystem : MonoBehaviour
 
         var flow = GameFlowController.Instance;
         if (flow == null) return false;
-        // Day positions select plants (slots 1-3), night positions select spells (slots 4-6).
+        // Keys 1-3 select plants during the day and spells at night.
         var selectionAction = flow.CurrentPhase == GamePhase.Night ? TutorialAction.CastSpell : TutorialAction.SelectSeed;
         if (!TutorialManager.Allows(selectionAction)) return false;
         var selection = new EquipmentGameplaySelection(Loadout, seedInventory, SpellInventory.Instance);

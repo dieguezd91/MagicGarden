@@ -29,7 +29,7 @@ public sealed class DailyLoadoutEquippedHudTests
         F.Call(owner, "ClearSelection");
         if (initiallySelected) Assert.That(F.Call(ability, "TrySelectEquipmentPosition", 0), Is.True);
         var before = F.Call(owner, "GetSelectedSlotIndex");
-        F.Call(ability, "HandleEquipmentSlotInput", plants ? 2 : 5);
+        F.Call(ability, "HandleEquipmentSlotInput", 2);
         Assert.That(F.Call(owner, "GetSelectedSlotIndex"), Is.EqualTo(before));
         if (plants) F.Call(hud, "SelectSlot", 2);
         else ((UnityEngine.Events.UnityEvent)F.Field(F.HudSlot(hud, false, 2), "OnClick")).Invoke();
@@ -38,13 +38,14 @@ public sealed class DailyLoadoutEquippedHudTests
 
     [TestCase(0)] [TestCase(1)] [TestCase(2)]
     [TestCase(3)] [TestCase(4)] [TestCase(5)]
-    public void NumericShortcutsSelectOnlyTheirOwnCategoryAndRespectPhase(int keyIndex)
+    public void NumericShortcutsSelectThePhaseCategory(int caseIndex)
     {
         f.EquipInitial();
         var ability = f.Unlocks.gameObject.AddComponent(F.Production("PlayerAbilitySystem"));
         F.Call(ability, "Awake"); F.Set(ability, "seedInventory", f.Seeds);
-        bool plants = keyIndex < 3;
-        int position = keyIndex % 3;
+        bool plants = caseIndex < 3;
+        int position = caseIndex % 3;
+        int keyIndex = position;
         if (!plants) F.Call(f.Days, "StartNight");
         F.Call(f.Seeds, "ClearSelection"); F.Call(f.Spells, "ClearSelection");
         var owner = plants ? f.Seeds : f.Spells;
@@ -58,15 +59,13 @@ public sealed class DailyLoadoutEquippedHudTests
         Assert.That(F.Call(owner, "GetSelectedSlotIndex"), Is.EqualTo(expected));
         Assert.That(F.Call(plants ? f.Spells : f.Seeds, "GetSelectedSlotIndex"), Is.EqualTo(-1));
         F.Call(f.Days, plants ? "StartNight" : "StartDay");
-        var seedBefore = F.Call(f.Seeds, "GetSelectedSlotIndex");
-        var spellBefore = F.Call(f.Spells, "GetSelectedSlotIndex");
+        var ownerBefore = F.Call(owner, "GetSelectedSlotIndex");
         F.Call(ability, "HandleEquipmentSlotInput", keyIndex);
-        Assert.That(F.Call(f.Seeds, "GetSelectedSlotIndex"), Is.EqualTo(seedBefore));
-        Assert.That(F.Call(f.Spells, "GetSelectedSlotIndex"), Is.EqualTo(spellBefore));
+        Assert.That(F.Call(owner, "GetSelectedSlotIndex"), Is.EqualTo(ownerBefore), "After the phase flips the same key selects the other category.");
     }
 
-    [TestCase(-1)] [TestCase(6)] [TestCase(8)]
-    public void NumericShortcutsOutsideTheSixEquipmentKeysAreIgnored(int keyIndex)
+    [TestCase(-1)] [TestCase(3)] [TestCase(5)] [TestCase(8)]
+    public void NumericShortcutsOutsideTheThreeEquipmentKeysAreIgnored(int keyIndex)
     {
         f.EquipInitial();
         var ability = f.Unlocks.gameObject.AddComponent(F.Production("PlayerAbilitySystem"));
@@ -137,7 +136,7 @@ public sealed class DailyLoadoutEquippedHudTests
             Assert.That(Icon(spell).rectTransform.anchoredPosition, Is.EqualTo(Icon(plant).rectTransform.anchoredPosition));
             var pn = (TMP_Text)F.Field(plant, "slotNumber"); var sn = (TMP_Text)F.Field(spell, "slotNumberText");
             Assert.That(sn.name, Is.EqualTo("Slot_Text"), "Use the existing bottom-right position, not the green count-shaped label");
-            Assert.That(sn.text, Is.EqualTo((i + 4).ToString())); Assert.That(pn.text, Is.EqualTo((i + 1).ToString()));
+            Assert.That(sn.text, Is.EqualTo((i + 1).ToString())); Assert.That(pn.text, Is.EqualTo((i + 1).ToString()));
             Assert.That(sn.font, Is.SameAs(pn.font)); Assert.That(sn.fontSize, Is.EqualTo(pn.fontSize));
             Assert.That(sn.alignment, Is.EqualTo(pn.alignment));
             Assert.That(sn.rectTransform.anchorMin, Is.EqualTo(pn.rectTransform.anchorMin));
@@ -408,7 +407,7 @@ public sealed class DailyLoadoutEquippedHudTests
         Assert.That(F.Call(f.Seeds, "GetSelectedSlotIndex"), Is.EqualTo(5));
         F.Set(f.Flow, "<IsChoosingUpgrade>k__BackingField", false);
         F.Call(f.Days, "StartNight");
-        F.Call(ability, "HandleEquipmentSlotInput", 3);
+        F.Call(ability, "HandleEquipmentSlotInput", 0);
         Assert.That(F.Call(f.Spells, "GetSelectedSlotIndex"), Is.EqualTo(4));
         ((UnityEngine.Events.UnityEvent)F.Field(F.HudSlot(spells, false, 1), "OnClick")).Invoke();
         Assert.That(F.Call(f.Spells, "GetSelectedSlotIndex"), Is.Zero);

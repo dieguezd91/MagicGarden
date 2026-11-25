@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: UseRitualAltar
   stepOrder: 14
-  instructionText: '<b>FOREST:</b> Night is near. Use the Ritual Altar with <sprite name="FKey"> to call it. Then select a filled spell slot with 4-6 and <sprite name="MouseClick"> to cast. Survive until dawn.'
+  instructionText: '<b>FOREST:</b> Night is near. Use the Ritual Altar with <sprite name="FKey"> to call it. Then select a filled spell slot with 1-3 and <sprite name="MouseClick"> to cast. Survive until dawn.'
   stepImage: {fileID: 1845753906, guid: d5879276d50f47440a06b03dcf0a46db, type: 3}
   objectiveType: 7
   requiredCount: 1

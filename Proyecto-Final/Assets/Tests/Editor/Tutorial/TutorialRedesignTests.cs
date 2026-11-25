@@ -115,7 +115,7 @@ public class TutorialRedesignTests
         Assert.That(open, Is.EqualTo(IndexOf(steps, "ConfirmDailyLoadout") - 1));
         CollectionAssert.AreEqual(new[] { "OpenDailyLoadout" }, Objectives(steps[open]));
         var text = Raw(steps[open]);
-        Assert.That(text, Does.Contain("slots 1-3").And.Contain("slots 4-6").And.Contain("Confirm").And.Contain("<sprite name=\"FKey\">"));
+        Assert.That(text, Does.Contain("day slots 1-3").And.Contain("night slots 1-3").And.Contain("Confirm").And.Contain("<sprite name=\"FKey\">"));
         Assert.That(text, Does.Match("(?i)at least one of each"), "Keep the tutorial rule: one plant and one spell.");
     }
 
@@ -127,7 +127,7 @@ public class TutorialRedesignTests
         Assert.That(Flag(night, "useConfiguredCompletion"), Is.True);
         Assert.That(Get(night, "conditionCombination").ToString(), Is.EqualTo("All"));
         CollectionAssert.AreEquivalent(new[] { "UseRitualAltar", "CastSpell", "SurviveNight" }, Objectives(night));
-        Assert.That(Raw(night), Does.Contain("4-6").And.Contain("<sprite name=\"FKey\">").And.Contain("<sprite name=\"MouseClick\">"));
+        Assert.That(Raw(night), Does.Contain("1-3").And.Contain("<sprite name=\"FKey\">").And.Contain("<sprite name=\"MouseClick\">"));
     }
 
     [Test]

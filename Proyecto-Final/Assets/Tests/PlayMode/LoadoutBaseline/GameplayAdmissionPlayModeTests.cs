@@ -445,12 +445,12 @@ public sealed class GameplayAdmissionPlayModeTests
         Emit("OnCycleInput", 1); Assert.That(Property(ability, "CurrentAbility").ToString(), Is.EqualTo("Planting"));
         Emit("OnCycleInput", -1); Assert.That(Property(ability, "CurrentAbility").ToString(), Is.EqualTo("Digging"));
         Call(cycle, "StartNight");
-        Emit("OnSlotSelected", 0); Emit("OnSlotSelected", 1); Emit("OnSlotSelected", 2);
-        Assert.That(spellEvents, Is.Zero, "Plant shortcuts must not select spells at night");
+        Emit("OnSlotSelected", 3); Emit("OnSlotSelected", 4); Emit("OnSlotSelected", 5);
+        Assert.That(spellEvents, Is.Zero, "Keys 4-6 no longer select spells");
         Assert.That(seedEvents, Is.EqualTo(1));
-        Emit("OnSlotSelected", 3);
+        Emit("OnSlotSelected", 0);
         Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(4)); Assert.That(spellEvents, Is.EqualTo(1));
-        Emit("OnSlotSelected", 4); Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(1));
+        Emit("OnSlotSelected", 1); Assert.That(Call(spells, "GetSelectedSlotIndex"), Is.EqualTo(1));
         Assert.That(spellEvents, Is.EqualTo(2)); Assert.That(seedEvents, Is.EqualTo(1));
         Assert.That(Call(seeds, "GetSelectedSlotIndex"), Is.EqualTo(5));
         Emit("OnCycleInput", 1);

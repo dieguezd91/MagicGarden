@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: Teleport
   stepOrder: 7
-  instructionText: '<b>FOREST:</b> Prepare before calling night. <sprite name="SpaceKey"> teleports; <sprite name="TABKey"> or <sprite name="IKey"> opens your inventory. At night, use a filled spell slot with 4-6 and <sprite name="MouseClick"> to cast. Keep moving and protect the ancestral tree until dawn.'
+  instructionText: '<b>FOREST:</b> Prepare before calling night. <sprite name="SpaceKey"> teleports; <sprite name="TABKey"> or <sprite name="IKey"> opens your inventory. At night, use a filled spell slot with 1-3 and <sprite name="MouseClick"> to cast. Keep moving and protect the ancestral tree until dawn.'
   stepImage: {fileID: 0}
   objectiveType: 15
   requiredCount: 1

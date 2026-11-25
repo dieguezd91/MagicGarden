@@ -19,7 +19,11 @@ public static class EquipmentHudStyle
         if (frame != null)
             frame.color = !occupied ? EmptyFrame : !phaseActive ? InactiveFrame : highlighted ? Color.white : ActiveFrame;
         if (icon != null) icon.color = phaseActive ? Color.white : InactiveContent;
-        if (number != null) number.color = occupied && phaseActive ? Position : MutedPosition;
+        if (number != null)
+        {
+            number.enabled = phaseActive;
+            number.color = occupied ? Position : MutedPosition;
+        }
         if (stock != null) stock.color = phaseActive ? Position : MutedPosition;
         float scale = highlighted ? 1.2f : 1f;
         root.localScale = new Vector3(scale, scale, 1f);

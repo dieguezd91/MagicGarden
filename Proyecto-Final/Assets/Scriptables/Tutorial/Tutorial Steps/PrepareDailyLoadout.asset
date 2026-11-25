@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: PrepareDailyLoadout
   stepOrder: 11
-  instructionText: '<b>FOREST:</b> Choose plants for daytime slots 1-3 and spells for nighttime slots 4-6. During this tutorial, select at least one of each; other slots may stay empty. Confirm locks your choices for the day. You cannot change them until the next day.'
+  instructionText: '<b>FOREST:</b> Choose plants for daytime slots 1-3 and spells for nighttime slots 1-3. During this tutorial, select at least one of each; other slots may stay empty. Confirm locks your choices for the day. You cannot change them until the next day.'
   stepImage: {fileID: 1439159968, guid: d5879276d50f47440a06b03dcf0a46db, type: 3}
   objectiveType: 15
   requiredCount: 1
