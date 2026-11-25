@@ -119,6 +119,24 @@ public class SpellCompletionTests
     private static int FireParticleBursts() =>
         Object.FindObjectsOfType<ParticleSystem>().Count(p => p.gameObject.name.StartsWith("FireImpactParticles") || p.gameObject.name.StartsWith("ImpactParticles"));
 
+    [UnityTest] public IEnumerator AFireHitWithThePrefabDefaultsKeepsDamageAndNumberButNoParticlesNorKnockback()
+    {
+        yield return new EnterPlayMode();
+        Isolate();
+        BuildFireHitFixture(out var flame, out var enemy, false);
+        yield return null; yield return null;
+        var life = enemy.GetComponent(TypeOf("LifeController"));
+        float before = (float)Field(life, "currentHealth");
+        var rb = enemy.GetComponent<Rigidbody2D>();
+
+        FlameHits(flame, enemy);
+
+        Assert.That((float)Field(life, "currentHealth"), Is.LessThan(before), "S1: the hit still deals damage");
+        Assert.That(enemy.GetComponentInChildren(TypeOf("FloatingDamageText")), Is.Not.Null, "S1: the damage number stays");
+        Assert.That(FireParticleBursts(), Is.Zero, "S1: no impact particles with the prefab defaults");
+        Assert.That(rb.velocity, Is.EqualTo(Vector2.zero), "S1: no knockback with the prefab defaults");
+    }
+
     [UnityTest] public IEnumerator AFireHitShowsADamageNumberSpawnsParticlesAndKnocksTheEnemyBack()
     {
         yield return new EnterPlayMode();

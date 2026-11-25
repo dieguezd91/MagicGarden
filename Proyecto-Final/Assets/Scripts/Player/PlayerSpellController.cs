@@ -3,6 +3,43 @@
 public class PlayerSpellController : MonoBehaviour
 {
     [SerializeField] private Transform firePoint;
+
+    /// <summary>The point every spell spawns from. FireSpell reads it to spawn each flame at the hand.</summary>
+    public Transform FirePoint => firePoint;
+
+    private Sprite handCenterSprite;
+    private Vector2 handCenterLocal;
+
+    /// <summary>
+    /// World position of the hand the player sees: the centre of the opaque pixels of the current hand sprite frame (tight sprite mesh),
+    /// so it follows the hand animation. False (origin = fire point) when the hand is hidden or has no sprite.
+    /// </summary>
+    public bool TryGetHandOrigin(out Vector3 origin)
+    {
+        origin = firePoint != null ? firePoint.position : transform.position;
+        if (handRenderer == null || !handRenderer.enabled || !handRenderer.gameObject.activeInHierarchy) return false;
+
+        Sprite sprite = handRenderer.sprite;
+        if (sprite == null) return false;
+
+        if (sprite != handCenterSprite)
+        {
+            Vector2[] vertices = sprite.vertices;
+            if (vertices == null || vertices.Length == 0) return false;
+
+            Vector2 min = vertices[0], max = vertices[0];
+            for (int i = 1; i < vertices.Length; i++)
+            {
+                min = Vector2.Min(min, vertices[i]);
+                max = Vector2.Max(max, vertices[i]);
+            }
+            handCenterSprite = sprite;
+            handCenterLocal = (min + max) * 0.5f;
+        }
+
+        origin = handRenderer.transform.TransformPoint(new Vector3(handCenterLocal.x, handCenterLocal.y, 0f));
+        return true;
+    }
     [SerializeField] private ManaSystem manaSystem;
 
     [SerializeField] private Animator handAnimator;
