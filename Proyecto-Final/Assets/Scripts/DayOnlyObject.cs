@@ -9,7 +9,7 @@ public class DayOnlyObject : MonoBehaviour
     [SerializeField] private bool deactivateGameObject = true;
 
     private Renderer[] renderers;
-    private GamePhase lastPhase = GamePhase.None;
+    private GameFlowController flowController;
 
     private void Awake()
     {
@@ -24,26 +24,32 @@ public class DayOnlyObject : MonoBehaviour
         }
     }
 
+    // Event driven: a deactivated component keeps its subscription, so a target that is
+    // this very GameObject still comes back when the day starts.
     private void Start()
     {
-        if (LevelManager.Instance != null)
+        flowController = GameFlowController.Instance;
+        if (flowController == null)
         {
-            UpdateVisibility(GameFlowController.Instance.CurrentPhase);
-            lastPhase = GameFlowController.Instance.CurrentPhase;
+            flowController = FindObjectOfType<GameFlowController>();
+        }
+        if (flowController == null) return;
+
+        UpdateVisibility(flowController.CurrentPhase);
+        flowController.OnPhaseChanged += OnPhaseChanged;
+    }
+
+    private void OnDestroy()
+    {
+        if (flowController != null)
+        {
+            flowController.OnPhaseChanged -= OnPhaseChanged;
         }
     }
 
-    private void Update()
+    private void OnPhaseChanged(GamePhase newPhase)
     {
-        if (LevelManager.Instance == null) return;
-
-        GamePhase currentPhase = GameFlowController.Instance.CurrentPhase;
-
-        if (currentPhase != lastPhase)
-        {
-            UpdateVisibility(currentPhase);
-            lastPhase = currentPhase;
-        }
+        UpdateVisibility(newPhase);
     }
 
     private void UpdateVisibility(GamePhase phase)
@@ -52,7 +58,7 @@ public class DayOnlyObject : MonoBehaviour
 
         if (deactivateGameObject)
         {
-            if (targetObject.activeSelf != shouldBeVisible)
+            if (targetObject != null && targetObject.activeSelf != shouldBeVisible)
             {
                 targetObject.SetActive(shouldBeVisible);
             }

@@ -142,7 +142,6 @@ public class DayNightLightController : MonoBehaviour
         Color startLightColor = globalLight.color;
         float startBloom = bloomComponent != null ? bloomComponent.intensity.value : 0f;
         float startExposure = colorAdjustmentsComponent != null ? colorAdjustmentsComponent.postExposure.value : 0f;
-        Color startColorFilter = colorAdjustmentsComponent != null ? colorAdjustmentsComponent.colorFilter.value : Color.white;
         float startVignette = vignetteComponent != null ? vignetteComponent.intensity.value : 0f;
 
         float elapsedTime = 0f;
@@ -163,6 +162,9 @@ public class DayNightLightController : MonoBehaviour
 
             if (bloomComponent != null)
                 bloomComponent.intensity.value = Mathf.Lerp(startBloom, targetBloom, t);
+
+            if (colorAdjustmentsComponent != null)
+                colorAdjustmentsComponent.postExposure.value = Mathf.Lerp(startExposure, targetExposure, t);
 
             if (vignetteComponent != null)
                 vignetteComponent.intensity.value = Mathf.Lerp(startVignette, targetVignette, t);
