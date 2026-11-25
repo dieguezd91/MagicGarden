@@ -40,7 +40,7 @@ public class EnemyChaseState : IState
         if (enemy is SniperBoss sniperBoss) 
             attackRange = sniperBoss.SniperAttackRange;
         if (enemy is Skeleton skeleton)
-            attackRange = skeleton.attackRange;
+            attackRange = skeleton.AttackDistance;
         else if (enemy is Infernum infernum)
             attackRange = infernum.GetType().GetField("shootingRange", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(infernum) as float? ?? 5f;
         else if (enemy is GardenGnome gnome)
@@ -97,9 +97,7 @@ public class EnemyAttackState : IState
 
     private float attackRange = 1.5f;
     private float meleeDelay;
-    private float specialDelay;
     private float nextAttackTime;
-    private bool usingSpecialAttack;
 
     public EnemyAttackState(EnemyBase enemy)
     {
@@ -112,7 +110,7 @@ public class EnemyAttackState : IState
         if (enemy is Skeleton skeleton)
         {
             this.skeleton = skeleton;
-            attackRange = skeleton.attackRange;
+            attackRange = skeleton.AttackDistance;
         }
         else if (enemy is Infernum infernum)
         {
@@ -136,13 +134,11 @@ public class EnemyAttackState : IState
             {
                 attackRange = boss.bossData.meleeRadius;
                 meleeDelay = boss.bossData.meleeDelay;
-                specialDelay = boss.bossData.specialDelay;
             }
             else
             {
                 attackRange = 3f;
                 meleeDelay = 0.6f;
-                specialDelay = 1f;
             }
         }
     }
@@ -153,7 +149,8 @@ public class EnemyAttackState : IState
         enemy.isCurrentlyAttacking = false;
         nextAttackTime = Time.time;
 
-        if (enemy.animator != null)
+        // The skeleton turns its swing on itself when it actually starts one (see Skeleton.PerformAttack).
+        if (enemy.animator != null && skeleton == null)
             enemy.animator.SetBool("isAttacking", true);
     }
 
@@ -178,26 +175,26 @@ public class EnemyAttackState : IState
             return;
         }
 
-        if (boss != null && boss.bossData != null)
+        if (skeleton != null)
         {
+            if (skeleton.CanAttack())
+                skeleton.PerformAttack();
+        }
+        else if (boss != null && boss.bossData != null)
+        {
+            // The golem only has the melee thrust (and the summon, handled elsewhere); there is no special attack
+            // animation, so out of melee reach it walks closer instead of hitting from afar.
+            if (enemy.GetDistanceToTarget() > boss.bossData.meleeRadius)
+            {
+                enemy.StateMachine.ChangeState<EnemyChaseState>();
+                return;
+            }
+
             if (Time.time >= nextAttackTime && !enemy.isCurrentlyAttacking)
             {
                 enemy.isCurrentlyAttacking = true;
-
-                float distance = enemy.GetDistanceToTarget();
-
-                if (distance <= boss.bossData.meleeRadius)
-                {
-                    usingSpecialAttack = false;
-                    boss.StartCoroutine(BossMeleeRoutine());
-                    nextAttackTime = Time.time + meleeDelay;
-                }
-                else if (distance <= boss.bossData.specialRadius)
-                {
-                    usingSpecialAttack = true;
-                    boss.StartCoroutine(BossSpecialRoutine());
-                    nextAttackTime = Time.time + specialDelay;
-                }
+                boss.StartCoroutine(BossMeleeRoutine());
+                nextAttackTime = Time.time + meleeDelay;
             }
         }
         else
@@ -218,22 +215,14 @@ public class EnemyAttackState : IState
         }
     }
 
+    // Waits for the boss's own attack to finish. Clearing isCurrentlyAttacking earlier made the golem's
+    // strike event (which needs it) skip the damage, and let the state walk away mid-thrust.
     private IEnumerator BossMeleeRoutine()
     {
         yield return new WaitForSeconds(0.2f);
         boss.TryStartMeleeAttack();
 
-        yield return new WaitForSeconds(0.3f);
-        enemy.isCurrentlyAttacking = false;
-    }
-
-    private IEnumerator BossSpecialRoutine()
-    {
-        boss.animator.SetTrigger("attackSpecial");
-
-        yield return new WaitForSeconds(specialDelay);
-
-        yield return boss.StartCoroutine(boss.PerformSpecialAttack());
+        yield return new WaitUntil(() => boss == null || boss.isDead || !boss.IsMeleeAttacking);
         enemy.isCurrentlyAttacking = false;
     }
 

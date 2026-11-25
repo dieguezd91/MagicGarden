@@ -25,7 +25,7 @@ MonoBehaviour:
   manaDropChance: 0.5
   bossMaxHealth: 1000
   minAttackDistance: 3
-  meleeRadius: 3
+  meleeRadius: 2
   specialRadius: 5
   meleeDamage: 30
   specialDamage: 50

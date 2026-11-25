@@ -15,9 +15,16 @@ public class Infernum : EnemyBase
     private float fireRate;
     private float aimYOffset;
     private float nextTimeToFire = 0f;
+    private Vector3 firingPointOffset;
 
-    public bool CanShootNow => Time.time >= rangedData.FireRate;
+    public bool CanShootNow => Time.time >= nextTimeToFire;
 
+    protected override void Awake()
+    {
+        base.Awake();
+        if (firingPoint != null)
+            firingPointOffset = firingPoint.localPosition;
+    }
 
     protected override EnemyDataSO GetEnemyData() => rangedData;
 
@@ -45,8 +52,21 @@ public class Infernum : EnemyBase
         nextTimeToFire = Time.time + fireRate / fireRate;
     }
 
+    // It only turned while walking, so when it stopped to shoot it could face away from its target.
+    // The sprite turns with flipX, which does not move children, so the firing point is mirrored by hand.
+    private void FaceTarget()
+    {
+        float dx = currentTarget.position.x - transform.position.x;
+        if (Mathf.Abs(dx) < 0.01f) return;
+        float side = Mathf.Sign(dx);
+        UpdateSpriteDirection(new Vector2(side, 0f));
+        if (firingPoint != null)
+            firingPoint.localPosition = new Vector3(Mathf.Abs(firingPointOffset.x) * side, firingPointOffset.y, firingPointOffset.z);
+    }
+
     private void Shoot()
     {
+        FaceTarget();
         Vector2 adjustedTargetPos = (Vector2)currentTarget.position + Vector2.down * aimYOffset;
         Vector2 direction = (adjustedTargetPos - (Vector2)transform.position).normalized;
 

@@ -9,6 +9,8 @@ AnimatorOverrideController:
   m_Name: Minion
   m_Controller: {fileID: 9100000, guid: 26dcd47ff80d89740a12925b9132d061, type: 2}
   m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: df527e87cafa40e1b3f6c3ad58300609, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: b2b1a3514a81471aa224f7b3a89f0dc0, type: 2}
   - m_OriginalClip: {fileID: 7400000, guid: 8693def90a37c0943a7ad4dcd206782b, type: 2}
     m_OverrideClip: {fileID: 7400000, guid: 0f57308bd1e39384ba0b9dcb2cbf4e00, type: 2}
   - m_OriginalClip: {fileID: 7400000, guid: 4258c5de3dba52142a8ea8be8bf64917, type: 2}

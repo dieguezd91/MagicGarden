@@ -169,6 +169,8 @@ public class Boss : EnemyBase
         throw new System.NotImplementedException();
     }
 
+    public bool IsMeleeAttacking => currentAttackCoroutine != null;
+
     public void TryStartMeleeAttack()
     {
         if (currentAttackCoroutine == null)

@@ -404,7 +404,7 @@ public abstract class EnemyBase : MonoBehaviour, IEnemy
         slowMultiplier = 1f;
     }
 
-    public float GetDistanceToTarget()
+    public virtual float GetDistanceToTarget()
     {
         return currentTarget != null
             ? Vector2.Distance(transform.position, currentTarget.position)
