@@ -111,6 +111,7 @@ public class MainMenuController : UIControllerBase
         _optionsBackButton.Interactable = true;
 
         _optionsPanel.Show();
+        PlayPanelSound(true);
 
         if (EventSystem.current != null && _optionsBackButton != null)
         {
@@ -123,6 +124,7 @@ public class MainMenuController : UIControllerBase
         if (_optionsPanel == null || !isOptionsOpen) return;
 
         _optionsPanel.Hide();
+        PlayPanelSound(false);
 
         isOptionsOpen = false;
 
@@ -138,6 +140,7 @@ public class MainMenuController : UIControllerBase
     {
         if (isOptionsOpen) return;
         _controlsPanel?.Show();
+        PlayPanelSound(true);
     }
 
     private void ShowCredits()
@@ -147,8 +150,13 @@ public class MainMenuController : UIControllerBase
         if (_creditsPanel != null)
         {
             _creditsPanel.Show();
+            PlayPanelSound(true);
         }
     }
+
+    // Options, Controls and Credits slide in and out with a soft leafy swish.
+    private static void PlayPanelSound(bool open) =>
+        SoundManager.Instance?.Play(open ? "UI_Menu_Panel_Open" : "UI_Menu_Panel_Close");
 
     public void OnPlayButtonClick()
     {
@@ -160,6 +168,7 @@ public class MainMenuController : UIControllerBase
     private void HideControls()
     {
         _controlsPanel?.Hide();
+        PlayPanelSound(false);
     }
 
     private void HideCredits()
@@ -167,6 +176,7 @@ public class MainMenuController : UIControllerBase
         if (_creditsPanel != null)
         {
             _creditsPanel.Hide();
+            PlayPanelSound(false);
         }
     }
 

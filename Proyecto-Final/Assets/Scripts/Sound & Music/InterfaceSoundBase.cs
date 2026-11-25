@@ -9,20 +9,25 @@ public class InterfaceSoundBase : MonoBehaviour
     public SoundClipData menuButtonClick;
     public SoundClipData menuButtonDisabledClick;
 
-    [Header("Menu Button Specific Sounds")]
-    public SoundClipData menuButtonPlay;
-    public SoundClipData menuButtonOptions;
-    public SoundClipData menuButtonControls;
-    public SoundClipData menuButtonExit;
-
     [Header("Game Interface Sounds")]
     public SoundClipData gameInventoryBookOpen;
     public SoundClipData gameInventoryBookClose;
-    public SoundClipData pauseOpen;
-    public SoundClipData pauseClose;
+    public SoundClipData gameInventoryBookPageFlip;
+    [Tooltip("A book tab for the page that is already open: the page lifts and flops back.")]
+    public SoundClipData gameInventoryBookSamePage;
 
     public SoundClipData onAbilityChanged;
     public SoundClipData onSeedSelect;
+
+    [Header("Level Up Panel")]
+    public SoundClipData levelUpOpen;
+    public SoundClipData levelUpClose;
+
+    [Header("Level Up Reward Screen")]
+    public SoundClipData levelUpRewardOpen;
+    [Tooltip("Each reward row (new seeds, new spells, plant limit) as it pops in.")]
+    public SoundClipData levelUpRewardItem;
+    public SoundClipData levelUpRewardClose;
 
     private Dictionary<InterfaceSoundType, SoundClipData> soundDictionary;
 
@@ -34,16 +39,17 @@ public class InterfaceSoundBase : MonoBehaviour
             { InterfaceSoundType.MenuButtonDisabledHover, menuButtonDisabledHover },
             { InterfaceSoundType.MenuButtonClick, menuButtonClick },
             { InterfaceSoundType.MenuButtonDisabledClick, menuButtonDisabledClick },
-            { InterfaceSoundType.MenuButtonPlay, menuButtonPlay },
-            { InterfaceSoundType.MenuButtonOptions, menuButtonOptions },
-            { InterfaceSoundType.MenuButtonControls, menuButtonControls },
-            { InterfaceSoundType.MenuButtonExit, menuButtonExit },
             { InterfaceSoundType.GameInventoryBookOpen, gameInventoryBookOpen },
             { InterfaceSoundType.GameInventoryBookClose, gameInventoryBookClose },
-            { InterfaceSoundType.GamePauseOpen, pauseOpen},
-            { InterfaceSoundType.GamePauseClose, pauseClose},
+            { InterfaceSoundType.GameInventoryBookPageFlip, gameInventoryBookPageFlip },
+            { InterfaceSoundType.GameInventoryBookSamePage, gameInventoryBookSamePage },
             { InterfaceSoundType.OnAbilityChanged, onAbilityChanged },
             { InterfaceSoundType.OnSeedSelect, onSeedSelect },
+            { InterfaceSoundType.LevelUpOpen, levelUpOpen },
+            { InterfaceSoundType.LevelUpClose, levelUpClose },
+            { InterfaceSoundType.LevelUpRewardOpen, levelUpRewardOpen },
+            { InterfaceSoundType.LevelUpRewardItem, levelUpRewardItem },
+            { InterfaceSoundType.LevelUpRewardClose, levelUpRewardClose },
         };
     }
 

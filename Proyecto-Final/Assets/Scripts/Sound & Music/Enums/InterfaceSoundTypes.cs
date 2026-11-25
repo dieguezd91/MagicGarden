@@ -34,4 +34,14 @@ public enum InterfaceSoundType
 
     OnAbilityChanged,
     OnSeedSelect,
+
+    LevelUpOpen,
+    LevelUpClose,
+
+    LevelUpRewardOpen,
+    LevelUpRewardItem,
+    LevelUpRewardClose,
+
+    GameInventoryBookPageFlip,
+    GameInventoryBookSamePage,
 }

@@ -54,7 +54,7 @@ public class ManaPickup : MonoBehaviour
         }
         else
         {
-            SoundManager.Instance?.PlayOneShot("PickUp");
+            SoundManager.Instance?.PlayOneShot("PickUp_Mana");
         }
 
         Destroy(gameObject);

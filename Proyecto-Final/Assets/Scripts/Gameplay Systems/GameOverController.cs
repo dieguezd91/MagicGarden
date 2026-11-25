@@ -137,6 +137,9 @@ public class GameOverController : MonoBehaviour
         if (GameFlowController.Instance != null)
             GameFlowController.Instance.SetPhase(GamePhase.GameOver);
 
+        // After the phase change, like the game-over sting, so it routes to the UI group instead of being muffled.
+        SoundManager.Instance?.Play("To_Be_Continued");
+
         if (UIManager.Instance != null && UIManager.Instance.continuePanel != null)
         {
             UIManager.Instance.StartCoroutine(UIManager.Instance.AnimateContinuePanel());

@@ -649,6 +649,102 @@ MonoBehaviour:
     loop: 0
     mute: 0
     audioSource: {fileID: 0}
+  - name: Restore
+    clip: {fileID: 8300000, guid: 36c0c8390ebcc284c9656a6552769428, type: 3}
+    volume: 0.5
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: CantBuy
+    clip: {fileID: 8300000, guid: 1ed8fb76fc64e4e46847348138782234, type: 3}
+    volume: 0.45
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: PickUp_Mana
+    clip: {fileID: 8300000, guid: 7a9de5c4d998126449cf964a6b27a8b0, type: 3}
+    volume: 0.33
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: PickUp_Material
+    clip: {fileID: 8300000, guid: 8ad8a9749e89457e944264cc818f2589, type: 3}
+    volume: 0.94
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Shop_Buy
+    clip: {fileID: 8300000, guid: abdbbfd33a46f4549987385f85c536b5, type: 3}
+    volume: 0.31
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: To_Be_Continued
+    clip: {fileID: 8300000, guid: f799441d7b7291d4e86d094d7e336e87, type: 3}
+    volume: 0.8
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Menu_Panel_Open
+    clip: {fileID: 8300000, guid: 85db741edfc5461aa723cf9cf1b85631, type: 3}
+    volume: 0.35
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Menu_Panel_Close
+    clip: {fileID: 8300000, guid: e6ded77589a44425a232ff497066e7db, type: 3}
+    volume: 0.46
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Prompt_Hide
+    clip: {fileID: 8300000, guid: 3df167f186774b8fbfd40004c88d2a05, type: 3}
+    volume: 0.34
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Loadout_Tab
+    clip: {fileID: 8300000, guid: ba63a3beaf4244f8a1add115e9cacfb1, type: 3}
+    volume: 0.87
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Loadout_Scroll_Left
+    clip: {fileID: 8300000, guid: fdb85adeeacb411e9ffa520b3f143d61, type: 3}
+    volume: 0.31
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: UI_Loadout_Scroll_Right
+    clip: {fileID: 8300000, guid: d094e8ac86bd4d1c9a83a938fd361a04, type: 3}
+    volume: 0.31
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
   - name: UI_Loadout_Reject
     clip: {fileID: 8300000, guid: d0d953b858a04b2f84afa1c568138363, type: 3}
     volume: 0.45

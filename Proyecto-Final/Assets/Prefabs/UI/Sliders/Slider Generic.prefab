@@ -334,7 +334,7 @@ MonoBehaviour:
   _volume: 0.4
   _enableHoverSound: 1
   _onHoverSound: {fileID: 8300000, guid: 5d17f8d8078e2b54ab62ba6755295363, type: 3}
-  _enableValueChangedSound: 1
+  _enableValueChangedSound: 0
   _onValueChangedSound: {fileID: 8300000, guid: 4229f6c289f32f843ba8e9db98d72d32, type: 3}
   _enableDisabledValueChangedSound: 1
   _onDisabledValueChangedSound: {fileID: 8300000, guid: 75ac255b508adda48b7ea92c0ef8e7b7, type: 3}

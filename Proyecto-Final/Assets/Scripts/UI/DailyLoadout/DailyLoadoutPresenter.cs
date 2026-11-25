@@ -126,8 +126,9 @@ namespace MagicGarden.LoadoutUI
             }
             BindOptions(view.PlantOptionViews, true);
             BindOptions(view.SpellOptionViews, false);
-            Listen(view.PlantTabButton, () => { PlayUi(InterfaceSoundType.MenuButtonClick); SelectPosition(true, Mathf.Max(0, selectedPosition)); });
-            Listen(view.SpellTabButton, () => { PlayUi(InterfaceSoundType.MenuButtonClick); SelectPosition(false, Mathf.Max(0, selectedPosition)); });
+            // The tab tap only plays when the category actually changes.
+            Listen(view.PlantTabButton, () => { if (!plantCategory) PlaySfx("UI_Loadout_Tab"); SelectPosition(true, Mathf.Max(0, selectedPosition)); });
+            Listen(view.SpellTabButton, () => { if (plantCategory) PlaySfx("UI_Loadout_Tab"); SelectPosition(false, Mathf.Max(0, selectedPosition)); });
             Listen(view.ConfirmButton, Confirm);
             Listen(view.ClearButton, Clear);
             Listen(view.CancelButton, Close);

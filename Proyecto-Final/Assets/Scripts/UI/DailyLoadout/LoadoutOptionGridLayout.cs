@@ -113,7 +113,7 @@ namespace MagicGarden.LoadoutUI
             scroll.StopMovement();
             scrollVelocity = 0f;
             scrollTarget = Mathf.Clamp01(from + direction * perPage * card / hidden);
-            SoundManager.Instance?.PlayOneShot("ButtonClick", ui: true);
+            SoundManager.Instance?.PlayOneShot(direction < 0 ? "UI_Loadout_Scroll_Left" : "UI_Loadout_Scroll_Right", ui: true);
         }
 
         private void UpdateArrows()

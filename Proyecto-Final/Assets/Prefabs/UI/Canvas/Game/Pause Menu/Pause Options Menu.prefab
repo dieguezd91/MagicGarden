@@ -656,9 +656,9 @@ MonoBehaviour:
   musicSlider: {fileID: 6221389363689033213}
   sfxSlider: {fileID: 4165301558824148414}
   muteButton: {fileID: 6252287962899745701}
-  sliderTickClip: {fileID: 0}
+  sliderTickClip: {fileID: 8300000, guid: 318f24a685cb4d29896ed9b634356f58, type: 3}
   sliderTickMixerGroup: {fileID: -633828639928632731, guid: 5e6626574c6616a40a8e778a90666ada, type: 2}
-  sliderTickVolume: 0.35
+  sliderTickVolume: 0.25
 --- !u!1001 &417031990848616271
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -667,6 +667,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4807649685377728529}
     m_Modifications:
+    - target: {fileID: 345471450206581724, guid: 0e1aa68f848ddce4ca78b51642925fc7, type: 3}
+      propertyPath: _onHoverSound
+      value: 
+      objectReference: {fileID: 8300000, guid: a812fe7fe2244d38ae5675bf801a3ea6, type: 3}
     - target: {fileID: 2113008109743265759, guid: 0e1aa68f848ddce4ca78b51642925fc7, type: 3}
       propertyPath: m_Name
       value: Slider Effects Volume
@@ -780,6 +784,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4807649685377728529}
     m_Modifications:
+    - target: {fileID: 3765447605226011469, guid: dbb0781b1678e4d47ad77a5888f1eccf, type: 3}
+      propertyPath: _onHoverSound
+      value: 
+      objectReference: {fileID: 8300000, guid: a812fe7fe2244d38ae5675bf801a3ea6, type: 3}
+    - target: {fileID: 3765447605226011469, guid: dbb0781b1678e4d47ad77a5888f1eccf, type: 3}
+      propertyPath: _onClickSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 3944063d025d407cad4c0944971656dd, type: 3}
     - target: {fileID: 2256857712897565803, guid: dbb0781b1678e4d47ad77a5888f1eccf, type: 3}
       propertyPath: m_Name
       value: Button Menu Options Mute
@@ -893,6 +905,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4807649685377728529}
     m_Modifications:
+    - target: {fileID: 1586810221270872492, guid: d46abd486b6f1264d819f523e5326e4c, type: 3}
+      propertyPath: _onHoverSound
+      value: 
+      objectReference: {fileID: 8300000, guid: a812fe7fe2244d38ae5675bf801a3ea6, type: 3}
+    - target: {fileID: 1586810221270872492, guid: d46abd486b6f1264d819f523e5326e4c, type: 3}
+      propertyPath: _onClickSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 3944063d025d407cad4c0944971656dd, type: 3}
     - target: {fileID: 1252437218705736604, guid: d46abd486b6f1264d819f523e5326e4c, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1006,6 +1026,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4807649685377728529}
     m_Modifications:
+    - target: {fileID: 6212106384349653285, guid: 9e567cc7a53c8a146a3c42716bbdfba0, type: 3}
+      propertyPath: _onHoverSound
+      value: 
+      objectReference: {fileID: 8300000, guid: a812fe7fe2244d38ae5675bf801a3ea6, type: 3}
     - target: {fileID: 5741069237351779622, guid: 9e567cc7a53c8a146a3c42716bbdfba0, type: 3}
       propertyPath: m_Name
       value: Slider Music Volume
@@ -1119,6 +1143,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4807649685377728529}
     m_Modifications:
+    - target: {fileID: 3762918969367600128, guid: 5f0f9de209b74b149b3d2436aa2f0f66, type: 3}
+      propertyPath: _onHoverSound
+      value: 
+      objectReference: {fileID: 8300000, guid: a812fe7fe2244d38ae5675bf801a3ea6, type: 3}
     - target: {fileID: 1839830569021383539, guid: 5f0f9de209b74b149b3d2436aa2f0f66, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

@@ -93,9 +93,12 @@ public class BookInventoryAnimations : MonoBehaviour
             return;
         }
 
-        if (playClickSound && UIManager.Instance?.InterfaceSounds != null)
+        // The tab is for the page already open: no flip, a "can't" book sound instead.
+        // Otherwise the page flip itself is the sound (no extra generic click on top of a book).
+        if (animationController.CurrentPage == page)
         {
-            UIManager.Instance.InterfaceSounds.PlaySound(buttonClickSound);
+            if (playClickSound) UIManager.Instance?.InterfaceSounds?.PlaySound(InterfaceSoundType.GameInventoryBookSamePage);
+            return;
         }
 
         ChangePage(page);

@@ -163,7 +163,8 @@ public sealed class UpgradePanel : MonoBehaviour
     private void Purchase(int index)
     {
         if (runtime == null || !IsShopOpen || index < 0 || index >= shopDefinitions.Count) return;
-        runtime.Purchase(shopDefinitions[index], shopTargets[index]);
+        if (runtime.Purchase(shopDefinitions[index], shopTargets[index]))
+            SoundManager.Instance?.PlayOneShot("UI_Shop_Buy", ui: true);
         runtime.RefreshTargets(); RefreshShop();
     }
     public void CloseShop()

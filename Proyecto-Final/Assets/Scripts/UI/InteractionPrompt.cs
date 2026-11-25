@@ -34,6 +34,7 @@ public class InteractionPrompt : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D collision)
     {
+        if (collision.CompareTag("Player") && promptCanvas.activeSelf) SoundManager.Instance?.Play("UI_Prompt_Hide");
         promptCanvas.SetActive(false);
     }
 }

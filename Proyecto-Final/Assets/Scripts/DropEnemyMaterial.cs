@@ -46,7 +46,7 @@ public class DropEnemyMaterial : MonoBehaviour
         }
         else
         {
-            SoundManager.Instance?.PlayOneShot("PickUp");
+            SoundManager.Instance?.PlayOneShot("PickUp_Material");
         }
 
 
