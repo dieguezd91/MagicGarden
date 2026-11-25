@@ -464,12 +464,9 @@ public class SpellSlotUI : ImprovedUIButton, IPointerEnterHandler, IPointerExitH
     public void OnPointerEnter(PointerEventData eventData)
     {
         SpellSlot spell = equipmentMode ? displayedSlot : SpellInventory.Instance?.GetSpellSlot(SlotIndex);
-        if (spell != null && spell.isUnlocked)
-        {
+        // Locked, on cooldown or out of mana: the tooltip still shows.
+        if (spell != null)
             UIEvents.RequestSpellTooltip(spell);
-            Debug.Log("Hover Spell Slot: " + SlotIndex);
-
-        }
     }
 
     public void OnPointerExit(PointerEventData eventData)

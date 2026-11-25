@@ -11,6 +11,16 @@ public class TooltipUIController : UIControllerBase
     [SerializeField] private Image fullyGrownImage;
     [SerializeField] private Vector2 tooltipOffset = new Vector2(0f, 120f);
 
+    [Header("Backgrounds")]
+    [Tooltip("The tooltip panel's own Image; its sprite changes with what the tooltip describes.")]
+    [SerializeField] private Image background;
+    [SerializeField] private Sprite toolBackground;
+    [SerializeField] private Sprite seedBackground;
+    [SerializeField] private Sprite spellBackground;
+    [Tooltip("Tools have no picture box (UISprites_12C), so their description spans the whole body: this is its x and width then.")]
+    [SerializeField] private float wideDescriptionX = 0f;
+    [SerializeField] private float wideDescriptionWidth = 540f;
+
     [SerializeField] private Canvas rootCanvas;
     private RectTransform canvasRect;
     private RectTransform tooltipRect;
@@ -25,14 +35,24 @@ public class TooltipUIController : UIControllerBase
     private PlayerAbility currentAbilityData;
 
     private SpellSlot currentSpellData;
-    private PlayerAbilitySystem abilitySystem;
+
+    // The description's authored box (left of the picture), restored for seeds and spells.
+    private RectTransform descriptionRect;
+    private Vector2 descriptionPosition;
+    private Vector2 descriptionSize;
 
     protected override void CacheReferences()
     {
+        if (descriptionRect == null && seedDescriptionText != null)
+        {
+            descriptionRect = seedDescriptionText.rectTransform;
+            descriptionPosition = descriptionRect.anchoredPosition;
+            descriptionSize = descriptionRect.sizeDelta;
+        }
         if (rootCanvas == null) rootCanvas = GetComponentInParent<Canvas>(true);
         if (tooltipPanel != null) tooltipRect = tooltipPanel.GetComponent<RectTransform>();
+        if (background == null && tooltipPanel != null) background = tooltipPanel.GetComponent<Image>();
         if (rootCanvas != null) canvasRect = rootCanvas.GetComponent<RectTransform>();
-        abilitySystem = FindObjectOfType<PlayerAbilitySystem>();
     }
 
     protected override void SetupEventListeners()
@@ -108,15 +128,19 @@ public class TooltipUIController : UIControllerBase
     }
 
 
+    // Background and description box go together: tools fill the whole body, seeds and spells leave the picture box free.
+    private void SetBackground(Sprite sprite)
+    {
+        if (background != null && sprite != null) background.sprite = sprite;
+        if (descriptionRect == null) return;
+        bool wide = sprite != null && sprite == toolBackground;
+        descriptionRect.anchoredPosition = wide ? new Vector2(wideDescriptionX, descriptionPosition.y) : descriptionPosition;
+        descriptionRect.sizeDelta = wide ? new Vector2(wideDescriptionWidth, descriptionSize.y) : descriptionSize;
+    }
+
+    // Seed tooltips show whatever tool is active: a seed slot that is greyed out still describes its seed.
     private void OnTooltipRequested(int slotIndex)
     {
-        if (abilitySystem == null ||
-            abilitySystem.CurrentAbility != PlayerAbility.Planting)
-        {
-            ForceHide();
-            return;
-        }
-
         PlantSlot slot = SeedInventory.Instance?.GetPlantSlot(slotIndex);
 
         if (slot == null || slot.seedCount <= 0 || slot.data == null)
@@ -218,6 +242,7 @@ public class TooltipUIController : UIControllerBase
             return;
         }
 
+        SetBackground(toolBackground);
         tooltipPanel.SetActive(true);
         isTooltipVisible = true;
 
@@ -240,12 +265,6 @@ public class TooltipUIController : UIControllerBase
 
     public void ShowSlotTooltip(int slotIndex)
     {
-        if (abilitySystem == null || abilitySystem.CurrentAbility != PlayerAbility.Planting)
-        {
-            HideTooltip();
-            return;
-        }
-
         if (!ValidateTooltipComponents())
             return;
 
@@ -274,6 +293,7 @@ public class TooltipUIController : UIControllerBase
 
     private void ShowTooltipWithData(PlantDataSO data)
     {
+        SetBackground(seedBackground);
         tooltipPanel.SetActive(true);
         isTooltipVisible = true;
 
@@ -424,12 +444,14 @@ public class TooltipUIController : UIControllerBase
     private void ShowSpellTooltip(SpellSlot spell)
     {
         if (!ValidateTooltipComponents()) return;
-        if (spell == null || !spell.isUnlocked)
+        // Locked or unusable spells still describe themselves.
+        if (spell == null)
         {
             HideTooltip();
             return;
         }
 
+        SetBackground(spellBackground);
         tooltipPanel.SetActive(true);
         isTooltipVisible = true;
 
@@ -441,6 +463,7 @@ public class TooltipUIController : UIControllerBase
             if (spell.spellIcon != null)
             {
                 fullyGrownImage.sprite = spell.spellIcon;
+                fullyGrownImage.preserveAspect = true;
                 fullyGrownImage.gameObject.SetActive(true);
             }
             else

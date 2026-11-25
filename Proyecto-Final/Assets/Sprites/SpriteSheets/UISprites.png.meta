@@ -2808,6 +2808,48 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: UISprites_12B
+      rect:
+        serializedVersion: 2
+        x: 369
+        y: 256
+        width: 110
+        height: 47
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e843d8d628fef154aa627cea3ea0d5af
+      internalID: 1298461472
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UISprites_12C
+      rect:
+        serializedVersion: 2
+        x: 497
+        y: 448
+        width: 110
+        height: 47
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f92477c484fb9ea4e8847777b935121b
+      internalID: 486738410
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -2940,6 +2982,8 @@ TextureImporter:
       UISprites_10: 1626346817
       UISprites_11: -322483286
       UISprites_12: 1118135965
+      UISprites_12B: 1298461472
+      UISprites_12C: 486738410
       UISprites_13: -1371413568
       UISprites_14: -1732533042
       UISprites_15: -2082857234
@@ -2966,8 +3010,6 @@ TextureImporter:
       UISprites_34: -1645696394
       UISprites_35: 408355289
       UISprites_36: 824615246
-      UISprites_37: 1298461472
-      UISprites_38: 486738410
       UISprites_4: -281481597
       UISprites_5: -15138589
       UISprites_6: -407597832
