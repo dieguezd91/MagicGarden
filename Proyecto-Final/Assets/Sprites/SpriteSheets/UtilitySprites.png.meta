@@ -202,10 +202,10 @@ TextureImporter:
       name: GlowdustResource
       rect:
         serializedVersion: 2
-        x: 2
-        y: 210
-        width: 11
-        height: 7
+        x: 0
+        y: 208
+        width: 15
+        height: 14
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -265,10 +265,10 @@ TextureImporter:
       name: BoneResource
       rect:
         serializedVersion: 2
-        x: 17
-        y: 210
-        width: 14
-        height: 13
+        x: 16
+        y: 207
+        width: 15
+        height: 16
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -350,9 +350,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 32
-        y: 209
-        width: 13
-        height: 14
+        y: 207
+        width: 16
+        height: 17
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -412,10 +412,10 @@ TextureImporter:
       name: WindwalkerEssence
       rect:
         serializedVersion: 2
-        x: 82
-        y: 209
-        width: 11
-        height: 14
+        x: 81
+        y: 208
+        width: 14
+        height: 16
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -434,9 +434,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 97
-        y: 209
+        y: 208
         width: 14
-        height: 14
+        height: 16
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -455,9 +455,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 113
-        y: 210
-        width: 13
-        height: 13
+        y: 209
+        width: 15
+        height: 14
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -2097,7 +2097,7 @@ TextureImporter:
         width: 16
         height: 34
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -2105,6 +2105,111 @@ TextureImporter:
       bones: []
       spriteID: b4f2bf4666d63dd47a477807cba0b550
       internalID: -1854059368
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UtilitySprites_16
+      rect:
+        serializedVersion: 2
+        x: 178
+        y: 209
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ca957faab0cfede4fb41d5f3a602b512
+      internalID: 352729201
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UtilitySprites_17
+      rect:
+        serializedVersion: 2
+        x: 194
+        y: 210
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f81833278dc01fd4d908bb0229d14d22
+      internalID: -1420378273
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UtilitySprites_27
+      rect:
+        serializedVersion: 2
+        x: 209
+        y: 208
+        width: 14
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 964edf4ab6441524ba9368f52bb1ec4c
+      internalID: 168219291
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UtilitySprites_28
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 209
+        width: 16
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2f61cb076f9994d4cbdc12e00c67cd88
+      internalID: -120757584
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UtilitySprites_29
+      rect:
+        serializedVersion: 2
+        x: 242
+        y: 209
+        width: 13
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 35e440048691b6844973b97f6584298a
+      internalID: 277280077
       vertices: []
       indices: 
       edges: []
@@ -2213,6 +2318,9 @@ TextureImporter:
       UtilitySprites_24: -1692575495
       UtilitySprites_25: -90073644
       UtilitySprites_26: 1113642663
+      UtilitySprites_27: 168219291
+      UtilitySprites_28: -120757584
+      UtilitySprites_29: 277280077
       UtilitySprites_3: -594268589
       UtilitySprites_4: -1197579337
       UtilitySprites_5: 1868219237
