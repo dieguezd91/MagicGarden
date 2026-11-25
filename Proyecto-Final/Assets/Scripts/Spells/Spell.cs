@@ -21,7 +21,8 @@ public abstract class Spell : MonoBehaviour
     public bool HasCastSound => castSound != null && castSound.clips != null && castSound.clips.Length > 0;
 
     // No cooldown check: this is called on the prefab asset, whose cooldown timer would survive editor play sessions.
-    public void PlayCastSound(Transform at) => SoundManager.Instance?.PlayClip(castSound, SoundSourceType.Localized, at);
+    // Casting comes from the player: centred (2D). Impacts below stay positioned where they land.
+    public void PlayCastSound(Transform at) => SoundManager.Instance?.PlayClip(castSound, SoundSourceType.Global, at);
 
     protected void PlayImpactSound()
     {

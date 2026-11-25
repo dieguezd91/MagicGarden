@@ -138,7 +138,7 @@ public class FireSpell : Spell
             playerSpellController.SetFireSpellActive(false);
 
         StopFlameLoop();
-        SoundManager.Instance?.PlayClip(flameEndSound, SoundSourceType.Localized, transform);
+        SoundManager.Instance?.PlayClip(flameEndSound, SoundSourceType.Global, transform);
         StartCooldown();
         Destroy(gameObject);
     }

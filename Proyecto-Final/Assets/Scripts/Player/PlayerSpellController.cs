@@ -158,7 +158,7 @@ public class PlayerSpellController : MonoBehaviour
             descriptor.Id, descriptor.Capability, descriptor.Bases.ContainsKey(MagicGarden.Stat.Quantity));
 
         if (prefabSpell.HasCastSound) prefabSpell.PlayCastSound(transform);
-        else SoundManager.Instance.Play("ShootSpell", SoundSourceType.Localized, transform);
+        else SoundManager.Instance.Play("ShootSpell", SoundSourceType.Global, transform);
         if (playerMovementController != null) playerMovementController.ApplyAttackMovementPenalty();
 
         FireSpell fireSpell = spellComponent as FireSpell;

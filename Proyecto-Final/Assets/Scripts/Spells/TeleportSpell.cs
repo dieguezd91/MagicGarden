@@ -55,7 +55,7 @@ public class TeleportSpell : Spell
 
     private void ExecuteTeleport(Vector3 startPos, Vector3 endPos)
     {
-        ShowTeleportEffect(startPos, teleportStartEffectPrefab);
+        Transform departure = ShowTeleportEffect(startPos, teleportStartEffectPrefab);
 
         if (playerTransform != null)
         {
@@ -66,7 +66,9 @@ public class TeleportSpell : Spell
 
         if (SoundManager.Instance != null)
         {
-            SoundManager.Instance.Play("PlayerTeleport", SoundSourceType.Global, playerTransform);
+            // Positioned where the player left from (the camera follows the player, so the arrival would be centred anyway).
+            if (departure != null) SoundManager.Instance.Play("PlayerTeleport", SoundSourceType.Localized, departure);
+            else SoundManager.Instance.Play("PlayerTeleport", SoundSourceType.Global, playerTransform);
         }
 
         if (Time.timeScale > 0f && CameraShaker.Instance != null)
@@ -75,12 +77,13 @@ public class TeleportSpell : Spell
         }
     }
 
-    private void ShowTeleportEffect(Vector3 position, GameObject effectPrefab)
+    private Transform ShowTeleportEffect(Vector3 position, GameObject effectPrefab)
     {
-        if (effectPrefab == null) return;
+        if (effectPrefab == null) return null;
 
         GameObject effect = Instantiate(effectPrefab, position, Quaternion.identity);
         Destroy(effect, effectDuration);
+        return effect.transform;
     }
 
     public bool CanTeleportTo(Vector2 direction, Vector3 startPosition)

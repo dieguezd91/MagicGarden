@@ -349,7 +349,7 @@ public class PlayerMovementController : MonoBehaviour
 
             SoundManager.Instance.Play(
                 soundName,
-                SoundSourceType.Localized,
+                SoundSourceType.Global,
                 transform
             );
 
