@@ -144,6 +144,7 @@ public class NightToDayTransitionController : MonoBehaviour
             blackScreen.gameObject.SetActive(true);
             blackScreen.raycastTarget = true;
 
+            musicCoroutine = StartCoroutine(StartDayMusicAtMidpoint(fadeInDuration + blackScreenDuration * 0.5f));
             yield return FadeScreen(1f, fadeInDuration);
         }
 
@@ -197,11 +198,25 @@ public class NightToDayTransitionController : MonoBehaviour
 
     private void OnDisable() => CancelTransition();
 
+    private Coroutine musicCoroutine;
+
+    private IEnumerator StartDayMusicAtMidpoint(float secondsToMidpoint)
+    {
+        var music = MusicManager.Instance;
+        if (music == null) yield break;
+        yield return new WaitForSecondsRealtime(Mathf.Max(0f, secondsToMidpoint - music.CrossfadeSeconds * 0.5f));
+        musicCoroutine = null;
+        if (MusicManager.Instance != null) MusicManager.Instance.BeginDayTransition();
+    }
+
     private void CancelTransition()
     {
         if (!isTransitioning && transitionCoroutine == null) return;
         if (transitionCoroutine != null) StopCoroutine(transitionCoroutine);
         transitionCoroutine = null;
+        if (musicCoroutine != null) StopCoroutine(musicCoroutine);
+        musicCoroutine = null;
+        if (MusicManager.Instance != null) MusicManager.Instance.CancelEarlyTransition();
         presentationCommitted = false;
         isTransitioning = false;
         SetAlpha(0f);

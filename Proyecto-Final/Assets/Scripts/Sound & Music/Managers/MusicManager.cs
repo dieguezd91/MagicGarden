@@ -3,9 +3,6 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 
-// Plays one intro + loop pair per game state. The loop is scheduled on the audio clock to start on the
-// exact sample the intro ends, so the join is gapless. Changing state fades the new music in while every
-// track that is still audible keeps fading out from wherever it was, so a quick second change never cuts one off.
 public class MusicManager : MonoBehaviour
 {
     [System.Serializable]
@@ -26,7 +23,7 @@ public class MusicManager : MonoBehaviour
     [SerializeField] private MusicTrack[] bossMusic;
     [SerializeField] private MusicTrack[] sniperBossMusic;
 
-    [SerializeField] private AudioSource audioSource; // template for routing (mixer group)
+    [SerializeField] private AudioSource audioSource;
     [Tooltip("Mixer group for the main music (child of Music). Falls back to the template's group.")]
     [SerializeField] private AudioMixerGroup mainGroup;
     [Tooltip("Mixer group for the night layer (child of Music), so it can get its own effects.")]
@@ -34,15 +31,8 @@ public class MusicManager : MonoBehaviour
     [SerializeField] private float musicVolume = 0.4f;
     [SerializeField] private float crossfadeSeconds = 2.5f;
 
-    // A loop that plays with the night and boss music, locked to its beat. It starts together with the music,
-    // positioned so its bar lines fall on the music's, and fades in on its own (longer) time. Only the loop
-    // of each entry is used; any intro assigned there is ignored.
     [Header("Night layer (with night and boss music, beat-locked)")]
     [SerializeField] private MusicTrack[] nightLayers;
-    // Night balance: the layer carries the groove and sits above the main music, which becomes the bed that
-    // keeps the game's character. The layer's energy is in the kick/sub, so at equal settings it sounds ~3 dB
-    // quieter (-18.5 LUFS through the Layer group's filters vs ~-15.5 for the night tracks). Defaults below put
-    // the layer ~5 dB over the main, and the night overall ~0.7 dB louder than day music (-15.0 vs -15.7 LUFS).
     [Tooltip("Main music volume during night and boss states (day and menu always use 1).")]
     [SerializeField, Range(0f, 1f)] private float nightMainVolume = 0.52f;
     [Tooltip("Layer volume relative to the music volume. Above 1 makes it louder than the main track's base level.")]
@@ -52,8 +42,10 @@ public class MusicManager : MonoBehaviour
     [Tooltip("Tempo of the night music and the layer. Used to keep the layer on the night music's bar lines.")]
     [SerializeField] private float nightBpm = 104f;
 
-    // Sweeps the low-pass filters on Music/Main, Music/Layer and Effects/Game down while the game is paused
-    // or over, and back up after. Effects/UI (menu sounds) is left alone. Uses the exposed mixer parameters below.
+    [Header("Scene changes (menu and game)")]
+    [Tooltip("Seconds the next scene's music takes to fade in. It starts just before the old music finishes fading out.")]
+    [SerializeField, Min(0f)] private float sceneMusicFadeInSeconds = 1.5f;
+
     [Header("Muffle on pause and game over")]
     [SerializeField] private float muffledCutoff = 700f;
     [SerializeField] private float muffleSeconds = 0.35f;
@@ -65,15 +57,14 @@ public class MusicManager : MonoBehaviour
     {
         public AudioSource intro;
         public AudioSource loop;
-        public float gain;   // 0..1 position in the fade, not the volume itself
-        public float target; // 1 = fading in / playing, 0 = fading out
+        public float gain;
+        public float target;
         public float volumeScale = 1f;
-        public float fadeInSeconds = -1f; // < 0: use the normal crossfade time
+        public float fadeInSeconds = -1f;
+        public float fadeOutSeconds = -1f;
         public bool Playing => intro.clip != null || loop.clip != null;
         public void SetVolume(float v) { intro.volume = v; loop.volume = v; }
 
-        // Layer decks only: when the followed music loop wraps next, how long that loop is, and the
-        // audio-clock time at which the layer loop's sample 0 played (or would have).
         public double nextWrap;
         public double followPeriod;
         public double layerAnchor;
@@ -88,6 +79,7 @@ public class MusicManager : MonoBehaviour
             target = 0f;
             volumeScale = 1f;
             fadeInSeconds = -1f;
+            fadeOutSeconds = -1f;
             followPeriod = 0d;
             SetVolume(0f);
         }
@@ -102,11 +94,11 @@ public class MusicManager : MonoBehaviour
     private MusicState upcomingBossState = MusicState.None;
     private bool gameOverLatch;
     private Deck currentLayer;
-    private MusicTrack layerTrack; // kept for the whole night so night -> boss does not swap the layer
+    private MusicTrack layerTrack;
     private AudioMixer mixer;
     private PauseController pause;
-    private float muffle;        // 0 = open, 1 = fully muffled
-    private bool muffleApplied;  // while true the cutoffs are overridden; otherwise the mixer snapshot owns them
+    private float muffle;
+    private bool muffleApplied;
 
     private void Awake()
     {
@@ -128,7 +120,6 @@ public class MusicManager : MonoBehaviour
 
         mixer = mainGroup != null ? mainGroup.audioMixer
               : audioSource.outputAudioMixerGroup != null ? audioSource.outputAudioMixerGroup.audioMixer : null;
-        // The open (unmuffled) cutoffs are whatever the mixer snapshot is set to, so tweaks there still apply.
         if (mixer != null)
         {
             for (int i = 0; i < MuffleParams.Length; i++)
@@ -157,6 +148,7 @@ public class MusicManager : MonoBehaviour
     {
         bossNight = null;
         gameOverLatch = false;
+        earlyState = MusicState.None;
         pause = FindFirstObjectByType<PauseController>();
         ResetNightTracking();
         UpdateMusic();
@@ -175,17 +167,14 @@ public class MusicManager : MonoBehaviour
         if (mixer == null)
             return;
 
-        // gameOverLatch keeps it muffled through the game-over exit, which resumes just before loading.
         bool muffled = gameOverLatch || (pause != null && pause.IsPaused);
         float target = muffled ? 1f : 0f;
         if (!muffleApplied && target <= 0f)
             return;
 
-        // unscaled: pause and game over set timeScale to 0
         muffle = Mathf.MoveTowards(muffle, target, muffleSeconds > 0f ? Time.unscaledDeltaTime / muffleSeconds : 1f);
         if (muffle <= 0f)
         {
-            // Hand the cutoffs back to the mixer snapshot.
             foreach (string param in MuffleParams)
                 mixer.ClearFloat(param);
             muffleApplied = false;
@@ -198,7 +187,6 @@ public class MusicManager : MonoBehaviour
         muffleApplied = true;
     }
 
-    // Interpolates frequencies on a log scale so the sweep sounds even from top to bottom.
     private static float LogLerp(float a, float b, float t)
     {
         return Mathf.Exp(Mathf.Lerp(Mathf.Log(a), Mathf.Log(b), t));
@@ -207,8 +195,60 @@ public class MusicManager : MonoBehaviour
     private void UpdateMusic()
     {
         MusicState next = DesiredState();
+        if (earlyState != MusicState.None)
+        {
+            if (earlyUntilDay && GameFlowController.Instance != null &&
+                GameFlowController.Instance.WorldPhase == GamePhase.Day)
+                earlyState = MusicState.None;
+            else
+                next = earlyState;
+        }
         if (next != MusicState.None && next != state)
             Play(next);
+    }
+
+    private MusicState earlyState = MusicState.None;
+    private bool earlyUntilDay;
+
+    public float CrossfadeSeconds => crossfadeSeconds;
+
+    public void BeginDayTransition()
+    {
+        earlyState = MusicState.Day;
+        earlyUntilDay = true;
+    }
+
+    public void FadeOutForSceneChange(float seconds)
+    {
+        earlyState = MusicState.Silence;
+        earlyUntilDay = false;
+        state = MusicState.Silence;
+        current = null;
+        currentLayer = null;
+        layerTrack = null;
+        foreach (Deck deck in decks)
+        {
+            if (!deck.Playing) continue;
+            deck.target = 0f;
+            deck.fadeOutSeconds = Mathf.Max(0f, seconds);
+        }
+    }
+
+    public void StartSceneMusic(string sceneName)
+    {
+        MusicState target = IsMenuScene(sceneName) ? MusicState.Menu
+                          : IsGameplayScene(sceneName) ? MusicState.Day
+                          : MusicState.None;
+        if (target == MusicState.None) return;
+        earlyState = target;
+        earlyUntilDay = false;
+        Play(target);
+        if (current != null) current.fadeInSeconds = sceneMusicFadeInSeconds;
+    }
+
+    public void CancelEarlyTransition()
+    {
+        earlyState = MusicState.None;
     }
 
     private MusicState DesiredState()
@@ -221,17 +261,12 @@ public class MusicManager : MonoBehaviour
         if (!IsGameplayScene(sceneName))
             return MusicState.None;
 
-        // Losing or reaching the end keeps the music that was playing (night layer included) until the scene
-        // changes; the next scene then crossfades it out. Both game-over exits set the phase back to Day just
-        // before they load a scene, so the latch must also ignore that, or day music would cut in for a moment.
         if (gameOverLatch)
             return MusicState.None;
 
         if (GameFlowController.Instance == null)
             return MusicState.None;
 
-        // WorldPhase, not CurrentPhase: the level-up popup reports "LevelUp" while the night goes on underneath.
-        // Reading that as "the night ended" forgot the boss was already dead and started the next boss's music.
         GamePhase phase = GameFlowController.Instance.WorldPhase;
         if (phase == GamePhase.Day)
             ResetNightTracking();
@@ -244,9 +279,9 @@ public class MusicManager : MonoBehaviour
                 return NightState();
             case GamePhase.GameOver:
                 gameOverLatch = true;
-                return MusicState.None; // keep playing what was on
+                return MusicState.None;
             default:
-                return MusicState.None; // ritual: keep what is playing
+                return MusicState.None;
         }
     }
 
@@ -263,12 +298,9 @@ public class MusicManager : MonoBehaviour
             return StateForBoss(bossNight.CurrentBoss);
         }
 
-        // The boss is gone: let its death and the victory sting ring out instead of restarting the calm night music.
         if (bossSeenThisNight)
             return MusicState.Silence;
 
-        // Boss night, boss still to come: go straight to its music. Starting the calm track first meant two
-        // changes a couple of seconds apart. Decided once per night, so a random boss pick cannot flip it.
         bool bossDay = DayCycleController.Instance != null && bossNight.IsBossNightDay(DayCycleController.Instance.CurrentDay);
         if (!bossDay)
             return MusicState.Night;
@@ -295,14 +327,14 @@ public class MusicManager : MonoBehaviour
     {
         state = next;
 
-        if (current != null) current.target = 0f; // keeps fading out from its present level
+        if (current != null) current.target = 0f;
         current = null;
         if (currentLayer != null) currentLayer.target = 0f;
         currentLayer = null;
 
         bool nightFamily = next == MusicState.Night || next == MusicState.Boss || next == MusicState.SniperBoss;
         if (!nightFamily)
-            layerTrack = null; // next night picks a layer again
+            layerTrack = null;
 
         if (next == MusicState.Silence)
             return;
@@ -310,14 +342,13 @@ public class MusicManager : MonoBehaviour
         MusicTrack track = PickVariation(TracksFor(next));
         if (track == null || track.loop == null)
         {
-            Debug.LogWarning($"[MusicManager] No music assigned for {next}.");
             return;
         }
         lastTrack = track;
 
         current = PrepareDeck(track, nightFamily ? nightMainVolume : 1f, mainGroup);
 
-        double start = AudioSettings.dspTime + 0.1; // small lead so both sources are ready
+        double start = AudioSettings.dspTime + 0.1;
         double musicStart = start;
         if (track.intro != null)
         {
@@ -334,23 +365,23 @@ public class MusicManager : MonoBehaviour
     {
         Deck deck = FreeDeck();
         AudioMixerGroup output = group != null ? group : audioSource.outputAudioMixerGroup;
-        deck.intro.outputAudioMixerGroup = output; // decks are reused for both main music and the layer
+        deck.intro.outputAudioMixerGroup = output;
         deck.loop.outputAudioMixerGroup = output;
         deck.intro.clip = track.intro;
         deck.loop.clip = track.loop;
-        deck.intro.loop = false; // a layer deck may have swapped its sources around
+        deck.intro.loop = false;
         deck.loop.loop = true;
         if (deck.intro.clip != null) deck.intro.timeSamples = 0;
         if (deck.loop.clip != null) deck.loop.timeSamples = 0;
         deck.gain = 0f;
         deck.target = 1f;
         deck.volumeScale = volumeScale;
+        deck.fadeInSeconds = -1f;
+        deck.fadeOutSeconds = -1f;
         deck.SetVolume(0f);
         return deck;
     }
 
-    // Starts the layer loop together with the music. Its sample 0 is lined up with the music loop's start
-    // (the music intro is whole bars ending there), so it begins mid-loop, already on the music's bar grid.
     private void StartLayer(double musicStart, double musicLoopStart, double musicLoopSeconds)
     {
         if (layerTrack == null)
@@ -359,7 +390,7 @@ public class MusicManager : MonoBehaviour
             return;
 
         currentLayer = PrepareDeck(layerTrack, nightLayerVolume, layerGroup);
-        currentLayer.intro.clip = null; // layers play their loop only
+        currentLayer.intro.clip = null;
         currentLayer.fadeInSeconds = nightLayerFadeInSeconds;
 
         AudioClip loop = layerTrack.loop;
@@ -378,9 +409,6 @@ public class MusicManager : MonoBehaviour
         return nightLayers[Random.Range(0, nightLayers.Length)];
     }
 
-    // Some night loops are a few milliseconds off a whole number of bars, so their beat jumps slightly
-    // every time they wrap. Shortly before each wrap, check where the layer will be; if it would land off
-    // the bar line, restart its loop on the nearest bar exactly at the wrap so it follows the jump.
     private void KeepLayerOnGrid()
     {
         Deck layer = currentLayer;
@@ -392,7 +420,7 @@ public class MusicManager : MonoBehaviour
         double wrap = layer.nextWrap;
         layer.nextWrap += layer.followPeriod;
         if (AudioSettings.dspTime > wrap - 0.05)
-            return; // a long hitch carried us past the wrap; scheduling now would land late
+            return;
 
         AudioClip clip = layer.loop.clip;
         double loopSeconds = ClipSeconds(clip);
@@ -400,10 +428,10 @@ public class MusicManager : MonoBehaviour
         double pos = Mod(wrap - layer.layerAnchor, loopSeconds);
         double onBar = System.Math.Round(pos / bar) * bar;
         if (System.Math.Abs(pos - onBar) < 0.003)
-            return; // close enough, let it play on
+            return;
 
         double newPos = Mod(onBar, loopSeconds);
-        AudioSource spare = layer.intro; // unused by layers (or a source the previous re-sync already stopped)
+        AudioSource spare = layer.intro;
         spare.Stop();
         spare.clip = clip;
         spare.loop = true;
@@ -412,7 +440,7 @@ public class MusicManager : MonoBehaviour
         spare.PlayScheduled(wrap);
         layer.loop.SetScheduledEndTime(wrap);
 
-        layer.intro = layer.loop; // the old one stops at the wrap
+        layer.intro = layer.loop;
         layer.loop = spare;
         layer.layerAnchor = wrap - newPos;
     }
@@ -430,7 +458,6 @@ public class MusicManager : MonoBehaviour
 
     private void UpdateFades()
     {
-        // unscaled: pause and level-up set timeScale to 0
         float step = crossfadeSeconds > 0f ? Time.unscaledDeltaTime / crossfadeSeconds : 1f;
         foreach (Deck deck in decks)
         {
@@ -438,13 +465,14 @@ public class MusicManager : MonoBehaviour
             float deckStep = step;
             if (deck.target > deck.gain && deck.fadeInSeconds >= 0f)
                 deckStep = deck.fadeInSeconds > 0f ? Time.unscaledDeltaTime / deck.fadeInSeconds : 1f;
+            else if (deck.target < deck.gain && deck.fadeOutSeconds >= 0f)
+                deckStep = deck.fadeOutSeconds > 0f ? Time.unscaledDeltaTime / deck.fadeOutSeconds : 1f;
             deck.gain = Mathf.MoveTowards(deck.gain, deck.target, deckStep);
             if (deck.gain <= 0f && deck.target <= 0f)
             {
                 deck.Stop();
                 continue;
             }
-            // Sine curve: equal power across the overlap (no dip in the middle) and no sudden start or end.
             deck.SetVolume(musicVolume * deck.volumeScale * Mathf.Sin(deck.gain * Mathf.PI * 0.5f));
         }
     }
@@ -488,7 +516,7 @@ public class MusicManager : MonoBehaviour
         s.loop = loop;
         s.volume = 0f;
         s.spatialBlend = 0f;
-        s.priority = 0; // music must never be culled by the voice limit
+        s.priority = 0;
         return s;
     }
 

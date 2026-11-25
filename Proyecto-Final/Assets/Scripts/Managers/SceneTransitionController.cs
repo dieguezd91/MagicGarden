@@ -37,6 +37,10 @@ public class SceneTransitionController : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float transitionVolume = 0.6f;
     private AudioSource transitionSource;
 
+    [Header("Music")]
+    [Tooltip("Seconds before the screen is fully covered that the next scene's music starts, overlapping the old music's fade-out tail so there is no silent gap.")]
+    [SerializeField, Min(0f)] private float musicOverlapSeconds = 0.3f;
+
     [Header("Quit")]
     [Tooltip("Seconds to fade to black while the leaves cover the screen before the game closes.")]
     [SerializeField] private float quitFadeDuration = 1.2f;
@@ -262,9 +266,45 @@ public class SceneTransitionController : MonoBehaviour
 
     #region Scene Transition Logic
 
+    // The old music fades out while the screen is being covered. The next scene's music starts
+    // musicOverlapSeconds before the cover completes, so the two only overlap briefly and there is no silent gap.
+    private void FadeOutMusicWhileCovering(string nextSceneName)
+    {
+        if (MusicManager.Instance == null) return;
+        float cover = CoverSeconds();
+        MusicManager.Instance.FadeOutForSceneChange(cover);
+        StartCoroutine(StartNextSceneMusic(nextSceneName, Mathf.Max(0f, cover - musicOverlapSeconds)));
+    }
+
+    private IEnumerator StartNextSceneMusic(string sceneName, float delay)
+    {
+        if (delay > 0f) yield return new WaitForSecondsRealtime(delay);
+        if (MusicManager.Instance != null) MusicManager.Instance.StartSceneMusic(sceneName);
+    }
+
+    private static string SceneNameForIndex(int index)
+    {
+        string path = SceneUtility.GetScenePathByBuildIndex(index);
+        return string.IsNullOrEmpty(path) ? string.Empty : System.IO.Path.GetFileNameWithoutExtension(path);
+    }
+
+    private float CoverSeconds()
+    {
+        if (transitionType == TransitionType.Simple) return fadeDuration;
+        if (waitForAnimationEnd && transitionAnimator != null && transitionAnimator.runtimeAnimatorController != null)
+        {
+            float longest = 0f;
+            foreach (var clip in transitionAnimator.runtimeAnimatorController.animationClips)
+                if (clip != null) longest = Mathf.Max(longest, clip.length);
+            if (longest > 0f) return longest;
+        }
+        return animationDuration;
+    }
+
     private IEnumerator TransitionToScene(string sceneName, Action onSceneLoaded = null)
     {
         isTransitioning = true;
+        FadeOutMusicWhileCovering(sceneName);
         float startTime = Time.realtimeSinceStartup;
 
         yield return StartCoroutine(FadeOut());
@@ -302,6 +342,7 @@ public class SceneTransitionController : MonoBehaviour
     private IEnumerator TransitionToScene(int sceneIndex, Action onSceneLoaded = null)
     {
         isTransitioning = true;
+        FadeOutMusicWhileCovering(SceneNameForIndex(sceneIndex));
         float startTime = Time.realtimeSinceStartup;
 
         yield return StartCoroutine(FadeOut());
