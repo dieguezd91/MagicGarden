@@ -272,7 +272,7 @@ public class SceneTransitionController : MonoBehaviour
     {
         if (MusicManager.Instance == null) return;
         float cover = CoverSeconds();
-        MusicManager.Instance.FadeOutForSceneChange(cover);
+        MusicManager.Instance.FadeOutCurrentMusic(cover);
         StartCoroutine(StartNextSceneMusic(nextSceneName, Mathf.Max(0f, cover - musicOverlapSeconds)));
     }
 

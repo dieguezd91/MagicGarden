@@ -42,8 +42,8 @@ public class MusicManager : MonoBehaviour
     [Tooltip("Tempo of the night music and the layer. Used to keep the layer on the night music's bar lines.")]
     [SerializeField] private float nightBpm = 104f;
 
-    [Header("Scene changes (menu and game)")]
-    [Tooltip("Seconds the next scene's music takes to fade in. It starts just before the old music finishes fading out.")]
+    [Header("Scene changes and night to day")]
+    [Tooltip("Seconds the next music takes to fade in (new scene, or day after night). It starts just before the old music finishes fading out.")]
     [SerializeField, Min(0f)] private float sceneMusicFadeInSeconds = 1.5f;
 
     [Header("Muffle on pause and game over")]
@@ -216,9 +216,12 @@ public class MusicManager : MonoBehaviour
     {
         earlyState = MusicState.Day;
         earlyUntilDay = true;
+        if (state == MusicState.Day) return;
+        Play(MusicState.Day);
+        if (current != null) current.fadeInSeconds = sceneMusicFadeInSeconds;
     }
 
-    public void FadeOutForSceneChange(float seconds)
+    public void FadeOutCurrentMusic(float seconds)
     {
         earlyState = MusicState.Silence;
         earlyUntilDay = false;

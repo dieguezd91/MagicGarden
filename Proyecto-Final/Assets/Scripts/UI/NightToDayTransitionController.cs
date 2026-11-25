@@ -20,6 +20,10 @@ public class NightToDayTransitionController : MonoBehaviour
     [SerializeField] private float fadeInDuration = 1.5f;
     [SerializeField] private float blackScreenDuration = 1f;
     [SerializeField] private float fadeOutDuration = 0.8f;
+
+    [Header("Music")]
+    [Tooltip("Seconds before the screen is fully black (when the night music goes silent) that the day music starts, so there is no silent gap.")]
+    [SerializeField, Min(0f)] private float dayMusicOverlapSeconds = 0.3f;
     [Tooltip("Seconds after fade-out reserved for visible waking before movement and the house-door opening are released.")]
     [SerializeField, Min(0f)] private float wakeHoldDuration = 2.2f;
 
@@ -144,7 +148,7 @@ public class NightToDayTransitionController : MonoBehaviour
             blackScreen.gameObject.SetActive(true);
             blackScreen.raycastTarget = true;
 
-            musicCoroutine = StartCoroutine(StartDayMusicAtMidpoint(fadeInDuration + blackScreenDuration * 0.5f));
+            musicCoroutine = StartCoroutine(SwitchToDayMusic());
             yield return FadeScreen(1f, fadeInDuration);
         }
 
@@ -200,11 +204,13 @@ public class NightToDayTransitionController : MonoBehaviour
 
     private Coroutine musicCoroutine;
 
-    private IEnumerator StartDayMusicAtMidpoint(float secondsToMidpoint)
+    // The night music fades out together with the screen and is silent exactly when it is fully black.
+    // The day music starts dayMusicOverlapSeconds before that, so they only overlap briefly and there is no gap.
+    private IEnumerator SwitchToDayMusic()
     {
-        var music = MusicManager.Instance;
-        if (music == null) yield break;
-        yield return new WaitForSecondsRealtime(Mathf.Max(0f, secondsToMidpoint - music.CrossfadeSeconds * 0.5f));
+        if (MusicManager.Instance == null) yield break;
+        MusicManager.Instance.FadeOutCurrentMusic(fadeInDuration);
+        yield return new WaitForSecondsRealtime(Mathf.Max(0f, fadeInDuration - dayMusicOverlapSeconds));
         musicCoroutine = null;
         if (MusicManager.Instance != null) MusicManager.Instance.BeginDayTransition();
     }
