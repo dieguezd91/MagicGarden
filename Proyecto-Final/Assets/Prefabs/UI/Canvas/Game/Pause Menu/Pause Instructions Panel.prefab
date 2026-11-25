@@ -66,7 +66,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "BASIC CONTROLS\n\nMOVEMENT: WASD or arrow keys\r.\nINTERACTION: Left click\r.\nCHANGE
-    PLANT: Keys 1-5\r.\nCANCEL ACTION: ESC\r.\n\nGAME CYCLE\r\n\nDAY: Grow and harvest
+    PLANT OR SPELL: Keys 1-3\r.\nCANCEL ACTION: ESC\r.\n\nGAME CYCLE\r\n\nDAY: Grow and harvest
     plants.\r\nNIGHT: Defend your house from enemies\r.\n\nABILITIES\r\n\nDIG: Create
     plots for planting\r.\nPLANT: Place seeds in plots\r.\nHARVEST: Collect mature
     plants\r.\n\nABILITY SELECTION\r\n\nUse the interface buttons to switch between:\r\nDig
