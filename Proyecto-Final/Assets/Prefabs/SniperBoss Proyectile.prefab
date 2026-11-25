@@ -10127,6 +10127,7 @@ MonoBehaviour:
     loop: 0
     randomizeClip: 1
     cooldownTime: 0
+  impactParticlesPrefab: {fileID: 491567316690014037, guid: ee269b145022c494b8a6424f16134fdc, type: 3}
 --- !u!114 &1173499983766142987
 MonoBehaviour:
   m_ObjectHideFlags: 0

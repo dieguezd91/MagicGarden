@@ -26,6 +26,15 @@ public class HouseLifeController : MonoBehaviour
     private float lastParticleTime = -1f;
     public float minParticleInterval = 0.1f;
 
+    [Header("CAMERA SHAKE")]
+    [Tooltip("Camera shake strength when the house takes damage. 0 disables the camera shake.")]
+    [SerializeField] private float cameraShakeIntensity = 0.15f;
+    [Tooltip("Camera shake duration in seconds when the house takes damage. 0 disables the camera shake.")]
+    [SerializeField] private float cameraShakeDuration = 0.15f;
+    [Tooltip("Minimum seconds between two camera shakes, so a swarm hitting the house does not shake the camera constantly.")]
+    [SerializeField] private float cameraShakeMinInterval = 0.4f;
+    private float lastCameraShakeTime = float.NegativeInfinity;
+
     private bool isDestroyed = false;
 
     void Awake()
@@ -59,6 +68,7 @@ public class HouseLifeController : MonoBehaviour
                 hitSound.SetLastPlayTime();
             }
             PlayDamageParticles();
+            ShakeCamera();
         }
 
         UpdateAnimator();
@@ -95,6 +105,15 @@ public class HouseLifeController : MonoBehaviour
     {
         isDestroyed = true;
         onHouseDestroyed?.Invoke();
+    }
+
+    private void ShakeCamera()
+    {
+        if (cameraShakeIntensity <= 0f || cameraShakeDuration <= 0f || CameraShaker.Instance == null) return;
+        if (Time.unscaledTime - lastCameraShakeTime < cameraShakeMinInterval) return;
+
+        lastCameraShakeTime = Time.unscaledTime;
+        CameraShaker.Instance.Shake(cameraShakeIntensity, cameraShakeDuration);
     }
 
     public void PlayDamageParticles()

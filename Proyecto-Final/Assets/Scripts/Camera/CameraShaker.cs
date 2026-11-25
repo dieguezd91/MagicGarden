@@ -7,6 +7,11 @@ public class CameraShaker : MonoBehaviour
 
     [SerializeField] private CameraOffsetController cameraOffsetController;
     [SerializeField] private AnimationCurve shakeCurve = AnimationCurve.EaseInOut(0, 1, 1, 0);
+    [Tooltip("When on, a new shake only replaces the running one if it is at least as strong as the running shake right now. Off = the last call always wins (previous behavior).")]
+    [SerializeField] private bool strongestShakeWins = true;
+
+    // Intensity applied this frame; 0 when no shake is running.
+    private float currentIntensity;
 
     void Awake()
     {
@@ -22,6 +27,7 @@ public class CameraShaker : MonoBehaviour
 
     public void Shake(float intensity, float duration)
     {
+        if (strongestShakeWins && intensity < currentIntensity) return;
         StopAllCoroutines();
         StartCoroutine(ShakeRoutine(intensity, duration));
     }
@@ -39,7 +45,7 @@ public class CameraShaker : MonoBehaviour
             }
 
             float normalizedTime = elapsed / duration;
-            float currentIntensity = intensity * shakeCurve.Evaluate(normalizedTime);
+            currentIntensity = intensity * shakeCurve.Evaluate(normalizedTime);
 
             Vector3 offset = (Vector3)Random.insideUnitCircle * currentIntensity;
             cameraOffsetController?.SetOffset(offset);
@@ -48,7 +54,13 @@ public class CameraShaker : MonoBehaviour
             yield return null;
         }
 
+        currentIntensity = 0f;
         cameraOffsetController?.ResetOffset();
+    }
+
+    private void OnDisable()
+    {
+        currentIntensity = 0f;
     }
 
 }

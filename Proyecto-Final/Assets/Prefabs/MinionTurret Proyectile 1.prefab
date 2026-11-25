@@ -5277,6 +5277,7 @@ MonoBehaviour:
     loop: 0
     randomizeClip: 1
     cooldownTime: 0.0
+  impactParticlesPrefab: {fileID: 491567316690014037, guid: b4718f9f977adb740a54a6ea904ae4f7, type: 3}
 --- !u!1 &8701345492937397947
 GameObject:
   m_ObjectHideFlags: 0

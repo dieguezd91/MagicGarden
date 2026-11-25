@@ -42,8 +42,10 @@ public class LifeController : MonoBehaviour
     public Color flashColor = new Color(1f, 0f, 0f, 0.5f);
 
     [Header("HIT PUNCH")]
-    [Tooltip("Enemies pop in size when they take damage. Untick to disable.")]
+    [Tooltip("Enemies (and plants, see Punch Plants) pop in size when they take damage. Untick to disable.")]
     public bool punchOnDamage = true;
+    [Tooltip("Plants also pop in size when they take damage, using the same punch settings. Untick to keep plants still.")]
+    public bool punchPlants = true;
     [Tooltip("Scale added by the punch (0.15 = +15%). 0 disables it.")]
     public float punchScale = 0.15f;
     [Tooltip("Punch duration in seconds.")]
@@ -174,7 +176,7 @@ public class LifeController : MonoBehaviour
                 StartCoroutine(FlashRoutine());
             }
 
-            if (isEnemy) TryPunch();
+            if (isEnemy || (punchPlants && isPlant)) TryPunch(); // the player never punches
         }
 
         onHealthChanged?.Invoke(currentHealth, maxHealth);

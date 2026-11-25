@@ -17,6 +17,8 @@ public class Infernum : EnemyBase
     private float nextTimeToFire = 0f;
     private Vector3 firingPointOffset;
 
+    // FireRate (RangedEnemyDataSO) is the number of seconds between two shots, like the other cooldowns in the enemy data.
+    // The first shot is allowed right away (nextTimeToFire starts at 0).
     public bool CanShootNow => Time.time >= nextTimeToFire;
 
     protected override void Awake()
@@ -49,7 +51,7 @@ public class Infernum : EnemyBase
         if (currentTarget == null) return;
 
         Shoot();
-        nextTimeToFire = Time.time + fireRate / fireRate;
+        nextTimeToFire = Time.time + Mathf.Max(0f, fireRate);
     }
 
     // It only turned while walking, so when it stopped to shoot it could face away from its target.

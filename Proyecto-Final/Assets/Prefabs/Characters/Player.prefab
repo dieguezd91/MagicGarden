@@ -15541,6 +15541,7 @@ GameObject:
   - component: {fileID: 8364719283748192837}
   - component: {fileID: 9215038472910485721}
   - component: {fileID: 9215038472910485722}
+  - component: {fileID: 5817203946115528391}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -21560,3 +21561,22 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &5817203946115528391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6429872126492704177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d606df6f4f642c79d34e337a5dc9e862, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  minDamage: 0.1
+  reactToDamageOverTime: 0
+  enableHitStop: 1
+  hitStopDuration: 0.06
+  enableCameraShake: 1
+  shakeIntensity: 0.25
+  shakeDuration: 0.2

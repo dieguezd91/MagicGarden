@@ -25,6 +25,6 @@ MonoBehaviour:
   manaDropChance: 0.5
   experienceReward: 25
   shootingRange: 6
-  fireRate: 0.5
+  fireRate: 1
   bulletForce: 5
   aimYOffset: 0.5

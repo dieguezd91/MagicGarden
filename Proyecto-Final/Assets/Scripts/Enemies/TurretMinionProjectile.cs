@@ -13,6 +13,25 @@ public class TurretMinionProjectile : MonoBehaviour
         // Positioned where it lands; the projectile is destroyed right after.
         SoundManager.Instance?.PlayClip(impactSound, SoundSourceType.Localized, transform);
     }
+    [Header("Impact Effects")]
+    [Tooltip("Optional particles spawned where the projectile hits. Empty = no particles.")]
+    [SerializeField] private GameObject impactParticlesPrefab;
+
+    private void SpawnImpactParticles()
+    {
+        if (impactParticlesPrefab == null) return;
+
+        var particles = Instantiate(impactParticlesPrefab, transform.position, Quaternion.identity);
+        float lifetime = 1f;
+        foreach (var system in particles.GetComponentsInChildren<ParticleSystem>())
+        {
+            if (!system.isPlaying) system.Play(); // prefabs without Play On Awake still show
+            var main = system.main;
+            lifetime = Mathf.Max(lifetime, main.duration + main.startLifetime.constantMax);
+        }
+        Destroy(particles, lifetime + 0.2f);
+    }
+
     private Rigidbody2D rb;
 
     private Transform owner;
@@ -93,6 +112,7 @@ public class TurretMinionProjectile : MonoBehaviour
 
         hasHit = true;
         PlayImpactSound();
+        SpawnImpactParticles();
 
         if (life != null && life.IsAlive())
         {

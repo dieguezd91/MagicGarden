@@ -11,6 +11,8 @@ public class FeedbackUIController : UIControllerBase
     [SerializeField] private GameObject damagedScreen;
     [SerializeField] private float damageFadeSpeed = 2f;
     [SerializeField] private float damageFadeOutDelay = 1f;
+    [SerializeField, Tooltip("Show the floating damage numbers over the player when it takes damage. Off by default: the damage screen already signals the hit.")]
+    private bool showPlayerDamageNumbers = false;
 
     [Header("Post-Process Effects")]
     [SerializeField] private Volume bloomVolume;
@@ -112,7 +114,8 @@ public class FeedbackUIController : UIControllerBase
 
     public void ShowDamageEffect(float damage, Vector3 worldPosition)
     {
-        ShowFloatingDamage(damage, worldPosition);
+        if (showPlayerDamageNumbers)
+            ShowFloatingDamage(damage, worldPosition);
         ShowDamageScreen(damage);
     }
 

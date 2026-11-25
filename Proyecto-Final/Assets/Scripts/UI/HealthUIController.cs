@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using DG.Tweening;
 
 public class HealthUIController : UIControllerBase
 {
@@ -13,6 +14,18 @@ public class HealthUIController : UIControllerBase
     [SerializeField] private Image whiteFillImage;
     [SerializeField] private float whiteBarSpeed = 1.5f;
 
+    [Header("Player Hit Punch")]
+    [Tooltip("Pops the player health bar when health goes down. Untick to disable. Nothing happens when health goes up.")]
+    [SerializeField] private bool punchOnDamage = true;
+    [Tooltip("Scale added by the punch (0.15 = +15%). 0 disables it.")]
+    [SerializeField] private float punchScale = 0.15f;
+    [Tooltip("Punch duration in real seconds (ignores slow motion). 0 disables it.")]
+    [SerializeField] private float punchDuration = 0.25f;
+    [Tooltip("How many times the punch oscillates.")]
+    [SerializeField] private int punchVibrato = 8;
+    [Tooltip("Minimum real seconds between two punches, so rapid damage ticks do not shake the bar constantly.")]
+    [SerializeField] private float punchMinInterval = 0.1f;
+
     [Header("Home Health")]
     [SerializeField] private Slider homeHealthBar;
     [SerializeField] private Image homeFillImage;
@@ -21,6 +34,11 @@ public class HealthUIController : UIControllerBase
 
     private float targetFill = 1f;
     private float lastHealth = 1f;
+    private float lastCurrentHealth = float.NaN;
+    private Tween punchTween;
+    private Transform punchedTransform;
+    private Vector3 punchBaseScale;
+    private float lastPunchTime = float.NegativeInfinity;
     private Coroutine whiteBarRoutine;
     private LifeController playerLife;
     private HouseLifeController homeLife;
@@ -63,6 +81,8 @@ public class HealthUIController : UIControllerBase
 
         if (whiteFillImage != null && healthBar != null)
             whiteFillImage.fillAmount = healthBar.value / healthBar.maxValue;
+
+        lastCurrentHealth = playerLife != null ? playerLife.currentHealth : float.NaN;
     }
 
     public override void HandleUpdate()
@@ -79,7 +99,12 @@ public class HealthUIController : UIControllerBase
         float healthPercentage = Mathf.Clamp01(currentHealth / maxHealth);
         targetFill = healthPercentage;
 
+        // Compared on absolute health so raising the max health does not count as damage.
+        bool tookDamage = !float.IsNaN(lastCurrentHealth) && currentHealth < lastCurrentHealth;
+        lastCurrentHealth = currentHealth;
+
         healthBar.value = currentHealth;
+        if (tookDamage) TryPunchHealthBar();
 
         UpdatePlayerFillColor(healthPercentage);
         UpdatePlayerHealthText(currentHealth, maxHealth);
@@ -102,6 +127,35 @@ public class HealthUIController : UIControllerBase
         lastHealth = healthPercentage;
     }
 
+
+    // Always restarts from the stored base scale, so repeated punches never leave the bar drifted.
+    private void TryPunchHealthBar()
+    {
+        if (!punchOnDamage || punchScale <= 0f || punchDuration <= 0f || healthBar == null) return;
+        if (Time.unscaledTime - lastPunchTime < punchMinInterval) return;
+        lastPunchTime = Time.unscaledTime;
+
+        KillPunch();
+        punchedTransform = healthBar.transform;
+        punchBaseScale = punchedTransform.localScale;
+        var target = punchedTransform;
+        var baseScale = punchBaseScale;
+        punchTween = target.DOPunchScale(Vector3.one * punchScale, punchDuration, Mathf.Max(1, punchVibrato), 1f)
+            .SetUpdate(true).SetLink(gameObject)
+            .OnComplete(() => { if (target != null) target.localScale = baseScale; });
+    }
+
+    private void KillPunch()
+    {
+        bool running = punchTween != null && punchTween.IsActive();
+        if (running) punchTween.Kill();
+        punchTween = null;
+        if (running && punchedTransform != null) punchedTransform.localScale = punchBaseScale;
+    }
+
+    private void OnDisable() => KillPunch();
+
+    protected override void OnCleanup() => KillPunch();
 
     private IEnumerator BlinkWhiteBar(float targetNormalized)
     {

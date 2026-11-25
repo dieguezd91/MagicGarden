@@ -24,6 +24,6 @@ MonoBehaviour:
   footstepCooldown: 0.4
   manaDropChance: 0.5
   shootingRange: 6
-  fireRate: 0.3
+  fireRate: 1
   bulletForce: 5
   aimYOffset: 0.5
