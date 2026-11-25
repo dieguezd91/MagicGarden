@@ -577,7 +577,7 @@ MonoBehaviour:
   impact:
     clips:
     - {fileID: 8300000, guid: 922e6e4240b54c3bbbe12817f1bbf6b5, type: 3}
-    volume: 0.65
+    volume: 0.42
     pitch: 1
     pitchVariation: 0.05
     loop: 0
