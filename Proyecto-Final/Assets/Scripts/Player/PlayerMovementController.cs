@@ -52,10 +52,21 @@ public class PlayerMovementController : MonoBehaviour
     private bool tutorialBlocksMovement;
     private bool dayTransitionBlocked = false;
 
+    private const float RitualArrivalDistance = 0.025f;
+    private const float RitualApproachGrace = 0.5f;
+    private static readonly int MeditateState = Animator.StringToHash("Base Layer.Meditate");
+    private Vector2 ritualCenter;
+    private bool holdingRitualPosition;
+    private RigidbodyConstraints2D preRitualConstraints;
+
     public float BaseMoveSpeed => maxSpeed;
-    public bool IsMovementEnabled => movementEnabled;
+    public bool IsMovementEnabled => movementEnabled && !IsRitualMovementActive;
     public bool IsMoving => currentVelocity.sqrMagnitude > 0.01f;
     public Vector2 MoveInput => moveInput;
+    public bool IsRitualMovementActive { get; private set; }
+    public bool CanStartRitualMovement => isActiveAndEnabled && rb != null && rb.simulated && !IsRitualMovementActive;
+
+    private float AccelerationStep => accelerationRate * Time.fixedDeltaTime;
 
     private void Start()
     {
@@ -65,6 +76,8 @@ public class PlayerMovementController : MonoBehaviour
             OnPhaseChanged(GameFlowController.Instance.CurrentPhase);
         }
     }
+
+    private void OnDisable() => EndRitualMovement();
 
     private void OnDestroy()
     {
@@ -105,6 +118,12 @@ public class PlayerMovementController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (IsRitualMovementActive)
+        {
+            UpdateRitualMovement();
+            return;
+        }
+
         if (dayTransitionBlocked)
         {
             moveInput = Vector2.zero;
@@ -206,25 +225,10 @@ public class PlayerMovementController : MonoBehaviour
             TutorialEvents.InvokePlayerMoved();
         }
 
-        // Velocidad base modificada por el hielo
-        Vector2 targetVelocity = moveInput * UpgradeRuntime.Value("player", MagicGarden.Stat.MoveSpeed, maxSpeed, "Player") * iceSlowMultiplier;
-
-        if (Time.time < attackSlowEndTime)
-        {
-            float remainingTime = attackSlowEndTime - Time.time;
-            float lerpFactor = remainingTime / attackSlowDuration;
-            float speedMultiplier = Mathf.Lerp(1f, attackMovementPenalty, lerpFactor);
-
-            targetVelocity *= speedMultiplier;
-        }
-
+        Vector2 targetVelocity = GetMovementTargetVelocity(moveInput);
         if (moveInput.sqrMagnitude > 0.01f)
         {
-            currentVelocity = Vector2.Lerp(
-                currentVelocity,
-                targetVelocity,
-                accelerationRate * Time.fixedDeltaTime
-            );
+            currentVelocity = Accelerate(currentVelocity, targetVelocity);
         }
         else
         {
@@ -238,34 +242,157 @@ public class PlayerMovementController : MonoBehaviour
         if (rb != null)
             rb.velocity = currentVelocity;
 
-        bool isMoving = currentVelocity.sqrMagnitude > 0.01f;
+        UpdateMovementAnimation(moveInput);
+    }
 
-        if (animator != null && spriteRenderer != null)
+    private Vector2 GetMovementTargetVelocity(Vector2 direction)
+    {
+        Vector2 targetVelocity = direction * UpgradeRuntime.Value("player", MagicGarden.Stat.MoveSpeed, maxSpeed, "Player") * iceSlowMultiplier;
+        if (Time.time < attackSlowEndTime)
         {
-            if (moveInput != Vector2.zero)
+            float remainingTime = attackSlowEndTime - Time.time;
+            float lerpFactor = remainingTime / attackSlowDuration;
+            targetVelocity *= Mathf.Lerp(1f, attackMovementPenalty, lerpFactor);
+        }
+        return targetVelocity;
+    }
+
+    private Vector2 Accelerate(Vector2 velocity, Vector2 targetVelocity) =>
+        Vector2.Lerp(velocity, targetVelocity, AccelerationStep);
+
+    private void UpdateMovementAnimation(Vector2 direction)
+    {
+        if (animator == null || spriteRenderer == null) return;
+
+        if (direction != Vector2.zero)
+        {
+            float animAimX = direction.x;
+
+            if (direction.x > 0.01f)
             {
-                float animAimX = moveInput.x;
-                float animAimY = moveInput.y;
-
-                if (moveInput.x > 0.01f)
-                {
-                    spriteRenderer.flipX = true;
-                    animAimX = -moveInput.x;
-                }
-                else if (moveInput.x < -0.01f)
-                {
-                    spriteRenderer.flipX = false;
-                }
-
-                animator.SetBool("IsMoving", true);
-                animator.SetFloat("aimX", animAimX);
-                animator.SetFloat("aimY", animAimY);
+                spriteRenderer.flipX = true;
+                animAimX = -direction.x;
             }
-            else
+            else if (direction.x < -0.01f)
             {
-                animator.SetBool("IsMoving", isMoving);
+                spriteRenderer.flipX = false;
+            }
+
+            animator.SetBool("IsMoving", true);
+            animator.SetFloat("aimX", animAimX);
+            animator.SetFloat("aimY", direction.y);
+        }
+        else
+        {
+            animator.SetBool("IsMoving", IsMoving);
+        }
+    }
+
+    public bool TryStartRitualApproach(Vector2 center, out float timeout)
+    {
+        timeout = 0f;
+        if (!CanStartRitualMovement) return false;
+
+        ritualCenter = center;
+        IsRitualMovementActive = true;
+        StopRitualVelocity();
+        timeout = EstimateRitualApproachTimeout(ritualCenter - rb.position);
+        return true;
+    }
+
+    private float EstimateRitualApproachTimeout(Vector2 remaining)
+    {
+        float distance = remaining.magnitude;
+        if (distance <= RitualArrivalDistance) return RitualApproachGrace;
+
+        float step = Time.fixedDeltaTime;
+        float blend = Mathf.Clamp01(AccelerationStep);
+        Vector2 direction = remaining / distance;
+        // Budget for damped travel, plus the distance lost to the acceleration ramp.
+        float cruiseSpeed = Vector2.Dot(GetMovementTargetVelocity(direction), direction) * Mathf.Clamp01(1f - rb.drag * step);
+        if (cruiseSpeed <= 0f || blend <= 0f) return RitualApproachGrace;
+
+        float rampDelay = step * (1f - blend) / blend;
+        return distance / cruiseSpeed + rampDelay + RitualApproachGrace;
+    }
+
+    public bool TryStartRitualMeditation()
+    {
+        if (!IsRitualMovementActive || rb == null || !rb.simulated || !HasReachedRitualCenter()) return false;
+
+        StopRitualVelocity();
+        rb.position = ritualCenter;
+        preRitualConstraints = rb.constraints;
+        rb.constraints = RigidbodyConstraints2D.FreezeAll;
+        holdingRitualPosition = true;
+
+        if (animator != null)
+        {
+            animator.SetBool("IsMoving", false);
+            // The non-looping clip enters the pose once and holds its last frame.
+            animator.Play(MeditateState, 0, 0f);
+        }
+        return true;
+    }
+
+    public void EndRitualMovement()
+    {
+        if (!IsRitualMovementActive) return;
+
+        StopRitualVelocity();
+        bool wasMeditating = holdingRitualPosition;
+        if (wasMeditating && rb != null)
+            rb.constraints = preRitualConstraints;
+
+        holdingRitualPosition = false;
+        IsRitualMovementActive = false;
+        // Leave the controller's Any State death transition alone.
+        if (animator != null && animator.isActiveAndEnabled && (lifeController == null || lifeController.IsAlive()))
+        {
+            ResetAnimator();
+            if (wasMeditating && GameFlowController.Instance?.CurrentPhase == GamePhase.Night)
+            {
+                // Sample Idle before restoring spell parameters: Meditate disables the child hand Animator.
+                animator.Update(0f);
+                GetComponent<PlayerSpellController>()?.RefreshHandNightness();
             }
         }
+    }
+
+    private void UpdateRitualMovement()
+    {
+        if (rb == null || !rb.simulated) return;
+
+        if (holdingRitualPosition || HasReachedRitualCenter())
+        {
+            StopRitualVelocity();
+            if (holdingRitualPosition && rb.position != ritualCenter)
+                rb.position = ritualCenter;
+            else if (!holdingRitualPosition)
+                UpdateMovementAnimation(Vector2.zero);
+            return;
+        }
+
+        Vector2 remaining = ritualCenter - rb.position;
+        float distance = remaining.magnitude;
+        Vector2 direction = remaining / distance;
+        // Steer toward the center after contacts without carrying sideways momentum into the stop.
+        Vector2 forwardVelocity = direction * Mathf.Max(0f, Vector2.Dot(currentVelocity, direction));
+        currentVelocity = Vector2.ClampMagnitude(Accelerate(forwardVelocity, GetMovementTargetVelocity(direction)),
+            distance / Time.fixedDeltaTime);
+        rb.velocity = currentVelocity;
+        UpdateMovementAnimation(currentVelocity.normalized);
+    }
+
+    private bool HasReachedRitualCenter() =>
+        (rb.position - ritualCenter).sqrMagnitude <= RitualArrivalDistance * RitualArrivalDistance;
+
+    private void StopRitualVelocity()
+    {
+        moveInput = Vector2.zero;
+        currentVelocity = Vector2.zero;
+        if (rb != null)
+            rb.velocity = Vector2.zero;
     }
 
     public void ApplyAttackMovementPenalty()

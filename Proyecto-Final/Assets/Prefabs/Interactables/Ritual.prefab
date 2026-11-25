@@ -40,6 +40,7 @@ Transform:
   - {fileID: 6372257809296615446}
   - {fileID: 9062042649926641396}
   - {fileID: 2533222158165117443}
+  - {fileID: 1675630003121498361}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1682724339635525393
@@ -154,10 +155,13 @@ MonoBehaviour:
   ritualDuration: 3
   canTransitionToNight: 1
   canRestoreHealth: 1
+  meditationPoint: {fileID: 1675630003121498361}
   altarSpriteRenderer: {fileID: 1682724339635525393}
   defaultSprite: {fileID: 1845753906, guid: d5879276d50f47440a06b03dcf0a46db, type: 3}
   nearSprite: {fileID: -593795343, guid: d5879276d50f47440a06b03dcf0a46db, type: 3}
   ritualVisualController: {fileID: 6952376027871709097}
+  tutorialStepOrderToUnlock: 9
+  houseMissingHealthRestorePercent: 25
 --- !u!114 &6952376027871709097
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -175,12 +179,12 @@ MonoBehaviour:
   - {fileID: 724081456883087910}
   - {fileID: 7866460332723460107}
   - {fileID: 8689629635829901728}
-  candleColor: {r: 0.5698323, g: 0, b: 1, a: 1}
+  candleColor: {r: 0.66, g: 0.38, b: 1, a: 1}
   DoorLight: {fileID: 0}
   ritualLightFadeDuration: 2.5
   candleFlickerSpeed: 2
-  candleFlickerAmount: 0.3
-  candleIgnitionDelay: 0.3
+  candleFlickerAmount: 0.08
+  candleExtinguishInterval: 0.15
   ritualVignetteIntensity: 0.6
   centerVignetteOnPlayer: 1
   vignetteFadeDuration: 1.5
@@ -229,6 +233,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventToFire: 3
   fireOnce: 1
+--- !u!1 &1675630003121498360
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1675630003121498361}
+  m_Layer: 0
+  m_Name: MeditationPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1675630003121498361
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1675630003121498360}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.6, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1967797365600204590}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2197889082941499086
 GameObject:
   m_ObjectHideFlags: 0
@@ -245,7 +280,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1653289436270728460
 Transform:
   m_ObjectHideFlags: 0
@@ -256,7 +291,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.726, y: 0.551, z: 0}
-  m_LocalScale: {x: 0.25, y: 0.25, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1967797365600204590}
@@ -274,11 +309,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ComponentVersion: 1
-  m_LightType: 1
+  m_LightType: 3
   m_BlendStyleIndex: 0
-  m_FalloffIntensity: 0.6
-  m_Color: {r: 1, g: 0.98605806, b: 0.48584908, a: 1}
-  m_Intensity: 2.5
+  m_FalloffIntensity: 0.65
+  m_Color: {r: 0.66, g: 0.38, b: 1, a: 1}
+  m_Intensity: 0.8
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
   m_ApplyToSortingLayers: 000000006f30d0fbb3adee4b014a9075437ea3b2
@@ -299,8 +334,8 @@ MonoBehaviour:
     m_Extent: {x: 1.5, y: 1.4981, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
-  m_PointLightInnerRadius: 0
-  m_PointLightOuterRadius: 1
+  m_PointLightInnerRadius: 0.08
+  m_PointLightOuterRadius: 0.6
   m_ShapeLightParametricSides: 5
   m_ShapeLightParametricAngleOffset: 0
   m_ShapeLightParametricRadius: 1
@@ -355,7 +390,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &9062042649926641396
 Transform:
   m_ObjectHideFlags: 0
@@ -366,7 +401,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.716, y: 0.001, z: 0}
-  m_LocalScale: {x: 0.25, y: 0.25, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1967797365600204590}
@@ -384,11 +419,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ComponentVersion: 1
-  m_LightType: 1
+  m_LightType: 3
   m_BlendStyleIndex: 0
-  m_FalloffIntensity: 0.6
-  m_Color: {r: 1, g: 0.98605806, b: 0.48584908, a: 1}
-  m_Intensity: 2.5
+  m_FalloffIntensity: 0.65
+  m_Color: {r: 0.66, g: 0.38, b: 1, a: 1}
+  m_Intensity: 0.8
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
   m_ApplyToSortingLayers: 000000006f30d0fbb3adee4b014a9075437ea3b2
@@ -409,8 +444,8 @@ MonoBehaviour:
     m_Extent: {x: 1.4958999, y: 1.49785, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
-  m_PointLightInnerRadius: 0
-  m_PointLightOuterRadius: 1
+  m_PointLightInnerRadius: 0.08
+  m_PointLightOuterRadius: 0.6
   m_ShapeLightParametricSides: 5
   m_ShapeLightParametricAngleOffset: 0
   m_ShapeLightParametricRadius: 1
@@ -465,7 +500,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2661708976545011783
 Transform:
   m_ObjectHideFlags: 0
@@ -476,7 +511,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.735, y: -0.01, z: 0}
-  m_LocalScale: {x: 0.25, y: 0.25, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1967797365600204590}
@@ -494,11 +529,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ComponentVersion: 1
-  m_LightType: 1
+  m_LightType: 3
   m_BlendStyleIndex: 0
-  m_FalloffIntensity: 0.6
-  m_Color: {r: 1, g: 0.98605806, b: 0.48584908, a: 1}
-  m_Intensity: 2.5
+  m_FalloffIntensity: 0.65
+  m_Color: {r: 0.66, g: 0.38, b: 1, a: 1}
+  m_Intensity: 0.8
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
   m_ApplyToSortingLayers: 000000006f30d0fbb3adee4b014a9075437ea3b2
@@ -519,8 +554,8 @@ MonoBehaviour:
     m_Extent: {x: 1.4958999, y: 1.49535, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
-  m_PointLightInnerRadius: 0
-  m_PointLightOuterRadius: 1
+  m_PointLightInnerRadius: 0.08
+  m_PointLightOuterRadius: 0.6
   m_ShapeLightParametricSides: 5
   m_ShapeLightParametricAngleOffset: 0
   m_ShapeLightParametricRadius: 1
@@ -575,7 +610,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6372257809296615446
 Transform:
   m_ObjectHideFlags: 0
@@ -586,7 +621,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.712, y: 0.553, z: 0}
-  m_LocalScale: {x: 0.25, y: 0.25, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1967797365600204590}
@@ -604,11 +639,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ComponentVersion: 1
-  m_LightType: 1
+  m_LightType: 3
   m_BlendStyleIndex: 0
-  m_FalloffIntensity: 0.6
-  m_Color: {r: 1, g: 0.98605806, b: 0.48584908, a: 1}
-  m_Intensity: 2.5
+  m_FalloffIntensity: 0.65
+  m_Color: {r: 0.66, g: 0.38, b: 1, a: 1}
+  m_Intensity: 0.8
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
   m_ApplyToSortingLayers: 000000006f30d0fbb3adee4b014a9075437ea3b2
@@ -629,8 +664,8 @@ MonoBehaviour:
     m_Extent: {x: 1.49565, y: 1.4951, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
-  m_PointLightInnerRadius: 0
-  m_PointLightOuterRadius: 1
+  m_PointLightInnerRadius: 0.08
+  m_PointLightOuterRadius: 0.6
   m_ShapeLightParametricSides: 5
   m_ShapeLightParametricAngleOffset: 0
   m_ShapeLightParametricRadius: 1

@@ -366058,14 +366058,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Door Light
       objectReference: {fileID: 0}
-    - target: {fileID: 5252220008598720961, guid: 0cb9a02348a29964688a62cf99963e21, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8706675297062990351, guid: 0cb9a02348a29964688a62cf99963e21, type: 3}
-      propertyPath: m_Intensity
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 8706675297062990351, guid: 0cb9a02348a29964688a62cf99963e21, type: 3}
       propertyPath: m_LocalBounds.m_Center.x
       value: 0.00084996223

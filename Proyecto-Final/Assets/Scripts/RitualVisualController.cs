@@ -6,14 +6,15 @@ public class RitualVisualController : MonoBehaviour
 {
     [Header("Visual Effects")]
     [SerializeField] private Light2D[] candleLights;
-    [SerializeField] private Color candleColor = new Color(0.7f, 0.3f, 1f);
+    [SerializeField] private Color candleColor = new Color(0.66f, 0.38f, 1f);
     [SerializeField] private Light2D DoorLight;
-    [SerializeField] private float ritualLightFadeDuration = 2f;
+    [Tooltip("Length of the environment fade before releasing the player.")]
+    [SerializeField, Min(0f)] private float ritualLightFadeDuration = 2f;
 
     [Header("Candle Settings")]
-    [SerializeField] private float candleFlickerSpeed = 2f;
-    [SerializeField] private float candleFlickerAmount = 0.3f;
-    [SerializeField] private float candleIgnitionDelay = 0.3f;
+    [SerializeField, Min(0f)] private float candleFlickerSpeed = 2f;
+    [SerializeField, Range(0f, 0.25f)] private float candleFlickerAmount = 0.08f;
+    [SerializeField, Min(0f)] private float candleExtinguishInterval = 0.15f;
 
     [Header("Post Processing")]
     [SerializeField] private float ritualVignetteIntensity = 0.6f;
@@ -23,7 +24,7 @@ public class RitualVisualController : MonoBehaviour
     private const float DAY_VIGNETTE_INTENSITY = 0.0f;
     private const float NIGHT_VIGNETTE_INTENSITY = 0.1f;
     private const float RITUAL_LIGHT_DIM = 0.05f;
-    private const float RITUAL_PULSE_SPEED = 1.5f;
+    private const float EXIT_CUE_FADE_DURATION = 0.5f;
 
     [Header("References")]
     private DayNightLightController lightController;
@@ -35,9 +36,13 @@ public class RitualVisualController : MonoBehaviour
     private bool ritualActive = false;
     private bool candlesLitAfterRitual = false;
     private bool interiorLightsDimmed = false;
+    private bool exitCueReleased;
+    private float[] candleBaseIntensities;
     private float doorLightOriginalIntensity;
     private Coroutine activeDoorLightCoroutine;
     private bool isSubscribed = false;
+
+    public float EndFadeDuration => Mathf.Max(0f, ritualLightFadeDuration);
 
     private void Start()
     {
@@ -57,6 +62,7 @@ public class RitualVisualController : MonoBehaviour
     private void OnDisable()
     {
         UnsubscribeFromEvents();
+        ResetRitualLights();
     }
 
     private void OnDestroy()
@@ -72,15 +78,19 @@ public class RitualVisualController : MonoBehaviour
         mainCamera = Camera.main;
 
         if (DoorLight != null)
-        {
             doorLightOriginalIntensity = DoorLight.intensity > 0.1f ? DoorLight.intensity : 1.5f;
-            DoorLight.intensity = 0f;
-        }
     }
 
     private void InitializeComponents()
     {
         SetupVignette();
+        HideExitCue();
+        if (candleLights == null) return;
+
+        candleBaseIntensities = new float[candleLights.Length];
+        for (int i = 0; i < candleLights.Length; i++)
+            if (candleLights[i] != null) candleBaseIntensities[i] = candleLights[i].intensity;
+
         TurnOffAllCandles();
     }
 
@@ -131,262 +141,188 @@ public class RitualVisualController : MonoBehaviour
 
     private void OnGameStateChangedHandler(GamePhase newPhase)
     {
+        if (newPhase != GamePhase.Night)
+        {
+            exitCueReleased = false;
+            HideExitCue();
+        }
+
         if (newPhase == GamePhase.Day)
         {
-            SetDoorLightIntensity(0f, 0.5f);
+            TurnOffAllCandles(playSound: true);
+            RestoreInteriorLighting(vignetteFadeDuration);
         }
     }
 
     private void HandleWorldStateChanged(WorldState newWorldState)
     {
-        if (newWorldState == WorldState.Interior)
+        exitCueReleased = false;
+        HideExitCue();
+
+        if (candlesLitAfterRitual)
         {
-            if (activeDoorLightCoroutine != null)
-            {
-                StopCoroutine(activeDoorLightCoroutine);
-                activeDoorLightCoroutine = null;
-            }
-
-            if (DoorLight != null)
-            {
-                DoorLight.intensity = 0f;
-                DoorLight.gameObject.SetActive(false);
-            }
-
-            if (candlesLitAfterRitual)
-            {
-                StartCoroutine(ExtinguishCandlesGradually());
-                candlesLitAfterRitual = false;
-            }
-
-            if (interiorLightsDimmed && worldTransition != null)
-            {
-                worldTransition.RestoreInteriorLightIntensity(vignetteFadeDuration);
-                interiorLightsDimmed = false;
-            }
+            StartCoroutine(ExtinguishCandlesGradually());
+            candlesLitAfterRitual = false;
         }
-        else
-        {
-            if (candlesLitAfterRitual)
-            {
-                StartCoroutine(ExtinguishCandlesGradually());
-                candlesLitAfterRitual = false;
-            }
 
-            if (interiorLightsDimmed && worldTransition != null)
-            {
-                worldTransition.RestoreInteriorLightIntensity(vignetteFadeDuration);
-                interiorLightsDimmed = false;
-            }
-
-            GamePhase currentPhase = GameFlowController.Instance != null ? GameFlowController.Instance.CurrentPhase : GamePhase.Day;
-            if (currentPhase == GamePhase.Night)
-            {
-                StartCoroutine(FadeInRitualLight(0.5f));
-            }
-            else
-            {
-                SetDoorLightIntensity(0f, 0.5f);
-            }
-        }
+        RestoreInteriorLighting(vignetteFadeDuration);
     }
 
     public void BeginRitual(float ritualDuration)
     {
+        ResetRitualLights();
         ritualActive = true;
 
-        StartCoroutine(RitualLightingSequence(ritualDuration));
+        StartCoroutine(LightCandlesSequentially(ritualDuration));
+        StartCoroutine(ApplyRitualVignette());
+        lightController?.DimLightForRitual(RITUAL_LIGHT_DIM, vignetteFadeDuration);
 
         if (centerVignetteOnPlayer)
-        {
             StartCoroutine(UpdateVignetteContinuously());
-        }
 
         if (worldTransition != null && worldTransition.IsInInterior)
         {
             worldTransition.SetInteriorLightIntensity(0.1f, vignetteFadeDuration);
             interiorLightsDimmed = true;
         }
-
-        if (DoorLight != null && DoorLight.gameObject.activeInHierarchy)
-        {
-            StartCoroutine(FadeOutDoorLight());
-        }
     }
 
     public void StartEndRitualEffects()
     {
-        SoundManager.Instance?.Play("CandleOff", SoundSourceType.Localized, transform); // heard near the altar only
+        ritualActive = false;
+        if (IsVignetteAvailable())
+            vignetteComponent.center.value = new Vector2(0.5f, 0.5f);
 
-        StartCoroutine(RestoreVignetteCoroutine());
-
-        if (lightController != null)
-        {
-            lightController.RestoreLightAfterRitual(GamePhase.Night, vignetteFadeDuration);
-        }
+        RestoreGlobalLighting(EndFadeDuration);
     }
 
-    public IEnumerator FinishEndRitualEffects()
+    public void OnPlayerReleased(bool completedNightRitual)
     {
-        yield return FadeInRitualLight();
-        ritualActive = false;
-        candlesLitAfterRitual = true;
+        exitCueReleased = completedNightRitual && worldTransition != null && worldTransition.IsInInterior &&
+            GameFlowController.Instance?.WorldPhase == GamePhase.Night;
+        candlesLitAfterRitual = exitCueReleased;
+        if (!exitCueReleased)
+        {
+            TurnOffAllCandles(playSound: true);
+            RestoreInteriorLighting(vignetteFadeDuration);
+        }
+
+        UpdateExitCue();
+    }
+
+    private void LateUpdate()
+    {
+        // A tutorial step can grant door permission after the player has been released.
+        if (exitCueReleased) UpdateExitCue();
     }
 
     public void ForceStopAndRestore()
     {
+        ResetRitualLights();
+        RestoreVignetteImmediate();
+        RestoreGlobalLighting(0.5f);
+        RestoreInteriorLighting(0.5f);
+    }
+
+    private void ResetRitualLights()
+    {
         StopAllCoroutines();
         activeDoorLightCoroutine = null;
         ritualActive = false;
-
+        exitCueReleased = false;
+        HideExitCue();
         TurnOffAllCandles();
-        RestoreEnvironment();
     }
 
-    private void RestoreEnvironment()
+    private void RestoreGlobalLighting(float duration)
     {
-        RestoreVignetteImmediate();
-
-        if (lightController != null)
-        {
-            GamePhase currentPhase = GameFlowController.Instance?.CurrentPhase ?? GamePhase.Day;
-            lightController.RestoreLightAfterRitual(currentPhase, 0.5f);
-        }
-
-        if (worldTransition != null && worldTransition.IsInInterior && interiorLightsDimmed)
-        {
-            worldTransition.RestoreInteriorLightIntensity(0.5f);
-            interiorLightsDimmed = false;
-        }
-
-        if (DoorLight != null)
-        {
-            GamePhase currentPhase = GameFlowController.Instance != null ? GameFlowController.Instance.CurrentPhase : GamePhase.Day;
-
-            if (currentPhase == GamePhase.Night)
-            {
-                StartCoroutine(FadeInRitualLight(0.5f));
-            }
-            else
-            {
-                SetDoorLightIntensity(0f, 0.5f);
-            }
-        }
+        GamePhase phase = GameFlowController.Instance?.WorldPhase ?? GamePhase.Day;
+        lightController?.RestoreLightAfterRitual(phase, duration);
     }
 
-    private IEnumerator RitualLightingSequence(float ritualDuration)
+    private void RestoreInteriorLighting(float duration)
     {
-        StartCoroutine(ApplyRitualVignette());
-        lightController?.DimLightForRitual(RITUAL_LIGHT_DIM, vignetteFadeDuration);
+        if (!interiorLightsDimmed) return;
 
-        yield return new WaitForSeconds(vignetteFadeDuration);
-        yield return LightCandlesSequentially(ritualDuration);
+        worldTransition?.RestoreInteriorLightIntensity(duration);
+        interiorLightsDimmed = false;
     }
 
     private IEnumerator LightCandlesSequentially(float ritualDuration)
     {
-        if (candleLights == null || candleLights.Length == 0) yield break;
+        if (candleBaseIntensities == null) yield break;
 
+        int count = 0;
+        foreach (Light2D candle in candleLights)
+            if (candle != null) count++;
+        if (count == 0) yield break;
+
+        // Each candle gets one share of the meditation, with the first lit on entry.
+        float started = Time.time;
+        float interval = Mathf.Max(0f, ritualDuration) / count;
+        int lit = 0;
         for (int i = 0; i < candleLights.Length; i++)
         {
-            IgniteCandle(i, ritualDuration);
-            yield return new WaitForSeconds(candleIgnitionDelay);
+            Light2D candle = candleLights[i];
+            if (candle == null) continue;
+
+            while (ritualActive && Time.time < started + lit * interval) yield return null;
+            if (!ritualActive) yield break;
+
+            candle.color = candleColor;
+            candle.gameObject.SetActive(true);
+            SoundManager.Instance?.Play("CandleOn", SoundSourceType.Localized, candle.transform);
+            StartCoroutine(FlickerCandle(candle, i));
+            lit++;
         }
     }
 
-    private void IgniteCandle(int index, float ritualDuration)
+    private IEnumerator FlickerCandle(Light2D candle, int index)
     {
-        if (candleLights[index] == null) return;
-
-        Light2D candle = candleLights[index];
-        candle.gameObject.SetActive(true);
-        candle.color = candleColor;
-
-        SoundManager.Instance?.Play("CandleOn", SoundSourceType.Localized, transform);
-        StartCoroutine(FlickerCandle(candle, index, ritualDuration));
-    }
-
-    private IEnumerator FlickerCandle(Light2D candle, int candleIndex, float ritualDuration)
-    {
-        if (candle == null) yield break;
-
-        float originalIntensity = candle.intensity;
-        float randomOffset = candleIndex * 0.5f;
-        float maxDuration = ritualDuration - (candleIndex * candleIgnitionDelay);
-        float elapsed = 0f;
-
-        while (elapsed < maxDuration && ritualActive)
+        float started = Time.time;
+        while (candle != null && candle.gameObject.activeSelf)
         {
-            elapsed += Time.deltaTime;
-
-            float flicker = Mathf.Sin((elapsed + randomOffset) * candleFlickerSpeed) * candleFlickerAmount;
-            float ritualPulse = Mathf.PingPong(elapsed * RITUAL_PULSE_SPEED, 1f) * 0.5f;
-
-            candle.intensity = originalIntensity + flicker + ritualPulse;
+            float phase = (Time.time - started) * candleFlickerSpeed + index * 0.5f;
+            float variation = Mathf.Sin(phase) * candleFlickerAmount;
+            candle.intensity = candleBaseIntensities[index] * (1f + variation);
             yield return null;
         }
-
-        if (candlesLitAfterRitual || ritualActive)
-        {
-            StartCoroutine(FlickerCandlePostRitual(candle, candleIndex));
-        }
-        else
-        {
-            candle.intensity = originalIntensity;
-        }
-    }
-
-    private IEnumerator FlickerCandlePostRitual(Light2D candle, int candleIndex)
-    {
-        if (candle == null) yield break;
-
-        float originalIntensity = candle.intensity;
-        float randomOffset = candleIndex * 0.5f;
-        float elapsed = 0f;
-
-        while ((candlesLitAfterRitual || ritualActive) && candle.gameObject.activeInHierarchy)
-        {
-            elapsed += Time.deltaTime;
-
-            float flicker = Mathf.Sin((elapsed + randomOffset) * candleFlickerSpeed) * candleFlickerAmount;
-            candle.intensity = originalIntensity + flicker;
-
-            yield return null;
-        }
-
-        candle.intensity = originalIntensity;
     }
 
     private IEnumerator ExtinguishCandlesGradually()
     {
-        if (candleLights == null || candleLights.Length == 0) yield break;
+        if (candleBaseIntensities == null) yield break;
 
         yield return new WaitForSeconds(1f);
-
+        bool playSound = true;
         for (int i = candleLights.Length - 1; i >= 0; i--)
         {
-            if (candleLights[i] != null && candleLights[i].gameObject.activeInHierarchy)
-            {
-                candleLights[i].gameObject.SetActive(false);
-            }
-
-            yield return new WaitForSeconds(candleIgnitionDelay * 0.5f);
+            if (!TurnOffCandle(i, playSound)) continue;
+            playSound = false;
+            yield return new WaitForSeconds(candleExtinguishInterval);
         }
     }
 
-    private void TurnOffAllCandles()
+    private void TurnOffAllCandles(bool playSound = false)
     {
-        if (candleLights == null) return;
-
-        foreach (Light2D candle in candleLights)
-        {
-            if (candle != null)
-            {
-                candle.gameObject.SetActive(false);
-            }
-        }
-
         candlesLitAfterRitual = false;
+        if (candleBaseIntensities == null) return;
+
+        for (int i = 0; i < candleLights.Length; i++)
+            if (TurnOffCandle(i, playSound)) playSound = false;
+    }
+
+    private bool TurnOffCandle(int index, bool playSound)
+    {
+        Light2D candle = candleLights[index];
+        if (candle == null || !candle.gameObject.activeSelf) return false;
+
+        if (playSound)
+            SoundManager.Instance?.Play("CandleOff", SoundSourceType.Localized, transform);
+
+        candle.gameObject.SetActive(false);
+        candle.intensity = candleBaseIntensities[index];
+        return true;
     }
 
     private IEnumerator ApplyRitualVignette()
@@ -436,7 +372,7 @@ public class RitualVisualController : MonoBehaviour
 
         float elapsed = 0f;
 
-        while (elapsed < duration)
+        while (ritualActive && elapsed < duration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
@@ -444,18 +380,7 @@ public class RitualVisualController : MonoBehaviour
             yield return null;
         }
 
-        vignetteComponent.intensity.value = to;
-    }
-
-    private IEnumerator RestoreVignetteCoroutine()
-    {
-        if (!IsVignetteAvailable()) yield break;
-
-        GamePhase currentPhase = GameFlowController.Instance != null ? GameFlowController.Instance.CurrentPhase : GamePhase.Night;
-        float targetIntensity = GetVignetteIntensityForState(currentPhase);
-
-        vignetteComponent.center.value = new Vector2(0.5f, 0.5f);
-        yield return AnimateVignetteIntensity(vignetteComponent.intensity.value, targetIntensity, 1f);
+        if (ritualActive) vignetteComponent.intensity.value = to;
     }
 
     private void RestoreVignetteImmediate()
@@ -481,77 +406,54 @@ public class RitualVisualController : MonoBehaviour
                vignetteComponent != null;
     }
 
-    private void SetDoorLightIntensity(float targetIntensity, float duration)
+    private void UpdateExitCue()
     {
-        if (DoorLight == null)
-        {
-            return;
-        }
+        if (DoorLight == null) return;
 
-        if (targetIntensity > 0f && !DoorLight.gameObject.activeInHierarchy)
+        // Match HouseDoor's tutorial and interior transition gates.
+        var tutorial = TutorialManager.Instance;
+        bool canShow = isActiveAndEnabled && exitCueReleased && worldTransition != null &&
+            worldTransition.IsInInterior && !worldTransition.IsTransitioning &&
+            GameFlowController.Instance?.CurrentPhase == GamePhase.Night &&
+            TutorialManager.Allows(TutorialAction.HouseDoor) &&
+            (tutorial == null || tutorial.UsesActionLock || !tutorial.IsPlayerGated());
+
+        if (!canShow)
+        {
+            if (DoorLight.gameObject.activeSelf) HideExitCue();
+        }
+        else if (!DoorLight.gameObject.activeSelf)
         {
             DoorLight.gameObject.SetActive(true);
+            activeDoorLightCoroutine = StartCoroutine(FadeInExitCue());
         }
-        else if (targetIntensity <= 0f && !DoorLight.gameObject.activeInHierarchy)
-        {
-            DoorLight.intensity = 0f;
-            return;
-        }
+    }
 
+    private void HideExitCue()
+    {
         if (activeDoorLightCoroutine != null)
         {
             StopCoroutine(activeDoorLightCoroutine);
+            activeDoorLightCoroutine = null;
         }
 
-        activeDoorLightCoroutine = StartCoroutine(AnimateDoorLight(targetIntensity, duration));
+        if (DoorLight == null) return;
+
+        DoorLight.intensity = 0f;
+        DoorLight.gameObject.SetActive(false);
     }
 
-    private IEnumerator AnimateDoorLight(float targetIntensity, float duration)
+    private IEnumerator FadeInExitCue()
     {
-        if (DoorLight == null)
-        {
-            yield break;
-        }
-
-        float startIntensity = DoorLight.intensity;
         float elapsed = 0f;
-
-        while (elapsed < duration)
+        while (elapsed < EXIT_CUE_FADE_DURATION)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-            DoorLight.intensity = Mathf.Lerp(startIntensity, targetIntensity, t);
+            DoorLight.intensity = Mathf.SmoothStep(0f, doorLightOriginalIntensity, elapsed / EXIT_CUE_FADE_DURATION);
             yield return null;
         }
 
-        DoorLight.intensity = targetIntensity;
-
-        if (Mathf.Approximately(targetIntensity, 0f))
-        {
-            DoorLight.gameObject.SetActive(false);
-        }
-
+        DoorLight.intensity = doorLightOriginalIntensity;
         activeDoorLightCoroutine = null;
-    }
-
-    private IEnumerator FadeOutDoorLight()
-    {
-        SetDoorLightIntensity(0.1f, vignetteFadeDuration);
-        yield return new WaitForSeconds(vignetteFadeDuration);
-    }
-
-    private IEnumerator FadeInRitualLight(float duration = -1f)
-    {
-        if (DoorLight == null) yield break;
-
-        float fadeDuration = duration > 0f ? duration : ritualLightFadeDuration;
-
-        if (!DoorLight.gameObject.activeInHierarchy)
-        {
-            DoorLight.gameObject.SetActive(true);
-        }
-
-        SetDoorLightIntensity(doorLightOriginalIntensity, fadeDuration);
-        yield return new WaitForSeconds(fadeDuration);
     }
 }

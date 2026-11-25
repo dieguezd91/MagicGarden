@@ -1,12 +1,15 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
-public class RitualAltar : MonoBehaviour, IInteractable
+public class RitualAltar : MonoBehaviour, IInteractionLifecycle
 {
     [Header("Ritual Configuration")]
     [SerializeField] private float ritualDuration = 10f;
     [SerializeField] private bool canTransitionToNight = true;
     [SerializeField] private bool canRestoreHealth = true;
+    [Tooltip("Optional point where the player stops and meditates. If unassigned, uses the altar's position.")]
+    [SerializeField] private Transform meditationPoint;
 
     [Header("Sprite Change")]
     [SerializeField] private SpriteRenderer altarSpriteRenderer;
@@ -19,14 +22,16 @@ public class RitualAltar : MonoBehaviour, IInteractable
     [Header("References")]
     private LevelManager levelManager;
     private LifeController playerLife;
+    private PlayerMovementController playerMovement;
     private HouseLifeController houseLife;
 
+    public event Action InteractionCompleted;
+
     private bool isPerformingRitual = false;
+    private bool ritualStarted;
     private Coroutine mainRitualCoroutine;
     [SerializeField] private int tutorialStepOrderToUnlock = 9;
     private bool tutorialInteractionPending = false;
-    // Whether we already fired the ritual-used tutorial event at interaction time
-    private bool tutorialEventFiredOnInteract = false;
 
     [SerializeField, Range(0f, 100f)] private float houseMissingHealthRestorePercent = 25f;
 
@@ -52,6 +57,7 @@ public class RitualAltar : MonoBehaviour, IInteractable
         if (player != null)
         {
             playerLife = player.GetComponent<LifeController>();
+            playerMovement = player.GetComponent<PlayerMovementController>();
         }
     }
 
@@ -60,26 +66,24 @@ public class RitualAltar : MonoBehaviour, IInteractable
         UpdateAltarAppearance();
     }
 
-    public void Interact()
+    public void Interact() => TryInteract();
+
+    public bool TryInteract()
     {
-        if (!CanInteract()) return;
-        var tm = TutorialManager.Instance;
-        if (tm != null && tm.IsTutorialActive())
-        {
-            tm.DeferNextStep();
-            TutorialEvents.InvokeRitualAltarUsed();
-            tm.ConfirmWaitStep();
+        if (!isActiveAndEnabled || !CanInteract() || playerMovement == null ||
+            !playerMovement.TryStartRitualApproach(meditationPoint != null ? meditationPoint.position : transform.position,
+                out float timeout))
+            return false;
 
-            tutorialInteractionPending = true;
-            tutorialEventFiredOnInteract = true;
-        }
-
-        mainRitualCoroutine = StartCoroutine(PerformRitual());
+        isPerformingRitual = true;
+        mainRitualCoroutine = StartCoroutine(PerformRitual(timeout));
+        return true;
     }
 
     public bool CanInteract()
     {
-        if (isPerformingRitual || levelManager == null || playerLife == null)
+        if (!enabled || isPerformingRitual || levelManager == null || playerLife == null || !playerLife.IsAlive() ||
+            (playerMovement != null && !playerMovement.CanStartRitualMovement) || GameFlowController.Instance == null)
             return false;
 
         if (!TutorialManager.Allows(TutorialAction.RitualAltar))
@@ -107,22 +111,60 @@ public class RitualAltar : MonoBehaviour, IInteractable
         return phase == GamePhase.Day;
     }
 
-    private IEnumerator PerformRitual()
+    private IEnumerator PerformRitual(float approachTimeout)
     {
-        BeginRitual();
+        float deadline = Time.time + approachTimeout;
+        // Let TryInteract return and the interaction trigger latch before running any callbacks.
+        yield return null;
+        while (CanContinueApproach() && Time.time < deadline)
+        {
+            if (playerMovement.TryStartRitualMeditation())
+            {
+                BeginRitual();
+                if (!isPerformingRitual) yield break;
 
-        yield return new WaitForSeconds(ritualDuration);
+                yield return new WaitForSeconds(ritualDuration);
+                yield return CompleteRitual();
+                if (isPerformingRitual) yield return EndRitualSequence();
+                yield break;
+            }
 
-        yield return CompleteRitual();
+            yield return null;
+        }
 
-        EndRitual();
+        ForceStopRitual();
+    }
+
+    private bool CanContinueApproach() => HasRitualPlayer() &&
+        GameFlowController.Instance != null && IsValidPhaseForRitual(GameFlowController.Instance.CurrentPhase);
+
+    private bool HasRitualPlayer() => playerLife != null && playerLife.IsAlive() &&
+        playerMovement != null && playerMovement.IsRitualMovementActive;
+
+    private void Update()
+    {
+        if (isPerformingRitual && !HasRitualPlayer())
+            CancelInteraction();
     }
 
     private void BeginRitual()
     {
-        isPerformingRitual = true;
+        var tm = TutorialManager.Instance;
+        if (tm != null && tm.IsTutorialActive())
+        {
+            // Do not advance the tutorial until the approach actually succeeds.
+            tutorialInteractionPending = true;
+            tm.DeferNextStep();
+            TutorialEvents.InvokeRitualAltarUsed();
+            if (!isPerformingRitual) return;
+            tm.ConfirmWaitStep();
+        }
+
         HandleRestorationAttempt();
+        if (!isPerformingRitual) return;
+        ritualStarted = true;
         GameFlowController.Instance.SetPhase(GamePhase.OnRitual);
+        if (!isPerformingRitual) return;
 
         if (canTransitionToNight && LunarCycleManager.Instance != null)
         {
@@ -144,32 +186,20 @@ public class RitualAltar : MonoBehaviour, IInteractable
         {
             if (tutorialInteractionPending)
             {
-                if (tutorialEventFiredOnInteract)
-                {
-                    Debug.Log("[RitualAltar] Ritual completed - releasing deferred tutorial next step (event already fired on interact).");
-                }
-                else
-                {
-                    Debug.Log("[RitualAltar] Ritual completed - confirming tutorial progression now.");
-                    TutorialEvents.InvokeRitualAltarUsed();
-                    TutorialManager.Instance?.ConfirmWaitStep();
-                }
+                Debug.Log("[RitualAltar] Ritual completed - releasing deferred tutorial next step (event already fired at ritual start).");
             }
             else
             {
                 Debug.Log("[RitualAltar] Ritual completed - invoking ritual-used (non-tutorial pending).");
                 TutorialEvents.InvokeRitualAltarUsed();
             }
+            if (!isPerformingRitual) yield break;
+
             TutorialEvents.InvokeNightStarted();
+            if (!isPerformingRitual) yield break;
             RitualBuffManager.Instance?.ActivateRitualBuff();
             DayCycleController.Instance.StartNight();
         }
-    }
-
-    private void EndRitual()
-    {
-        if (mainRitualCoroutine != null)
-            StartCoroutine(EndRitualSequence());
     }
 
     private IEnumerator EndRitualSequence()
@@ -177,23 +207,15 @@ public class RitualAltar : MonoBehaviour, IInteractable
         ritualVisualController?.StartEndRitualEffects();
         UpdateAltarAppearance();
 
-        // Release the deferred tutorial next-step now so the next instruction appears
-        // immediately after the ritual end effects (do not wait for the visual fade).
-        if (tutorialInteractionPending || tutorialEventFiredOnInteract)
-        {
-            TutorialManager.Instance?.ReleaseDeferredNextStep(true);
-        }
+        // Show the next instruction during the fade, but do not light the exit while the player is anchored.
+        ReleaseTutorialDeferral();
+        if (!isPerformingRitual) yield break;
 
-        if (ritualVisualController != null)
-        {
-            yield return ritualVisualController.FinishEndRitualEffects();
-        }
+        if (ritualVisualController != null && ritualVisualController.EndFadeDuration > 0f)
+            yield return new WaitForSeconds(ritualVisualController.EndFadeDuration);
 
-        isPerformingRitual = false;
-        mainRitualCoroutine = null;
-
-        tutorialInteractionPending = false;
-        tutorialEventFiredOnInteract = false;
+        RestoreDayIfStillInRitual();
+        if (isPerformingRitual) ReleaseRitualPlayer(completedNormally: true);
     }
 
     private void ApplyRitualBenefits()
@@ -210,11 +232,32 @@ public class RitualAltar : MonoBehaviour, IInteractable
         }
     }
 
+    private void OnDisable() => CancelInteraction();
+
+    public void CancelInteraction()
+    {
+        if (!isPerformingRitual) return;
+
+        RestoreDayIfStillInRitual();
+        ForceStopRitual();
+    }
+
     public void ForceStopRitual()
     {
+        // Existing force-end-night callers own the phase change; OnRitual is a valid input to EndNight.
         StopRitualCoroutine();
-        CleanupRitualState();
-        ritualVisualController?.ForceStopAndRestore();
+        if (ritualStarted || !isPerformingRitual)
+        {
+            UIManager.Instance?.HideRitualOverlay();
+            if (ritualVisualController != null && ritualVisualController.gameObject.activeInHierarchy)
+                ritualVisualController.ForceStopAndRestore();
+        }
+        UpdateAltarAppearance();
+        if (isPerformingRitual)
+        {
+            ReleaseTutorialDeferral();
+            ReleaseRitualPlayer();
+        }
     }
 
     private void StopRitualCoroutine()
@@ -228,13 +271,34 @@ public class RitualAltar : MonoBehaviour, IInteractable
         StopAllCoroutines();
     }
 
-    private void CleanupRitualState()
+    private void RestoreDayIfStillInRitual()
     {
-        isPerformingRitual = false;
-        UIManager.Instance?.HideRitualOverlay();
-        UpdateAltarAppearance();
+        var flow = GameFlowController.Instance;
+        if (ritualStarted && flow != null && flow.WorldPhase == GamePhase.OnRitual)
+            flow.SetPhase(GamePhase.Day);
+    }
+
+    private void ReleaseTutorialDeferral()
+    {
+        if (!tutorialInteractionPending) return;
+
         tutorialInteractionPending = false;
-        tutorialEventFiredOnInteract = false;
+        TutorialManager.Instance?.ReleaseDeferredNextStep(true);
+    }
+
+    private void ReleaseRitualPlayer(bool completedNormally = false)
+    {
+        if (playerMovement != null)
+            playerMovement.EndRitualMovement();
+
+        isPerformingRitual = false;
+        ritualStarted = false;
+        mainRitualCoroutine = null;
+        if (completedNormally && ritualVisualController != null)
+            ritualVisualController.OnPlayerReleased(canTransitionToNight);
+
+        if (gameObject.activeInHierarchy)
+            InteractionCompleted?.Invoke();
     }
 
     private void UpdateAltarAppearance()
