@@ -256,7 +256,9 @@ namespace MagicGarden.LoadoutUI
             if (plantCategory != plants) CancelDrag();
             plantCategory = plants; selectedPosition = position; feedback = null;
             view.ShowCategory(plants);
-            if (view.OptionsScroll != null) view.OptionsScroll.verticalNormalizedPosition = 1;
+            var strip = view.OptionContent != null ? view.OptionContent.GetComponent<LoadoutOptionGridLayout>() : null;
+            if (strip != null) strip.ResetScroll();
+            else if (view.OptionsScroll != null) view.OptionsScroll.horizontalNormalizedPosition = 0;
             Refresh();
         }
 
