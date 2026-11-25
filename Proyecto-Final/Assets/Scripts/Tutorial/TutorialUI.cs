@@ -231,7 +231,6 @@ public class TutorialUI : MonoBehaviour
         instructionText.text = step.DisplayText;
         instructionText.maxVisibleCharacters = 0;
         FitDialogue();
-        Debug.Log($"[TypeSFX] t={Time.unscaledTime:F3} f={Time.frameCount}  Typewriter START ({step.DisplayText?.Length ?? 0} chars)");
         typewriterCoroutine = StartCoroutine(TypewriterEffect(step.DisplayText));
         typingActive = true;
 
@@ -507,14 +506,12 @@ public class TutorialUI : MonoBehaviour
                     int k = Mathf.Max(1, keypressesPerSound);
                     if (writtingSoundBase != null && ((keypressCounter - 1) % k) == 0)
                     {
-                        Debug.Log($"[TypeSFX] t={Time.unscaledTime:F3} f={Time.frameCount}  char {i}/{totalCharacters} '{addedChar}' -> keypress");
                         writtingSoundBase.PlayKeypressSound();
                     }
                 }
             }
             yield return new WaitForSecondsRealtime(typewriterSpeed);
         }
-        Debug.Log($"[TypeSFX] t={Time.unscaledTime:F3} f={Time.frameCount}  Typewriter loop DONE (last letter shown)");
         // final reveal ensure
         instructionText.maxVisibleCharacters = Mathf.Max(totalCharacters, text.Length);
 
@@ -620,7 +617,6 @@ public class TutorialUI : MonoBehaviour
 
     private void KillAllAnimations()
     {
-        Debug.Log($"[TypeSFX] t={Time.unscaledTime:F3} f={Time.frameCount}  KillAllAnimations");
         if (textScrollRect != null) textScrollRect.StopMovement();
         if (currentSequence != null && currentSequence.IsActive())
         {
@@ -678,7 +674,6 @@ public class TutorialUI : MonoBehaviour
 
     private void FastForwardTypewriter()
     {
-        Debug.Log($"[TypeSFX] t={Time.unscaledTime:F3} f={Time.frameCount}  FastForwardTypewriter");
         if (typewriterCoroutine != null)
         {
             StopCoroutine(typewriterCoroutine);
@@ -708,7 +703,6 @@ public class TutorialUI : MonoBehaviour
     // Centralized handler to update the Continue button after typing finishes (natural or fast-forward)
     private void OnTypingFinished()
     {
-        Debug.Log($"[TypeSFX] t={Time.unscaledTime:F3} f={Time.frameCount}  OnTypingFinished");
         // Always stop any keypress sounds as soon as typing is considered finished
         writtingSoundBase?.StopKeypressSounds();
 

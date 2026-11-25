@@ -10,7 +10,7 @@ public class AmbienceWeatherAudioSource : MonoBehaviour
 
     [SerializeField] private AudioSource _audioSource;
 
-    private float authoredVolume = -1f; // the volume set on the prefab; fades run between 0 and this
+    private float authoredVolume = -1f;
     private Coroutine fade;
 
     private void Reset()
@@ -66,7 +66,6 @@ public class AmbienceWeatherAudioSource : MonoBehaviour
     private IEnumerator FadeTo(float target, float seconds, bool stopAtEnd)
     {
         float from = _audioSource.volume;
-        // unscaled: pause and level-up set timeScale to 0
         for (float t = 0f; t < seconds; t += Time.unscaledDeltaTime)
         {
             _audioSource.volume = Mathf.Lerp(from, target, Mathf.SmoothStep(0f, 1f, t / seconds));

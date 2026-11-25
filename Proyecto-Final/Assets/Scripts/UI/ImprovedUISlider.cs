@@ -109,11 +109,9 @@ public class ImprovedUISlider : MonoBehaviour, IPointerEnterHandler, IPointerExi
         if (isSmallMovement || isSlowMovement || isSmallIncrement)
         {
             float dynamicDelay = baseDelay * slowMovementDelayMultiplier;
-            Debug.Log($"[ImprovedUISlider] Using extended delay: {dynamicDelay:F2}s (small: {isSmallMovement}, slow: {isSlowMovement}, smallInc: {isSmallIncrement}, totalDist: {totalMovementDistance:F4}, lastInc: {lastIncrement:F4})");
             return dynamicDelay;
         }
         
-        Debug.Log($"[ImprovedUISlider] Using base delay: {baseDelay:F2}s");
         return baseDelay;
     }
 
@@ -142,13 +140,11 @@ public class ImprovedUISlider : MonoBehaviour, IPointerEnterHandler, IPointerExi
         {
             initialClickValue = sliderComponent.value;
             lastSliderValue = sliderComponent.value;
-            Debug.Log($"[ImprovedUISlider] OnPointerDown - initialClickValue: {initialClickValue}");
         }
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        Debug.Log($"[ImprovedUISlider] OnPointerUp - initialClickValue: {initialClickValue}, currentValue: {sliderComponent?.value}, soundPlayedForCurrentPause: {soundPlayedForCurrentPause}");
         
         // Play sound if value changed OR if user clicked and held for any amount of time (even quick clicks)
         if (sliderComponent != null && !soundPlayedForCurrentPause)
@@ -158,7 +154,6 @@ public class ImprovedUISlider : MonoBehaviour, IPointerEnterHandler, IPointerExi
             
             if (valueChanged || wasQuickClick)
             {
-                Debug.Log("[ImprovedUISlider] Playing sound on pointer up");
                 PlaySound(_onValueChangedSound, _enableValueChangedSound);
             }
         }
@@ -182,7 +177,6 @@ public class ImprovedUISlider : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     private void HandleValueChanged(float value)
     {
-        Debug.Log($"[ImprovedUISlider] HandleValueChanged - value: {value}, isDragging: {isDragging}, lastSliderValue: {lastSliderValue}");
         OnValueChanged.Invoke(value);
         if (isDragging)
         {
@@ -197,7 +191,6 @@ public class ImprovedUISlider : MonoBehaviour, IPointerEnterHandler, IPointerExi
                 lastMovementTime = Time.unscaledTime;
                 
                 lastSliderValue = value;
-                Debug.Log($"[ImprovedUISlider] Value changed during drag - soundPlayedForCurrentPause reset to false, totalMovement: {totalMovementDistance:F4}");
             }
         }
     }

@@ -6,15 +6,6 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>
-/// Dev-only audio session recorder for balancing. Starts automatically in editor play mode; F8 toggles recording.
-/// Writes a CSV per session. In the editor they go to the project's AudioSessions folder (next to Assets), so
-/// they can be committed and compared across the team; the file name carries who recorded it. Development
-/// builds have no project folder and write to persistentDataPath/AudioSessions. Each CSV has:
-///  - "play" rows for every sound SoundManager starts (volume, blend, distance, estimated heard gain)
-///  - "snap" rows once per second for every playing AudioSource in the scene (music, ambience, own sources)
-/// Analyze with Tools/Audio/analyze_audio_session.py.
-/// </summary>
 public class AudioSessionLogger : MonoBehaviour
 {
     private const KeyCode ToggleKey = KeyCode.F8;
@@ -37,7 +28,6 @@ public class AudioSessionLogger : MonoBehaviour
         DontDestroyOnLoad(go);
         instance = go.AddComponent<AudioSessionLogger>();
 #if UNITY_EDITOR
-        // Balancing phase: record every editor play session so a forgotten F8 doesn't lose a session.
         instance.StartRecording();
 #endif
     }
@@ -65,20 +55,17 @@ public class AudioSessionLogger : MonoBehaviour
         writer = new StreamWriter(path, false, new UTF8Encoding(false));
         writer.WriteLine("type,time,scene,sound,source,volume,pitch,spatialBlend,loop,rolloff,minDist,maxDist,dist2D,dist3D,heardGain,activeVoices,poolSize,listenerX,listenerY,listenerZ,srcX,srcY,srcZ,mixerGroup");
         playCount = 0;
-        Debug.Log($"[AudioSessionLogger] Recording to {path}");
     }
 
     private static string SessionFolder()
     {
 #if UNITY_EDITOR
-        // Application.dataPath is <project>/Assets; outside Assets so Unity does not import the CSVs.
         return Path.GetFullPath(Path.Combine(Application.dataPath, "..", "AudioSessions"));
 #else
         return Path.Combine(Application.persistentDataPath, "AudioSessions");
 #endif
     }
 
-    // Who recorded it, safe for a file name, so sessions from different machines can sit in one folder.
     private static string Recorder()
     {
         var name = new StringBuilder();
@@ -92,7 +79,6 @@ public class AudioSessionLogger : MonoBehaviour
         writer.Flush();
         writer.Dispose();
         writer = null;
-        Debug.Log($"[AudioSessionLogger] Saved {playCount} sound events to {path}");
     }
 
     private void OnApplicationQuit()
@@ -100,7 +86,6 @@ public class AudioSessionLogger : MonoBehaviour
         if (writer != null) StopRecording();
     }
 
-    /// <summary>Called by SoundManager right after it starts a sound.</summary>
     public static void LogPlay(string sound, AudioSource source, float volume)
     {
         if (!Recording || source == null) return;
@@ -147,7 +132,6 @@ public class AudioSessionLogger : MonoBehaviour
         return cachedListener;
     }
 
-    /// <summary>Distance attenuation of the source's 3D part (Unity's built-in curves; custom curves read from the source).</summary>
     private static float Attenuation(AudioSource s, float d)
     {
         float min = Mathf.Max(s.minDistance, 0.0001f), max = Mathf.Max(s.maxDistance, min);

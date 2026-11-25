@@ -8,25 +8,24 @@ public class InterfaceSoundBase : MonoBehaviour
     public SoundClipData menuButtonDisabledHover;
     public SoundClipData menuButtonClick;
     public SoundClipData menuButtonDisabledClick;
-    
+
     [Header("Menu Button Specific Sounds")]
     public SoundClipData menuButtonPlay;
     public SoundClipData menuButtonOptions;
     public SoundClipData menuButtonControls;
     public SoundClipData menuButtonExit;
-    
+
     [Header("Game Interface Sounds")]
     public SoundClipData gameInventoryBookOpen;
     public SoundClipData gameInventoryBookClose;
     public SoundClipData pauseOpen;
     public SoundClipData pauseClose;
-    
+
     public SoundClipData onAbilityChanged;
     public SoundClipData onSeedSelect;
-    
-    // Dictionary for runtime access
+
     private Dictionary<InterfaceSoundType, SoundClipData> soundDictionary;
-    
+
     public void Initialize()
     {
         soundDictionary = new Dictionary<InterfaceSoundType, SoundClipData>
@@ -47,18 +46,15 @@ public class InterfaceSoundBase : MonoBehaviour
             { InterfaceSoundType.OnSeedSelect, onSeedSelect },
         };
     }
-    
+
     public SoundClipData GetSound(InterfaceSoundType soundType)
     {
         if (soundDictionary == null) Initialize();
-        
+
         soundDictionary.TryGetValue(soundType, out SoundClipData soundData);
         return soundData;
     }
-    
-    /// <summary>
-    /// Plays the sound for the given EnemySoundType using SoundManager's pooling system.
-    /// </summary>
+
     public void PlaySound(InterfaceSoundType soundType)
     {
         var soundData = GetSound(soundType);
@@ -68,8 +64,6 @@ public class InterfaceSoundBase : MonoBehaviour
         soundData.SetLastPlayTime();
     }
 
-    // Menu, pause and book sounds stay clear while the game behind them is muffled. Ability and seed
-    // selection are in-game HUD feedback and are muffled with the rest of the game.
     private static bool IsMenuSound(InterfaceSoundType soundType)
     {
         return soundType != InterfaceSoundType.OnAbilityChanged && soundType != InterfaceSoundType.OnSeedSelect;

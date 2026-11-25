@@ -36,12 +36,12 @@ public class SoundClipData
     public AudioClip GetClip()
     {
         if (clips == null || clips.Length == 0) return null;
-    
+
         if (randomizeClip && clips.Length > 1)
         {
             return clips[Random.Range(0, clips.Length)];
         }
-    
+
         return clips[0];
     }
 

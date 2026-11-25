@@ -1,6 +1,5 @@
 public enum InterfaceSoundType
 {
-    // Generic Button ShowOptions
     GenericButtonClick,
     GenericButtonDisabledClick,
     GenericButtonHover,
@@ -12,13 +11,12 @@ public enum InterfaceSoundType
     GenericButtonSelect,
     GenericButtonDeselect,
     GenericButtonSubmit,
-    
-    // Main Menu Button ShowOptions
+
     MenuButtonPlay,
     MenuButtonOptions,
     MenuButtonControls,
     MenuButtonExit,
-    
+
     MenuButtonClick,
     MenuButtonDisabledClick,
     MenuButtonHover,
@@ -33,7 +31,7 @@ public enum InterfaceSoundType
     SliderDown,
     GameInventoryBookOpen,
     GameInventoryBookClose,
-    
+
     OnAbilityChanged,
     OnSeedSelect,
 }

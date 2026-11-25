@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-// Plays the ambience bed for the current weather. The weather controller picks the weather each day; this
-// manager picks the day or night version of it from the game phase and crossfades between beds.
 public class AmbienceSoundManager : MonoBehaviour
 {
     [Header("Weather Audio Sources")]
@@ -16,7 +14,6 @@ public class AmbienceSoundManager : MonoBehaviour
     private GameFlowController flow;
 
     private void Awake() {
-        // Find all AmbienceWeatherAudioSource components in children if not assigned
         if (_weatherAudioSources == null || _weatherAudioSources.Count == 0)
             _weatherAudioSources = GetComponentsInChildren<AmbienceWeatherAudioSource>().ToList();
     }
@@ -30,7 +27,6 @@ public class AmbienceSoundManager : MonoBehaviour
         if (flow != null) flow.OnPhaseChanged -= HandlePhaseChanged;
     }
 
-    // Only day and night change the bed; ritual, level-up and game over keep whatever is playing.
     private void HandlePhaseChanged(GamePhase phase) {
         if (!hasWeather) return;
         if (phase == GamePhase.Day) StartAmbience(AmbienceType.Forest, currentWeather);
@@ -56,7 +52,6 @@ public class AmbienceSoundManager : MonoBehaviour
         currentPlayingSource = source;
     }
 
-    /// <summary>Called when the weather changes. The night version is used automatically if it is already night.</summary>
     public void TransitionAmbience(AmbienceType target, AmbienceWeather weather) {
         currentWeather = weather;
         hasWeather = true;

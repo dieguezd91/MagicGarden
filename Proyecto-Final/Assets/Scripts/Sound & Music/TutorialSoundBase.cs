@@ -43,17 +43,14 @@ public class TutorialSoundBase : MonoBehaviour
 
         if (!soundDictionary.TryGetValue(type, out var soundData) || soundData == null || soundData.GetClip() == null)
         {
-            Debug.LogWarning($"[{gameObject.name}] TutorialSoundBase: SoundClipData for '{type}' is missing or not assigned.");
             return;
         }
 
         if (SoundManager.Instance == null)
         {
-            Debug.LogWarning($"[{gameObject.name}] TutorialSoundBase: SoundManager.Instance is null. Cannot play '{type}'.");
             return;
         }
 
         SoundManager.Instance.PlayClip(soundData, SoundSourceType.Global, Camera.main?.transform);
     }
 }
-

@@ -1,11 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// This script will be used to play ambient sounds, if the player is inside the trigger area for it.
-/// It will play at random intervals, but the timer stops if player is not inside trigger area.
-/// The audio source for this is going to be 3D for immersion.
-/// </summary>
-
 [RequireComponent(typeof(Collider))]
 [RequireComponent(typeof(AudioSource))]
 public class SoundAmbientRandomizedTrigger : MonoBehaviour
@@ -22,7 +16,7 @@ public class SoundAmbientRandomizedTrigger : MonoBehaviour
     private void Awake()
     {
         _audioSource = GetComponent<AudioSource>();
-        _audioSource.spatialBlend = 1f; // 3D sound
+        _audioSource.spatialBlend = 1f;
         _audioSource.playOnAwake = false;
         _audioSource.loop = false;
         _audioSource.clip = _ambientClip.GetClip();

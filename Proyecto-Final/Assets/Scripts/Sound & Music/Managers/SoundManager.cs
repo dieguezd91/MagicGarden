@@ -11,7 +11,7 @@ public class SoundManager : MonoBehaviour
 
     [SerializeField] private List<AudioSource> audioSourcePool = new();
     [SerializeField] private int initialPoolSize = 5;
-    [SerializeField] private GameObject audioSourcePrefab; // Prefab with AudioSource, AudioMixer, etc.
+    [SerializeField] private GameObject audioSourcePrefab;
 
     private const int MaxSimultaneousSameSound = 3;
 
@@ -25,23 +25,16 @@ public class SoundManager : MonoBehaviour
 
     private AudioListener listener;
 
-    // Pooled sources are shared by every kind of sound, so each play picks its mixer group. Game sounds
-    // (enemies, plants, spells, pickups, level up, in-game HUD) go to Effects/Game, which is muffled while
-    // paused or after game over; menu sounds go to Effects/UI and stay clear.
     [Header("Mixer routing")]
     [SerializeField] private AudioMixerGroup gameGroup;
     [SerializeField] private AudioMixerGroup uiGroup;
     private PauseController pause;
 
-    /// <summary>
-    /// True while a menu has the player's attention (paused, game over, or no gameplay in this scene).
-    /// Anything that starts playing now is menu feedback rather than a game event.
-    /// </summary>
     private bool MenuMoment
     {
         get
         {
-            if (GameFlowController.Instance == null) return true; // main menu scene
+            if (GameFlowController.Instance == null) return true;
             if (GameFlowController.Instance.WorldPhase == GamePhase.GameOver) return true;
             return pause != null && pause.IsPaused;
         }
@@ -53,7 +46,6 @@ public class SoundManager : MonoBehaviour
         if (group != null) source.outputAudioMixerGroup = group;
     }
 
-    // Dictionary to track sounds by name for quick lookup
     private Dictionary<string, Sound> soundLookup = new();
 
     private void Awake()
@@ -73,24 +65,20 @@ public class SoundManager : MonoBehaviour
     {
         pause = FindFirstObjectByType<PauseController>();
 
-        // Create lookup dictionary for faster sound finding
         foreach (var sound in sounds)
         {
             soundLookup[sound.name] = sound;
         }
 
-        // First, find any existing AudioSources on this GameObject
         AudioSource[] existingAudioSources = GetComponents<AudioSource>();
         audioSourcePool.AddRange(existingAudioSources);
 
-        // If we don't have enough AudioSources, create more to reach initialPoolSize
         int sourcesToCreate = Mathf.Max(0, initialPoolSize - audioSourcePool.Count);
         for (int i = 0; i < sourcesToCreate; i++)
         {
             CreateNewAudioSource();
         }
 
-        // Play sounds that should play on awake
         foreach (var sound in sounds)
         {
             if (sound.playOnAwake)
@@ -126,10 +114,8 @@ public class SoundManager : MonoBehaviour
 
     private AudioSource GetAvailableAudioSource()
     {
-        // Try to find an available audio source (not playing)
         var availableSource = audioSourcePool.FirstOrDefault(source => !source.isPlaying);
 
-        // If no available source, create a new one
         if (availableSource == null)
         {
             availableSource = CreateNewAudioSource();
@@ -145,10 +131,6 @@ public class SoundManager : MonoBehaviour
         source.dopplerLevel = 0f;
     }
 
-    /// <summary>
-    /// The camera/listener sits in front of the 2D play plane (z -10). Put sources at the listener's depth
-    /// so distance is the on-screen distance; otherwise every sound starts 10 units away.
-    /// </summary>
     private Vector3 OnListenerPlane(Vector3 position)
     {
         if (listener == null || !listener.isActiveAndEnabled)
@@ -178,14 +160,12 @@ public class SoundManager : MonoBehaviour
     {
         if (clip == null) return false;
         float now = Time.unscaledTime;
-        // now < last covers a stale entry after an editor play session without domain reload.
         if (lastStartTime.TryGetValue(clip, out float last) && now >= last && now - last < minRetriggerSeconds)
             return true;
         lastStartTime[clip] = now;
         return false;
     }
 
-    /// <param name="ui">Menu feedback (buttons, pause screens): never muffled.</param>
     public void PlayOneShot(string name, bool ui = false)
     {
         if (!soundLookup.TryGetValue(name, out Sound sound))
@@ -279,14 +259,8 @@ public class SoundManager : MonoBehaviour
         LogPlay(name, audioSource, sound.volume);
     }
 
-    // Loops that belong to one object and follow it (e.g. a boss's hover hum). They are not pooled: the source is
-    // a child of the owner and goes away with it.
     private readonly List<AudioSource> attachedLoops = new();
 
-    /// <summary>
-    /// Starts a positioned loop that follows <paramref name="owner"/>. The caller owns the returned source
-    /// (volume, pitch, stopping); it is destroyed together with the owner.
-    /// </summary>
     public AudioSource PlayAttachedLoop(SoundClipData data, Transform owner)
     {
         if (data == null || owner == null) return null;
@@ -296,13 +270,12 @@ public class SoundManager : MonoBehaviour
         GameObject holder = audioSourcePrefab != null ? Instantiate(audioSourcePrefab, owner) : new GameObject();
         holder.name = $"Loop_{clip.name}";
         holder.transform.SetParent(owner, false);
-        // Same depth trick as the pooled sources; as a child it keeps that depth while it follows the owner.
         holder.transform.position = OnListenerPlane(owner.position);
 
         AudioSource source = holder.GetComponent<AudioSource>();
         if (source == null) source = holder.AddComponent<AudioSource>();
         if (gameGroup != null)
-            source.outputAudioMixerGroup = gameGroup; // a loop on a world object is always a game sound
+            source.outputAudioMixerGroup = gameGroup;
         else if (source.outputAudioMixerGroup == null && audioSourcePool.Count > 0 && audioSourcePool[0] != null)
             source.outputAudioMixerGroup = audioSourcePool[0].outputAudioMixerGroup;
 
@@ -329,7 +302,6 @@ public class SoundManager : MonoBehaviour
             return;
         }
 
-        // Stop all audio sources playing this sound
         foreach (var source in audioSourcePool)
         {
             if (source.isPlaying && source.clip == sound.clip)
@@ -339,10 +311,6 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Stops every pooled source holding this clip, including PlayOneShot playback.
-    /// Does not check isPlaying, which is not reliable for one-shots.
-    /// </summary>
     public void StopClip(AudioClip clip)
     {
         if (clip == null) return;
@@ -350,7 +318,6 @@ public class SoundManager : MonoBehaviour
         {
             if (source != null && source.clip == clip)
             {
-                Debug.Log($"[TypeSFX] t={Time.unscaledTime:F3} f={Time.frameCount} StopClip {clip.name} on {source.name} (isPlaying before={source.isPlaying}, time={source.time:F3})");
                 source.Stop();
             }
         }
@@ -397,7 +364,7 @@ public class SoundManager : MonoBehaviour
                 source.UnPause();
         }
     }
-    
+
     public bool IsPlaying(string name)
     {
         if (!soundLookup.TryGetValue(name, out Sound sound))
@@ -415,7 +382,6 @@ public class SoundManager : MonoBehaviour
     [Tooltip("With this many sounds already playing, enemy footsteps and idle sounds are skipped so hits, deaths and attacks keep their voices (Unity plays 32 at most).")]
     [SerializeField] private int crowdedVoiceCount = 20;
 
-    /// <summary>True when so much is playing that filler sounds should stay out of the way.</summary>
     public bool IsCrowded => GetActiveSourceCount() >= crowdedVoiceCount;
 
     public int GetTotalSourceCount()
@@ -423,9 +389,6 @@ public class SoundManager : MonoBehaviour
         return audioSourcePool.Count;
     }
 
-    /// <summary>
-    /// Plays a SoundClipData using the pooling and limiting system.
-    /// </summary>
     public AudioSource PlayClip(SoundClipData data, SoundSourceType sourceType = SoundSourceType.Global, Transform parent = null, bool ui = false)
     {
         if (data == null) return null;
@@ -485,10 +448,7 @@ public class SoundManager : MonoBehaviour
         LogPlay(clip.name, audioSource, data.volume);
         return audioSource;
     }
-    
-    /// <summary>
-    /// Plays an GetAudioClip directly using the pooling and limiting system.
-    /// </summary>
+
     public void PlayAudioClip(AudioClip clip, float volume = 0.5f, float pitch = 1f, bool loop = false, bool ui = false)
     {
         if (clip == null) return;
@@ -540,14 +500,12 @@ public class SoundManager : MonoBehaviour
     private void RegenerateAudioSourcePool()
     {
         ClearAudioSourcePool();
-        // Add any AudioSources on this GameObject (should be none after clear, but just in case)
         foreach (var src in GetComponents<AudioSource>())
         {
             if (!audioSourcePool.Contains(src))
                 audioSourcePool.Add(src);
         }
 
-        // Create new sources to reach initialPoolSize
         int sourcesToCreate = Mathf.Max(0, initialPoolSize - audioSourcePool.Count);
         for (int i = 0; i < sourcesToCreate; i++)
         {
@@ -558,7 +516,6 @@ public class SoundManager : MonoBehaviour
     [ContextMenu("Clear Audio Source Pool")]
     private void ClearAudioSourcePool()
     {
-        // Remove and destroy all pooled AudioSources except those on this GameObject
         audioSourcePool.RemoveAll(source =>
         {
             if (source == null) return true;
@@ -569,7 +526,6 @@ public class SoundManager : MonoBehaviour
             }
             return false;
         });
-        // Remove AudioSources from this GameObject except this component
         foreach (var src in GetComponents<AudioSource>())
         {
             if (src != null && src != this.GetComponent<AudioSource>())
