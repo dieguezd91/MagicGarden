@@ -2408,6 +2408,10 @@ MonoBehaviour:
   musicSlider: {fileID: 6274973326503030650}
   sfxSlider: {fileID: 5382776727498028253}
   muteButton: {fileID: 1754022704461259141}
+  groupMuteButtonPrefab: {fileID: 5785077795548186115, guid: 9ac15f544132499485f7e073a4064a4a, type: 3}
+  soundOnIcon: {fileID: 1651235326, guid: 6b876b38e4597704b84b5e76e54d27a1, type: 3}
+  soundOffIcon: {fileID: 1153830829, guid: 6b876b38e4597704b84b5e76e54d27a1, type: 3}
+  groupMuteGap: 0.35
   sliderTickClip: {fileID: 8300000, guid: 318f24a685cb4d29896ed9b634356f58, type: 3}
   sliderTickMixerGroup: {fileID: -633828639928632731, guid: 5e6626574c6616a40a8e778a90666ada, type: 2}
   sliderTickVolume: 0.25

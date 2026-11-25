@@ -134,27 +134,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5467993233487855235, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
       propertyPath: m_VerticalAlignment
-      value: 512
+      value: 4096
       objectReference: {fileID: 0}
     - target: {fileID: 5467993233487855235, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
       propertyPath: m_HorizontalAlignment
       value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 1029450753615087186, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1029450753615087186, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
-      propertyPath: m_AnchorMin.x
-      value: 0.1852
-      objectReference: {fileID: 0}
-    - target: {fileID: 1029450753615087186, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0.2857
-      objectReference: {fileID: 0}
-    - target: {fileID: 1029450753615087186, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0.9286
       objectReference: {fileID: 0}
     - target: {fileID: 7654868973609511931, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
       propertyPath: m_Name

@@ -113,10 +113,9 @@ public class MainMenuController : UIControllerBase
         _optionsPanel.Show();
         PlayPanelSound(true);
 
-        if (EventSystem.current != null && _optionsBackButton != null)
-        {
-            EventSystem.current.SetSelectedGameObject(_optionsBackButton.gameObject);
-        }
+        // Nothing starts selected: a pre-selected Back button shows its selected tint before the mouse ever touches it.
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(null);
     }
 
     private void HideOptions()
@@ -130,10 +129,8 @@ public class MainMenuController : UIControllerBase
 
         SetMainMenuButtonsInteractable(true);
 
-        if (EventSystem.current != null && _optionsButton != null)
-        {
-            EventSystem.current.SetSelectedGameObject(_optionsButton.gameObject);
-        }
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(null);
     }
 
     private void ShowControls()

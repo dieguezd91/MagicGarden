@@ -200,6 +200,22 @@ PrefabInstance:
       propertyPath: m_Name
       value: Restore Option Button
       objectReference: {fileID: 0}
+    - target: {fileID: 1029450753615087186, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1029450753615087186, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1029450753615087186, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1029450753615087186, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 2686626348742776, guid: 6750c1a9b32add34f9a96a161b5d5b4e, type: 3}
     - {fileID: 4696120000059815133, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}

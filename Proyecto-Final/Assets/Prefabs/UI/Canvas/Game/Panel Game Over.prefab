@@ -316,10 +316,6 @@ PrefabInstance:
       value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 1044355472996775097, guid: 6d7db9a3ef44cc14b8a02582f9fb80ad, type: 3}
-      propertyPath: m_margin.y
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1044355472996775097, guid: 6d7db9a3ef44cc14b8a02582f9fb80ad, type: 3}
       propertyPath: m_margin.z
       value: 10
       objectReference: {fileID: 0}

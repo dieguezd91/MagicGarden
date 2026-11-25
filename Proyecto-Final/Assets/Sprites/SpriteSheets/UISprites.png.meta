@@ -2754,7 +2754,7 @@ TextureImporter:
         width: 14
         height: 12
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -2762,6 +2762,48 @@ TextureImporter:
       bones: []
       spriteID: c9c5ec273dbdd3340b086c298554502e
       internalID: -1304206593
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icon_Sound_On
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1008
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b7ae9a4932ca4831a584c0fcf050d237
+      internalID: 1651235326
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icon_Sound_Off
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 1008
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f7cd15652f3a46bc95009172bb01c507
+      internalID: 1153830829
       vertices: []
       indices: 
       edges: []
@@ -2834,6 +2876,8 @@ TextureImporter:
       HouseHealthFull: 1028575516
       HouseTrim: -1821449813
       IKey: 124537896
+      Icon_Sound_Off: 1153830829
+      Icon_Sound_On: 1651235326
       IngredientList: -132592085
       IngredientRequirement: -1902967201
       InventoryDeco: -1338539560
@@ -2922,6 +2966,8 @@ TextureImporter:
       UISprites_34: -1645696394
       UISprites_35: 408355289
       UISprites_36: 824615246
+      UISprites_37: 1298461472
+      UISprites_38: 486738410
       UISprites_4: -281481597
       UISprites_5: -15138589
       UISprites_6: -407597832

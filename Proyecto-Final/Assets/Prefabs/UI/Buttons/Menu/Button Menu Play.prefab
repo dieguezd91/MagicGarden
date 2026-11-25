@@ -8,6 +8,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5467993233487855235, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 564081831426989095, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
       value: 0
@@ -122,15 +126,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5467993233487855235, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
       propertyPath: m_fontSize
-      value: 79.04
+      value: 75
       objectReference: {fileID: 0}
     - target: {fileID: 5467993233487855235, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
       propertyPath: m_fontSizeBase
-      value: 79.04
-      objectReference: {fileID: 0}
-    - target: {fileID: 5467993233487855235, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
-      propertyPath: m_VerticalAlignment
-      value: 256
+      value: 75
       objectReference: {fileID: 0}
     - target: {fileID: 7654868973609511931, guid: 46054446b6ed6ba43b17f5918830b4d7, type: 3}
       propertyPath: m_Name
