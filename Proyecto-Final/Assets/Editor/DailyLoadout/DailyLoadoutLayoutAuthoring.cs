@@ -137,19 +137,27 @@ public static class DailyLoadoutLayoutAuthoring
     private static void ConfigureScroll(ScrollRect scroll)
     {
         Stretch((RectTransform)scroll.transform, Vector2.zero, Vector2.zero);
-        scroll.horizontal = false; scroll.vertical = true;
+        // One horizontal strip; LoadoutOptionGridLayout enables sideways scrolling only when the cards overflow.
+        scroll.horizontal = false; scroll.vertical = false;
+        scroll.scrollSensitivity = -Mathf.Abs(scroll.scrollSensitivity);
         var content = scroll.content;
-        content.anchorMin = new Vector2(0, 1); content.anchorMax = Vector2.one;
-        content.pivot = new Vector2(.5f, 1); content.anchoredPosition = Vector2.zero; content.sizeDelta = Vector2.zero;
+        content.anchorMin = Vector2.zero; content.anchorMax = new Vector2(0, 1);
+        content.pivot = new Vector2(0, .5f); content.anchoredPosition = Vector2.zero; content.sizeDelta = Vector2.zero;
+        var fitter = content.GetComponent<ContentSizeFitter>();
+        if (fitter != null)
+        {
+            fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            fitter.verticalFit = ContentSizeFitter.FitMode.Unconstrained;
+        }
         var grid = content.GetComponent<GridLayoutGroup>();
-        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount; grid.constraintCount = 2;
+        grid.startAxis = GridLayoutGroup.Axis.Horizontal;
+        grid.constraint = GridLayoutGroup.Constraint.FixedRowCount; grid.constraintCount = 1;
         grid.padding = new RectOffset(12, 12, 12, 12); grid.spacing = new Vector2(16, 16);
         foreach (var option in content.GetComponentsInChildren<LoadoutOptionView>(true))
         {
             var data = new SerializedObject(option);
             Reference<TMP_Text>(data, "stateLabel").fontSize = 24;
         }
-        scroll.verticalNormalizedPosition = 1;
     }
 
     private static void Slot(LoadoutSlotView slot, float x, string position)

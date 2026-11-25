@@ -193,24 +193,24 @@ public sealed class DailyLoadoutUITests
             Canvas.ForceUpdateCanvases();
             LayoutRebuilder.ForceRebuildLayoutImmediate(content);
             var scroll = (ScrollRect)Ref(view, "optionsScroll");
-            Assert.That(content.rect.height, Is.GreaterThan(scroll.viewport.rect.height));
+            Assert.That(content.rect.width, Is.GreaterThan(scroll.viewport.rect.width));
             Assert.That(scroll.viewport.GetComponent<RectMask2D>(), Is.Not.Null);
-            Assert.That(scroll.vertical, Is.True); Assert.That(scroll.horizontal, Is.False);
+            Assert.That(scroll.horizontal, Is.True); Assert.That(scroll.vertical, Is.False);
             foreach (var child in options)
             {
                 Assert.That(child.gameObject.activeInHierarchy, Is.True, child.name);
                 Assert.That(child.GetComponents<ILayoutIgnorer>().Any(item => item.ignoreLayout), Is.False, child.name);
-                var bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(content, child);
-                Assert.That(bounds.min.x, Is.GreaterThanOrEqualTo(content.rect.xMin - 1), child.name);
-                Assert.That(bounds.max.x, Is.LessThanOrEqualTo(content.rect.xMax + 1), child.name);
+                var bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(scroll.viewport, child);
+                Assert.That(bounds.min.y, Is.GreaterThanOrEqualTo(scroll.viewport.rect.yMin - 1), child.name + " stays on the single row");
+                Assert.That(bounds.max.y, Is.LessThanOrEqualTo(scroll.viewport.rect.yMax + 1), child.name + " stays on the single row");
             }
             scroll.Rebuild(CanvasUpdate.PostLayout);
-            scroll.verticalNormalizedPosition = 0;
+            scroll.horizontalNormalizedPosition = 1;
             Canvas.ForceUpdateCanvases();
             var last = options[options.Count - 1];
             var lastBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(scroll.viewport, last);
-            Assert.That(lastBounds.min.y, Is.GreaterThanOrEqualTo(scroll.viewport.rect.yMin - 1));
-            Assert.That(lastBounds.max.y, Is.LessThanOrEqualTo(scroll.viewport.rect.yMax + 1));
+            Assert.That(lastBounds.min.x, Is.GreaterThanOrEqualTo(scroll.viewport.rect.xMin - 1));
+            Assert.That(lastBounds.max.x, Is.LessThanOrEqualTo(scroll.viewport.rect.xMax + 1));
             foreach (var slot in root.GetComponentsInChildren<Component>().Where(c => c.GetType().Name == "LoadoutSlotView"))
             {
                 var bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(root.transform, slot.transform);
