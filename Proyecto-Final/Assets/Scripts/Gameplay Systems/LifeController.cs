@@ -67,6 +67,10 @@ public class LifeController : MonoBehaviour
     [SerializeField] private GameObject manaPickupPrefab;
     [SerializeField] public float manaDropChance = 1f;
 
+    [Header("EXPERIENCE DROP")]
+    [Tooltip("Optional override prefab for this enemy's XP pickup. Leave empty to use the shared ExperienceItem prefab in Resources.")]
+    [SerializeField] private GameObject experiencePickupPrefab;
+
     [Header("OBJECT DROP SYSTEM")]
     [SerializeField] private List<LootItem> lootTable;
     [SerializeField] private float dropScatterDistance = 0.5f;
@@ -384,7 +388,7 @@ public class LifeController : MonoBehaviour
         dropsSpawned = true;
         if (experienceDrop > 0)
         {
-            var pickup = ExperiencePickup.Spawn(transform.position, experienceDrop, experienceIcon);
+            var pickup = ExperiencePickup.Spawn(transform.position, experienceDrop, experienceIcon, experiencePickupPrefab);
             Scatter(pickup);
         }
         if (lootTable != null && lootTable.Count > 0)

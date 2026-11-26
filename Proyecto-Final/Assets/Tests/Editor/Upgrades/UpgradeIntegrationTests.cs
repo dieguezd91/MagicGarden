@@ -325,6 +325,61 @@ public class UpgradeIntegrationTests
             if (!before.Contains(pickup)) { created.Add(pickup.gameObject); spawned++; }
         Assert.That(spawned, Is.EqualTo(1));
     }
+    [Test] public void ExperiencePickupUsesSharedPrefabAndPreservesItsSprite()
+    {
+        var prefab = Resources.Load<GameObject>("ExperienceItem");
+        Assert.That(prefab, Is.Not.Null, "Expected shared ExperienceItem prefab inside a Resources folder.");
+        var prefabRenderer = prefab.GetComponent<SpriteRenderer>();
+        Assert.That(prefabRenderer, Is.Not.Null);
+        Assert.That(prefabRenderer.sprite, Is.Not.Null);
+        Assert.That(prefab.GetComponent<Rigidbody2D>(), Is.Not.Null);
+        var prefabCollider = prefab.GetComponent<Collider2D>();
+        Assert.That(prefabCollider, Is.Not.Null);
+        Assert.That(prefabCollider.isTrigger, Is.True);
+        var pickupType = Production("ExperiencePickup");
+        Assert.That(prefab.GetComponent(pickupType), Is.Not.Null);
+
+        var tex = new Texture2D(2, 2); created.Add(tex);
+        var enemyIcon = Sprite.Create(tex, new Rect(0, 0, 2, 2), Vector2.one * 0.5f); created.Add(enemyIcon);
+        var life = Component("LifeController");
+        var before = new HashSet<UnityEngine.Object>(UnityEngine.Object.FindObjectsOfType(pickupType));
+        Call(life, "ConfigureExperienceDrop", 25, enemyIcon);
+        Set(life, "isDead", true);
+        Call(life, "Drop");
+
+        Component spawned = null;
+        foreach (Component pickup in UnityEngine.Object.FindObjectsOfType(pickupType))
+            if (!before.Contains(pickup)) { created.Add(pickup.gameObject); spawned = pickup; }
+        Assert.That(spawned, Is.Not.Null);
+        Assert.That(spawned.GetComponent<SpriteRenderer>().sprite, Is.EqualTo(prefabRenderer.sprite));
+        Assert.That(spawned.transform.localScale, Is.EqualTo(prefab.transform.localScale));
+        Assert.That(Get(spawned, "amount"), Is.EqualTo(25));
+    }
+    [Test] public void ExperiencePickupSupportsPerEnemyPrefabOverride()
+    {
+        var pickupType = Production("ExperiencePickup");
+        var tex = new Texture2D(2, 2); created.Add(tex);
+        var overrideSprite = Sprite.Create(tex, new Rect(0, 0, 2, 2), Vector2.one * 0.5f); created.Add(overrideSprite);
+        var customPrefab = new GameObject("Custom XP Prefab"); created.Add(customPrefab);
+        customPrefab.AddComponent<SpriteRenderer>().sprite = overrideSprite;
+        customPrefab.AddComponent<Rigidbody2D>();
+        customPrefab.AddComponent<CircleCollider2D>().isTrigger = true;
+        customPrefab.AddComponent(pickupType);
+
+        var life = Component("LifeController");
+        var before = new HashSet<UnityEngine.Object>(UnityEngine.Object.FindObjectsOfType(pickupType));
+        Set(life, "experiencePickupPrefab", customPrefab);
+        Call(life, "ConfigureExperienceDrop", 40, null);
+        Set(life, "isDead", true);
+        Call(life, "Drop");
+
+        Component spawned = null;
+        foreach (Component pickup in UnityEngine.Object.FindObjectsOfType(pickupType))
+            if (!before.Contains(pickup)) { created.Add(pickup.gameObject); spawned = pickup; }
+        Assert.That(spawned, Is.Not.Null);
+        Assert.That(spawned.GetComponent<SpriteRenderer>().sprite, Is.EqualTo(overrideSprite));
+        Assert.That(Get(spawned, "amount"), Is.EqualTo(40));
+    }
     [Test] public void UnlockSeedDeliveryPreservesExistingCountsAndDefersWhenFull()
     {
         var seeds = Component("SeedInventory");
