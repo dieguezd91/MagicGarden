@@ -104,6 +104,21 @@ MonoBehaviour:
   lifeTime: 10
   floatingDamagePrefab: {fileID: 8011744024934345175, guid: b18d5e020de9918429f62b516be2ef30, type: 3}
   impactParticlesPrefab: {fileID: 491567316690014037, guid: ee269b145022c494b8a6424f16134fdc, type: 3}
+  impactShakeIntensity: 0.3
+  impactShakeDuration: 0.25
+  hitStopDuration: 0.05
+  killShakeIntensity: 0.5
+  killShakeDuration: 0.3
+  killHitStopDuration: 0.09
+  castSound:
+    clips:
+    - {fileID: 8300000, guid: 8e50f6220fb662f4f95d3fe65edd4994, type: 3}
+    volume: 0.5
+    pitch: 1
+    pitchVariation: 0.05
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
   impactSound:
     clips:
     - {fileID: 8300000, guid: 6d17418e94214c87bb4c5c8d3e9d729b, type: 3}
@@ -121,16 +136,10 @@ MonoBehaviour:
   knockbackForce: 12
   explosionEffectPrefab: {fileID: 410531898165536235, guid: f978f6cbd9ae54147a800bc801c0370c, type: 3}
   explosionEffectDuration: 0.6
+  explosionShakeIntensity: 0.5
+  explosionShakeDuration: 0.4
+  explosionHitStopDuration: 0.06
   armingTime: 0.1
-  castSound:
-    clips:
-    - {fileID: 8300000, guid: 8e50f6220fb662f4f95d3fe65edd4994, type: 3}
-    volume: 0.5
-    pitch: 1
-    pitchVariation: 0.05
-    loop: 0
-    randomizeClip: 1
-    cooldownTime: 0.0
 --- !u!61 &5014852601970736367
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -146,7 +155,7 @@ BoxCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
