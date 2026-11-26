@@ -4871,7 +4871,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2347896188041809830}
   - component: {fileID: 3617661970593804660}
-  - component: {fileID: 7639220701534308262}
+  - component: {fileID: 8837740219576027364}
   m_Layer: 8
   m_Name: Effect
   m_TagString: Untagged
@@ -4946,32 +4946,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &7639220701534308262
-MonoBehaviour:
+--- !u!95 &8837740219576027364
+Animator:
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1946226900412504595}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7085ff6bda962bd40acaf357d0b7a60b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sprites:
-  - {fileID: 1235166977, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: -1669300021, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: 2113416279, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: 451072695, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: -1314865358, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: 1346612761, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: -1837379960, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: -2052144867, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: 762717307, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: -1891712872, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  frameDelay: 0.1
-  enableColliderToggle: 0
-  targetCollider: {fileID: 0}
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 22100000, guid: 02e9bd78e5199584aae4028b0e34df80, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &2177859810303777798
 GameObject:
   m_ObjectHideFlags: 0
@@ -5217,6 +5212,7 @@ MonoBehaviour:
       m_Calls: []
   manaPickupPrefab: {fileID: 5772987197591363074, guid: 83d9a560608ef2e438e8562bff94e850, type: 3}
   manaDropChance: 10
+  experiencePickupPrefab: {fileID: 0}
   lootTable:
   - name: BossHeart
     itemPrefab: {fileID: 1768544347340343859, guid: 00093646bc65a6744a868955a21380aa, type: 3}
@@ -20218,7 +20214,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6425624014032926648}
   - component: {fileID: 4323235084931323694}
-  - component: {fileID: 468258751165418070}
+  - component: {fileID: 9034849285313832236}
   m_Layer: 8
   m_Name: HeadTrail
   m_TagString: Untagged
@@ -20293,32 +20289,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &468258751165418070
-MonoBehaviour:
+--- !u!95 &9034849285313832236
+Animator:
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9143022395773637608}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7085ff6bda962bd40acaf357d0b7a60b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sprites:
-  - {fileID: 1850741240, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: -1161880379, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: 1837281142, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: 1052638068, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: -1280501780, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: 590303576, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: 82809178, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: -603009075, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: 1958936937, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  - {fileID: -1004245698, guid: 05e17f01cd9eca64d85b850872220ae3, type: 3}
-  frameDelay: 0.1
-  enableColliderToggle: 0
-  targetCollider: {fileID: 0}
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 22100000, guid: dff31224d466d5045aee7e1a674f7816, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &9221189378981008981
 GameObject:
   m_ObjectHideFlags: 0

@@ -370,6 +370,13 @@ MonoBehaviour:
   flashDuration: 0.1
   numberOfFlashes: 3
   flashColor: {r: 1, g: 0, b: 0, a: 0.5}
+  punchOnDamage: 1
+  punchPlants: 1
+  punchScale: 0.15
+  punchDuration: 0.2
+  punchVibrato: 6
+  punchMinInterval: 0.1
+  punchTarget: {fileID: 0}
   onDeath:
     m_PersistentCalls:
       m_Calls: []
@@ -381,6 +388,7 @@ MonoBehaviour:
       m_Calls: []
   manaPickupPrefab: {fileID: 5772987197591363074, guid: 83d9a560608ef2e438e8562bff94e850, type: 3}
   manaDropChance: 1
+  experiencePickupPrefab: {fileID: 0}
   lootTable:
   - name: Eternal Ember
     itemPrefab: {fileID: 1768544347340343859, guid: b63ac3ac3aacbd048a4daf47582e04b1, type: 3}
@@ -10250,6 +10258,10 @@ PrefabInstance:
     - target: {fileID: 2489268449943722584, guid: 55bd0a7de9e555941a58b6b90bf00f49, type: 3}
       propertyPath: m_Name
       value: EnemyCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 5933285377420938222, guid: 55bd0a7de9e555941a58b6b90bf00f49, type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7827403136463133310, guid: 55bd0a7de9e555941a58b6b90bf00f49, type: 3}
       propertyPath: m_Pivot.x
