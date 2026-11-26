@@ -14,10 +14,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepID: DefensivePlant
   stepOrder: 4
-  instructionText: '<b>FOREST:</b> Select a filled plant slot with 1-3, then <sprite name="MouseClick"> the dug soil to plant it. Plants need days to grow.'
+  instructionText: <b>FOREST:</b> Select a filled plant slot with 1-3, then <sprite
+    name="MouseClick"> the dug soil to plant it. Plants need days to grow and keep
+    in mind that for now <u>you can only plant 5 plants</u>.
   stepImage: {fileID: -596440827, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
+  stepImages: []
   objectiveType: 3
   requiredCount: 1
   isGatedStep: 0
+  allowNightTransition: 0
   waitDuration: 2
   unlockedActions: 272
+  useConfiguredCompletion: 0
+  conditionCombination: 0
+  conditions: []
+  waitMode: 0
+  hint: {fileID: 0}
+  enterActions: 
+  hideDialogueAfter: 
