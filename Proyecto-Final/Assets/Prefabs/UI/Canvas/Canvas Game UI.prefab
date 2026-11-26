@@ -2057,6 +2057,10 @@ PrefabInstance:
       propertyPath: modals
       value: 
       objectReference: {fileID: 688090975543400464}
+    - target: {fileID: 1209102477219471271, guid: 8906655f1a1c440488ad80f824e0829a, type: 3}
+      propertyPath: backdrop
+      value: 
+      objectReference: {fileID: 6257198326084510340}
     - target: {fileID: 3754535736051171806, guid: 8906655f1a1c440488ad80f824e0829a, type: 3}
       propertyPath: m_Name
       value: DailyLoadoutPanel

@@ -36,6 +36,7 @@ namespace MagicGarden.LoadoutUI
         [SerializeField] private TMP_Text selectedStateLabel;
         [SerializeField] private Image selectedEquipmentIcon;
         [SerializeField] private TMP_Text feedbackLabel;
+        [SerializeField] private GameObject footerHints;
 
         public bool HasDragPreview => dragPreview != null && dragPreviewIcon != null;
         public void ShowDragPreview(Sprite sprite, PointerEventData data)
@@ -62,7 +63,9 @@ namespace MagicGarden.LoadoutUI
         public IReadOnlyList<LoadoutSlotView> PlantSlots => plantSlots ?? System.Array.Empty<LoadoutSlotView>();
         public IReadOnlyList<LoadoutSlotView> SpellSlots => spellSlots ?? System.Array.Empty<LoadoutSlotView>();
         public LoadoutOptionView OptionPrefab => optionPrefab;
-        private bool ShowingSpells => spellOptionsPanel != null && spellOptionsPanel.activeSelf;
+        private bool activePlants = true;
+        private bool ShowingSpells => !activePlants;
+        public IReadOnlyList<LoadoutOptionView> Options(bool plants) => plants ? PlantOptionViews : SpellOptionViews;
         public RectTransform OptionContent => ShowingSpells ? spellOptionContent : optionContent;
         public IReadOnlyList<LoadoutOptionView> PlantOptionViews => optionViews ?? System.Array.Empty<LoadoutOptionView>();
         public IReadOnlyList<LoadoutOptionView> SpellOptionViews => spellOptionViews ?? System.Array.Empty<LoadoutOptionView>();
@@ -78,8 +81,10 @@ namespace MagicGarden.LoadoutUI
 
         public void ShowCategory(bool plants)
         {
-            if (plantOptionsPanel != null) plantOptionsPanel.SetActive(plants);
-            if (spellOptionsPanel != null) spellOptionsPanel.SetActive(!plants);
+            // Both catalogs stay visible side by side; the category only says which one the selection belongs to.
+            activePlants = plants;
+            if (plantOptionsPanel != null) plantOptionsPanel.SetActive(true);
+            if (spellOptionsPanel != null) spellOptionsPanel.SetActive(true);
             if (plantTabButton != null) plantTabButton.image.color = plants ? new Color(.65f, .85f, 1) : Color.white;
             if (spellTabButton != null) spellTabButton.image.color = !plants ? new Color(.65f, .85f, 1) : Color.white;
         }
@@ -92,12 +97,19 @@ namespace MagicGarden.LoadoutUI
             if (selectedEquipmentIcon != null) { selectedEquipmentIcon.sprite = sprite; selectedEquipmentIcon.enabled = sprite != null; }
         }
 
-        public void SetFeedbackMessage(string message) { if (feedbackLabel != null) feedbackLabel.text = message; }
+        // A feedback message takes the footer's place; with no message the static control hints show instead.
+        public void SetFeedbackMessage(string message)
+        {
+            bool hasMessage = !string.IsNullOrEmpty(message);
+            if (feedbackLabel != null) feedbackLabel.text = hasMessage ? message : string.Empty;
+            if (footerHints != null && footerHints.activeSelf == hasMessage) footerHints.SetActive(!hasMessage);
+        }
 
         public void SetAllowanceMessage(string message) { if (allowanceLabel != null) allowanceLabel.text = message ?? string.Empty; }
-        public void SetOptionsEmpty(bool empty)
+        public void SetOptionsEmpty(bool empty) { SetOptionsEmpty(true, empty); SetOptionsEmpty(false, empty); }
+        public void SetOptionsEmpty(bool plants, bool empty)
         {
-            var label = ShowingSpells ? spellEmptyOptionsLabel : emptyOptionsLabel;
+            var label = plants ? emptyOptionsLabel : spellEmptyOptionsLabel;
             if (label != null) label.gameObject.SetActive(empty);
         }
         // No confirmation, dismissal, equipment mutation or availability decision occurs here.

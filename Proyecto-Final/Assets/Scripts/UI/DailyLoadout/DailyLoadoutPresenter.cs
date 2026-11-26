@@ -16,6 +16,8 @@ namespace MagicGarden.LoadoutUI
         [SerializeField] private PlayerExperienceSystem experience;
         [SerializeField] private GameFlowController flow;
         [SerializeField] private UIFlowController modals;
+        [Tooltip("Shared blur behind modal UI (the same one the inventory uses). Optional.")]
+        [SerializeField] private UIBackdrop backdrop;
         private readonly DailyLoadoutCatalog catalog = new DailyLoadoutCatalog();
         private readonly List<KeyValuePair<Button, UnityAction>> bindings = new List<KeyValuePair<Button, UnityAction>>();
         private DailyLoadoutSession suppliedSession, activeSession;
@@ -30,6 +32,7 @@ namespace MagicGarden.LoadoutUI
         private SeedsEnum dragSeed;
         private SpellDataSO dragSpell;
         private int dragPointer;
+        private LoadoutEquipmentView hoverView;
         public event System.Action Closed;
         public bool IsOpen { get; private set; }
         public int SelectedPosition => selectedPosition;
@@ -77,6 +80,7 @@ namespace MagicGarden.LoadoutUI
                 return false;
             }
             activeSession = session; ownsModal = true; IsOpen = true;
+            if (backdrop != null) backdrop.Show();
             lastConfirmed = session.HasConfirmedToday;
             selectedPosition = 0; plantCategory = true; feedback = null;
             Bind();
@@ -133,6 +137,7 @@ namespace MagicGarden.LoadoutUI
             Listen(view.ClearButton, Clear);
             Listen(view.CancelButton, Close);
             if (view.CloseButton != null) Listen(view.CloseButton, Close);
+            foreach (var target in EquipmentViews()) if (target != null) target.HoverChanged += HandleHover;
         }
 
         private IEnumerable<LoadoutOptionView> AllOptions()
@@ -146,7 +151,7 @@ namespace MagicGarden.LoadoutUI
             for (int i = 0; i < options.Count; i++)
             {
                 int option = i;
-                Listen(options[i].SelectButton, () => { if (plantCategory == plants) AssignOption(option); });
+                Listen(options[i].SelectButton, () => AssignOption(plants, option));
                 options[i].BindDrag(this, i);
             }
         }
@@ -212,31 +217,9 @@ namespace MagicGarden.LoadoutUI
                 // Category/position browsing remains available after daily confirmation.
                 plantView.SelectButton.interactable = true; spellView.SelectButton.interactable = true;
             }
-            int count = selectedPosition < 0 ? 0 : plantCategory ? catalog.Plants.Count : catalog.Spells.Count;
-            for (int i = 0; i < view.OptionCapacity; i++)
-            {
-                var option = view.OptionViews[i];
-                bool visible = capacityOk && i < count;
-                option.gameObject.SetActive(visible);
-                if (!visible) continue;
-                var plant = plantCategory ? catalog.Plants[i] : null;
-                var spell = plantCategory ? null : catalog.Spells[i];
-                option.SetContent(plantCategory ? plant.plantIcon : spell.SpellIcon,
-                    plantCategory ? plant.plantName : spell.SpellName);
-                bool assigned = false;
-                for (int slot = 0; slot < 3; slot++)
-                    assigned |= (plantCategory
-                        ? activeSession.GetDraftPlant(slot).HasValue && activeSession.GetDraftPlant(slot).Identity == plant.seedType
-                        : activeSession.GetDraftSpell(slot).HasValue && activeSession.GetDraftSpell(slot).Identity == spell);
-                option.SetAssigned(assigned); option.SetSelected(false); option.SetReadOnly(!editable);
-                option.SetInvalidDropTarget(false); option.SetLocked(false);
-            }
-            view.SetOptionsEmpty(count == 0 || !capacityOk);
-            if (selectedPosition >= 0)
-            {
-                var selected = plantCategory ? view.PlantSlots[selectedPosition] : view.SpellSlots[selectedPosition];
-                view.SetSelection(plantCategory, selectedPosition, selected.IconSprite, selected.DisplayName, "Selected");
-            }
+            RefreshOptions(true, editable, capacityOk);
+            RefreshOptions(false, editable, capacityOk);
+            RefreshDetail();
             view.SetActionAvailability(editable, editable && selectedPosition >= 0);
             string allowance = activeSession.HasConfirmedToday
                 ? "Daily configuration allowance: consumed — read-only."
@@ -245,10 +228,94 @@ namespace MagicGarden.LoadoutUI
             StatusMessage = !capacityOk ? "Loadout option capacity exceeded. Configure the prefab option pool in the Editor."
                 : (plantCategory ? "Plant " : "Spell ") + (selectedPosition + 1) + " selected. " +
                     allowance + (string.IsNullOrEmpty(feedback) ? "" : " " + feedback);
-            view.SetAllowanceMessage("1 CHANGE PER DAY\n" + (activeSession.HasConfirmedToday ? "USED - READ-ONLY" : editable ? "AVAILABLE" : "UNAVAILABLE"));
-            view.SetFeedbackMessage(!capacityOk ? StatusMessage : string.IsNullOrEmpty(feedback)
-                ? "Changes remain a draft until you confirm your Loadout." : feedback);
+            view.SetAllowanceMessage("<sprite name=\"SunIcon\"> 1 change per day " + (activeSession.HasConfirmedToday
+                ? "<color=#E8A35A>USED</color>" : editable ? "<color=#8BE28B>AVAILABLE</color>" : "<color=#E8A35A>LOCKED</color>"));
+            view.SetFeedbackMessage(!capacityOk ? StatusMessage : feedback);
             ApplyDragFeedback(); // Polling must not erase the pointer's transient target state.
+        }
+
+        // Both catalogs are visible at once, so each one is refreshed every time.
+        private void RefreshOptions(bool plants, bool editable, bool capacityOk)
+        {
+            var options = view.Options(plants);
+            int count = selectedPosition < 0 ? 0 : plants ? catalog.Plants.Count : catalog.Spells.Count;
+            for (int i = 0; i < view.OptionCapacity; i++)
+            {
+                var option = options[i];
+                bool visible = capacityOk && i < count;
+                option.gameObject.SetActive(visible);
+                if (!visible) continue;
+                var plant = plants ? catalog.Plants[i] : null;
+                var spell = plants ? null : catalog.Spells[i];
+                option.SetContent(plants ? plant.plantIcon : spell.SpellIcon, plants ? plant.plantName : spell.SpellName);
+                int held = -1;
+                for (int slot = 0; slot < 3 && held < 0; slot++)
+                    if (plants
+                        ? activeSession.GetDraftPlant(slot).HasValue && activeSession.GetDraftPlant(slot).Identity == plant.seedType
+                        : activeSession.GetDraftSpell(slot).HasValue && activeSession.GetDraftSpell(slot).Identity == spell) held = slot;
+                option.SetAssigned(held >= 0); option.SetEquippedSlot(held);
+                option.SetSelected(false); option.SetReadOnly(!editable);
+                option.SetInvalidDropTarget(false); option.SetLocked(false);
+            }
+            view.SetOptionsEmpty(plants, count == 0 || !capacityOk);
+        }
+
+
+        // Description strip: whatever the pointer is over, otherwise the selected position.
+        private void RefreshDetail()
+        {
+            PlantDataSO plant = null; SpellDataSO spell = null;
+            if (hoverView != null && hoverView.isActiveAndEnabled) Describe(hoverView, out plant, out spell);
+            if (plant == null && spell == null && selectedPosition >= 0)
+                Describe(plantCategory ? view.PlantSlots[selectedPosition] : view.SpellSlots[selectedPosition], out plant, out spell);
+            if (plant != null) view.SetSelection(true, selectedPosition, plant.plantIcon, plant.plantName, plant.description);
+            else if (spell != null) view.SetSelection(false, selectedPosition, spell.SpellIcon, spell.SpellName,
+                "Mana cost " + spell.ManaCost + ". Cooldown " + spell.Cooldown.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + " s.");
+            else view.SetSelection(plantCategory, selectedPosition, null, string.Empty, "Hover a plant or spell to see what it does.");
+        }
+
+        private void Describe(LoadoutEquipmentView target, out PlantDataSO plant, out SpellDataSO spell)
+        {
+            plant = null; spell = null;
+            for (int i = 0; i < 3; i++)
+            {
+                if (target == view.PlantSlots[i])
+                {
+                    var held = activeSession.CanConfigure ? activeSession.GetDraftPlant(i) : activeSession.GetCommittedPlant(i);
+                    if (held.HasValue) plant = catalog.FindPlant(held.Identity);
+                    return;
+                }
+                if (target == view.SpellSlots[i])
+                {
+                    var held = activeSession.CanConfigure ? activeSession.GetDraftSpell(i) : activeSession.GetCommittedSpell(i);
+                    if (held.HasValue) spell = held.Identity;
+                    return;
+                }
+            }
+            for (int i = 0; i < catalog.Plants.Count && i < view.PlantOptionViews.Count; i++)
+                if (target == view.PlantOptionViews[i]) { plant = catalog.Plants[i]; return; }
+            for (int i = 0; i < catalog.Spells.Count && i < view.SpellOptionViews.Count; i++)
+                if (target == view.SpellOptionViews[i]) { spell = catalog.Spells[i]; return; }
+        }
+
+        private void HandleHover(LoadoutEquipmentView target, bool entered)
+        {
+            if (entered) hoverView = target;
+            else if (hoverView == target) hoverView = null;
+        }
+
+        private IEnumerable<LoadoutEquipmentView> EquipmentViews()
+        {
+            foreach (var slot in view.PlantSlots) yield return slot;
+            foreach (var slot in view.SpellSlots) yield return slot;
+            foreach (var option in AllOptions()) yield return option;
+        }
+
+        private int FirstEmptyPosition(bool plants)
+        {
+            for (int slot = 0; slot < 3; slot++)
+                if (!(plants ? activeSession.GetDraftPlant(slot).HasValue : activeSession.GetDraftSpell(slot).HasValue)) return slot;
+            return -1;
         }
 
         public void SelectPosition(bool plants, int position)
@@ -257,9 +324,6 @@ namespace MagicGarden.LoadoutUI
             if (plantCategory != plants) CancelDrag();
             plantCategory = plants; selectedPosition = position; feedback = null;
             view.ShowCategory(plants);
-            var strip = view.OptionContent != null ? view.OptionContent.GetComponent<LoadoutOptionGridLayout>() : null;
-            if (strip != null) strip.ResetScroll();
-            else if (view.OptionsScroll != null) view.OptionsScroll.horizontalNormalizedPosition = 0;
             Refresh();
         }
 
@@ -271,14 +335,18 @@ namespace MagicGarden.LoadoutUI
                 catalog.Spells.Count <= view.OptionCapacity;
         }
 
-        public void AssignOption(int optionIndex)
+        public void AssignOption(int optionIndex) { AssignOption(plantCategory, optionIndex); }
+
+        // Click path. Same category as the selection: that position. Other category: its first empty position.
+        public void AssignOption(bool plants, int optionIndex)
         {
             if (!CanEdit() || selectedPosition < 0) return;
-            int count = plantCategory ? catalog.Plants.Count : catalog.Spells.Count;
+            int count = plants ? catalog.Plants.Count : catalog.Spells.Count;
             if (optionIndex < 0 || optionIndex >= count) return;
-            bool accepted = AssignIdentity(plantCategory, plantCategory ? catalog.Plants[optionIndex].seedType : SeedsEnum.None,
-                plantCategory ? null : catalog.Spells[optionIndex], plantCategory, selectedPosition);
-            if (!accepted && IsOpen) view.OptionViews[optionIndex].SetInvalidDropTarget(true);
+            int target = plants == plantCategory ? selectedPosition : FirstEmptyPosition(plants);
+            bool accepted = target >= 0 && AssignIdentity(plants, plants ? catalog.Plants[optionIndex].seedType : SeedsEnum.None,
+                plants ? null : catalog.Spells[optionIndex], plants, target);
+            if (!accepted && IsOpen) view.Options(plants)[optionIndex].SetInvalidDropTarget(true);
         }
 
         private bool AssignIdentity(bool sourcePlants, SeedsEnum seed, SpellDataSO spell, bool targetPlants, int position)
@@ -297,15 +365,19 @@ namespace MagicGarden.LoadoutUI
         public bool BeginOptionDrag(LoadoutOptionDragSource source, int optionIndex, PointerEventData data)
         {
             if (dragSession != null || source == null || !CanEdit() || !view.HasDragPreview) return false;
-            int count = plantCategory ? catalog.Plants.Count : catalog.Spells.Count;
-            if (optionIndex < 0 || optionIndex >= count || !source.transform.IsChildOf(view.OptionViews[optionIndex].transform)) return false;
-            dragPlants = plantCategory;
+            // The source only knows its pool index; the pool that contains it decides the category.
+            bool sourcePlants = optionIndex >= 0 && optionIndex < view.PlantOptionViews.Count &&
+                source.transform.IsChildOf(view.PlantOptionViews[optionIndex].transform);
+            int count = sourcePlants ? catalog.Plants.Count : catalog.Spells.Count;
+            if (optionIndex < 0 || optionIndex >= count || optionIndex >= view.Options(sourcePlants).Count ||
+                !source.transform.IsChildOf(view.Options(sourcePlants)[optionIndex].transform)) return false;
+            dragPlants = sourcePlants;
             dragSeed = dragPlants ? catalog.Plants[optionIndex].seedType : SeedsEnum.None;
             dragSpell = dragPlants ? null : catalog.Spells[optionIndex];
             if (!DragIdentityAvailable()) { dragSeed = SeedsEnum.None; dragSpell = null; return false; }
             dragSource = source; dragSession = activeSession; dragPointer = data.pointerId;
             dragSession.CommittedChanged += CancelDrag; // Reset/confirmation invalidates the interaction, never the model.
-            view.ShowDragPreview(view.OptionViews[optionIndex].IconSprite, data);
+            view.ShowDragPreview(view.Options(dragPlants)[optionIndex].IconSprite, data);
             feedback = "Drop onto a matching position.";
             Refresh();
             return true;
@@ -391,12 +463,16 @@ namespace MagicGarden.LoadoutUI
             if (view != null) { view.HideDragPreview(); ApplyDragFeedback(); }
         }
 
-        public void Clear()
+        public void Clear() { ClearPosition(plantCategory, selectedPosition); }
+
+        // Empties one draft position and selects it. Right-click on a slot lands here.
+        public void ClearPosition(bool plants, int position)
         {
             CancelDrag();
-            if (!CanEdit() || selectedPosition < 0) return;
-            bool accepted = plantCategory ? activeSession.TrySetDraftPlant(selectedPosition, SeedsEnum.None)
-                : activeSession.TrySetDraftSpell(selectedPosition, null);
+            if (!CanEdit() || position < 0 || position >= 3) return;
+            bool accepted = plants ? activeSession.TrySetDraftPlant(position, SeedsEnum.None)
+                : activeSession.TrySetDraftSpell(position, null);
+            if (accepted) { plantCategory = plants; selectedPosition = position; }
             PlaySfx(accepted ? "UI_Loadout_Clear" : "UI_Loadout_Reject");
             feedback = accepted ? "Position cleared in draft." : "Clear rejected. Draft unchanged.";
             Refresh();
@@ -434,6 +510,7 @@ namespace MagicGarden.LoadoutUI
             if (IsOpen)
             {
                 PlaySfx("UI_Loadout_Close");
+                if (backdrop != null) backdrop.Hide();
                 IsOpen = false;
                 activeSession?.DiscardDraft();
                 if (flow != null) flow.OnPhaseChanged -= HandlePhaseChanged;
@@ -441,6 +518,8 @@ namespace MagicGarden.LoadoutUI
             }
             foreach (var pair in bindings) if (pair.Key != null) pair.Key.onClick.RemoveListener(pair.Value);
             bindings.Clear();
+            if (view != null) foreach (var target in EquipmentViews()) if (target != null) target.HoverChanged -= HandleHover;
+            hoverView = null;
             if (ownsModal && modals != null) modals.Close(UIModal.DailyLoadout);
             ownsModal = false; activeSession = null; selectedPosition = -1; feedback = null;
             if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null &&

@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 
 namespace MagicGarden.LoadoutUI
 {
-    public sealed class LoadoutSlotView : LoadoutEquipmentView, IDropHandler, IPointerEnterHandler, IPointerExitHandler
+    public sealed class LoadoutSlotView : LoadoutEquipmentView, IDropHandler, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
     {
         private DailyLoadoutPresenter dropOwner;
         private bool plants;
@@ -14,6 +14,11 @@ namespace MagicGarden.LoadoutUI
             dropOwner = presenter; plants = plantCategory; position = index;
         }
         public void OnDrop(PointerEventData data) { if (dropOwner != null) dropOwner.DropOption(this, plants, position, data); }
+        // Right-click empties this position; left clicks stay with the select button.
+        public void OnPointerClick(PointerEventData data)
+        {
+            if (dropOwner != null && data.button == PointerEventData.InputButton.Right) dropOwner.ClearPosition(plants, position);
+        }
         void IPointerEnterHandler.OnPointerEnter(PointerEventData data)
         {
             base.OnPointerEnter(data);
