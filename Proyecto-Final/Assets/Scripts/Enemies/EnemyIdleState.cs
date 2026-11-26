@@ -378,6 +378,7 @@ public class SniperBossAttackState : IState
     {
         if (boss.IsDead)
         {
+            boss.SetMovingAnimation(false);
             boss.StateMachine.ChangeState<EnemyDeadState>();
             return;
         }
@@ -389,6 +390,7 @@ public class SniperBossAttackState : IState
 
         if (target == null)
         {
+            boss.SetMovingAnimation(false);
             boss.StateMachine.ChangeState<EnemyIdleState>();
             return;
         }
@@ -397,9 +399,12 @@ public class SniperBossAttackState : IState
 
         if (distance > boss.SniperAttackRange + 0.5f)
         {
+            boss.SetMovingAnimation(false);
             boss.StateMachine.ChangeState<EnemyChaseState>();
             return;
         }
+
+        boss.SetMovingAnimation(true);
 
         if (Time.time >= nextAttackTime)
         {
@@ -418,6 +423,7 @@ public class SniperBossAttackState : IState
     {
         boss.CancelSniperAttack();
         boss.StopMovement();
+        boss.SetMovingAnimation(false);
     }
 }
 

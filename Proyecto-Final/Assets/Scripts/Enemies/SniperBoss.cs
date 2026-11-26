@@ -26,6 +26,8 @@ public class SniperBoss : Boss
     private SniperBossDataSO sniperData;
     private Coroutine sniperAttackCoroutine;
 
+    private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
+
     public float SniperAttackRange =>
         sniperData != null ? sniperData.SniperAttackRange : 8f;
 
@@ -122,7 +124,8 @@ public class SniperBoss : Boss
         isCurrentlyAttacking = true;
         StopMovement();
 
-        // The Attack clip (Robe_Aim_Charge) is a 1.2 s lock-on that ends on the shot; start it so the end lands on the shot.
+        SetMovingAnimation(true);
+
         const float AttackClipPeak = 1.2f;
         bool attackSoundPlayed = false;
 
@@ -135,25 +138,35 @@ public class SniperBoss : Boss
 
             UpdateAim(target.position);
 
-            if (!attackSoundPlayed && elapsed >= sniperData.AimDuration - AttackClipPeak)
+            if (!attackSoundPlayed &&
+                elapsed >= sniperData.AimDuration - AttackClipPeak)
             {
                 attackSoundPlayed = true;
-                PlayEnemySound(EnemySoundType.Attack, SoundSourceType.Localized, transform);
+
+                PlayEnemySound(
+                    EnemySoundType.Attack,
+                    SoundSourceType.Localized,
+                    transform
+                );
             }
 
             elapsed += Time.deltaTime;
             yield return null;
         }
-        animator.SetTrigger("attack");
+
+        SetMovingAnimation(false);
+
         if (!isDead && IsTargetValid(target))
         {
-            
+            animator.SetTrigger("attack");
             FireAtTarget(target.position);
         }
 
         yield return new WaitForSeconds(
             sniperData.RecoveryDuration
         );
+
+        SetMovingAnimation(false);
 
         isCurrentlyAttacking = false;
         sniperAttackCoroutine = null;
@@ -254,6 +267,14 @@ public class SniperBoss : Boss
             sniperAttackCoroutine = null;
         }
 
+        SetMovingAnimation(false);
         isCurrentlyAttacking = false;
+    }
+
+
+    public void SetMovingAnimation(bool isMoving)
+    {
+        if (animator != null)
+            animator.SetBool(IsMovingHash, isMoving);
     }
 }
