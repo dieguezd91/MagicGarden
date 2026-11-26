@@ -1,0 +1,34 @@
+type,time,scene,sound,source,volume,pitch,spatialBlend,loop,rolloff,minDist,maxDist,dist2D,dist3D,heardGain,activeVoices,poolSize,listenerX,listenerY,listenerZ,srcX,srcY,srcZ,mixerGroup
+snap,5.807,Menu,MG_Menu_Intro,Music Manager,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+snap,5.807,Menu,MG_Menu_Loop,Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+snap,7.215,Menu,MG_Menu_Intro,Music Manager,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+snap,7.215,Menu,MG_Menu_Loop,Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+snap,16.456,Menu,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1101.454,1101.499,1,0,20,0,0,-10,960,540,0,UI
+snap,16.456,Menu,MG_Menu_Intro,Music Manager,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+snap,16.456,Menu,MG_Menu_Loop,Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+play,17.258,Menu,Button Hover,PooledAudioSource_0,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,UI
+snap,17.461,Menu,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1101.454,1101.499,1,1,20,0,0,-10,960,540,0,UI
+snap,17.461,Menu,Button Hover,PooledAudioSource_0,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,UI
+snap,17.461,Menu,MG_Menu_Intro,Music Manager,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,Main
+snap,17.461,Menu,MG_Menu_Loop,Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,Main
+play,17.5,Menu,Button Hover,PooledAudioSource_1,0.5,1,0,0,Logarithmic,1,500,0,10,0.5,2,20,0,0,-10,0,0,0,UI
+play,17.712,Menu,Button Click,PooledAudioSource_2,0.5,1,0,0,Logarithmic,1,500,0,10,0.5,3,20,0,0,-10,0,0,0,UI
+play,17.712,Menu,UI_Menu_Panel_Open,PooledAudioSource_3,0.35,1,0,0,Linear,4,18,0,10,0.35,4,20,0,0,-10,0,0,0,UI
+play,17.712,Menu,Button Click Disabled,PooledAudioSource_4,0.5,1,0,0,Logarithmic,1,500,0,10,0.5,5,20,0,0,-10,0,0,0,UI
+play,18.199,Menu,Button Hover,PooledAudioSource_0,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,3,20,0,0,-10,0,0,0,UI
+snap,18.461,Menu,Button Hover,PooledAudioSource_0,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,UI
+snap,18.461,Menu,MG_Menu_Intro,Music Manager,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,Main
+snap,18.461,Menu,MG_Menu_Loop,Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,Main
+play,18.514,Menu,Button Hover,PooledAudioSource_1,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,2,20,0,0,-10,0,0,0,UI
+play,18.654,Menu,Button Hover,PooledAudioSource_2,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,3,20,0,0,-10,0,0,0,UI
+play,18.84,Menu,Button Click,PooledAudioSource_0,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,3,20,0,0,-10,0,0,0,UI
+play,19.009,Menu,Button Click,PooledAudioSource_3,0.4,1,0,0,Linear,4,18,0,10,0.4,4,20,0,0,-10,0,0,0,UI
+play,19.214,Menu,Button Hover,PooledAudioSource_1,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,3,20,0,0,-10,0,0,0,UI
+snap,19.464,Menu,MG_Menu_Intro,Music Manager,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,2,20,0,0,-10,0,0,0,Main
+snap,19.464,Menu,Button Hover,PooledAudioSource_1,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,2,20,0,0,-10,0,0,0,UI
+snap,19.464,Menu,Button Click,PooledAudioSource_3,0.4,1,0,0,Linear,4,18,0,10,0.4,2,20,0,0,-10,0,0,0,UI
+snap,19.464,Menu,MG_Menu_Loop,Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,2,20,0,0,-10,0,0,0,Main
+snap,20.466,Menu,MG_Menu_Intro,Music Manager,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+snap,20.466,Menu,MG_Menu_Loop,Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+snap,21.468,Menu,MG_Menu_Intro,Music Manager,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+snap,21.468,Menu,MG_Menu_Loop,Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main

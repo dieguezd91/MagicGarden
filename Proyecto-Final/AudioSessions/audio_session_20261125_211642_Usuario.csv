@@ -1,0 +1,19 @@
+type,time,scene,sound,source,volume,pitch,spatialBlend,loop,rolloff,minDist,maxDist,dist2D,dist3D,heardGain,activeVoices,poolSize,listenerX,listenerY,listenerZ,srcX,srcY,srcZ,mixerGroup
+snap,8.308,Menu,MG_Menu_Loop,Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+snap,8.308,Menu,MG_Menu_Intro,Music Manager,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+snap,10.72,Menu,MG_Menu_Loop,Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+snap,10.72,Menu,MG_Menu_Intro,Music Manager,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+snap,11.722,Menu,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1101.454,1101.499,1,0,20,0,0,-10,960,540,0,UI
+snap,11.722,Menu,MG_Menu_Loop,Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+snap,11.722,Menu,MG_Menu_Intro,Music Manager,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+play,12.656,Menu,Button Hover,PooledAudioSource_0,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,UI
+snap,12.725,Menu,Button Hover,PooledAudioSource_0,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,UI
+snap,12.725,Menu,(none),SceneTransitionController,1,1,0,0,Logarithmic,1,500,1101.454,1101.499,1,1,20,0,0,-10,960,540,0,UI
+snap,12.725,Menu,MG_Menu_Loop,Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,Main
+snap,12.725,Menu,MG_Menu_Intro,Music Manager,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,Main
+play,13.642,Menu,Button Hover,PooledAudioSource_0,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,UI
+snap,13.727,Menu,Button Hover,PooledAudioSource_0,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,UI
+snap,13.727,Menu,MG_Menu_Loop,Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,Main
+snap,13.727,Menu,MG_Menu_Intro,Music Manager,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,1,20,0,0,-10,0,0,0,Main
+snap,14.731,Menu,MG_Menu_Loop,Music Manager,0.4,1,0,1,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
+snap,14.731,Menu,MG_Menu_Intro,Music Manager,0.4,1,0,0,Logarithmic,1,500,0,10,0.4,0,20,0,0,-10,0,0,0,Main
