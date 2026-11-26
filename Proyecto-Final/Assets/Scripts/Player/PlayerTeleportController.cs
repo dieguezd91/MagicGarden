@@ -7,6 +7,13 @@ public class PlayerTeleportController : MonoBehaviour
     [SerializeField] private int teleportManaCost = 10;
     [SerializeField] private float teleportCooldown = 2f;
 
+    [Header("Cooldown Refusal Feedback")]
+    [Tooltip("SoundManager sound played when a teleport is refused because it is on cooldown. Leave empty for no sound.")]
+    [SerializeField] private string cooldownBlockedSoundName = "Player_Teleport_Cooldown";
+    [Tooltip("Minimum seconds between two cooldown-refusal sounds, so mashing the teleport key does not spam it.")]
+    [SerializeField, Min(0f)] private float cooldownBlockedFeedbackInterval = 0.4f;
+
+    private float nextCooldownBlockedFeedbackTime;
 
     private NightToDayTransitionController nightToDayTransition;
 
@@ -186,6 +193,24 @@ public class PlayerTeleportController : MonoBehaviour
             castDirection = (mousePos - transform.position).normalized;
         }
 
-        TryUseTeleport(castDirection);
+        if (!TryUseTeleport(castDirection) && IsRefusedByCooldown())
+            GiveCooldownBlockedFeedback();
+    }
+
+    // True when the cooldown is what stopped the teleport, not a cutscene, transition, tutorial lock or upgrade screen.
+    private bool IsRefusedByCooldown()
+    {
+        if (currentTeleportCooldown <= 0f) return false;
+        if (UpgradeRuntime.GameplayBlocked) return false;
+        if (nightToDayTransition != null && nightToDayTransition.IsTransitioning) return false;
+        return TutorialManager.Allows(TutorialAction.Teleport);
+    }
+
+    private void GiveCooldownBlockedFeedback()
+    {
+        if (string.IsNullOrEmpty(cooldownBlockedSoundName)) return;
+        if (Time.time < nextCooldownBlockedFeedbackTime) return;
+        nextCooldownBlockedFeedbackTime = Time.time + cooldownBlockedFeedbackInterval;
+        SoundManager.Instance?.PlayOneShot(cooldownBlockedSoundName);
     }
 }

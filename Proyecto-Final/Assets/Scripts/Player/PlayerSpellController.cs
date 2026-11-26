@@ -51,7 +51,7 @@ public class PlayerSpellController : MonoBehaviour
     [Tooltip("Notify the spell HUD and play a sound when a cast is refused because the spell is on cooldown. Turn off to disable the feedback.")]
     [SerializeField] private bool cooldownBlockedFeedback = true;
     [Tooltip("SoundManager sound played when a cast is refused for cooldown. Leave empty for no sound.")]
-    [SerializeField] private string cooldownBlockedSoundName = "UI_Loadout_Reject";
+    [SerializeField] private string cooldownBlockedSoundName = "Player_Spell_Cooldown";
     [Tooltip("Minimum seconds between two cooldown-refusal feedbacks, so a held attack button does not repeat it every frame.")]
     [SerializeField, Min(0f)] private float cooldownBlockedFeedbackInterval = 0.4f;
 

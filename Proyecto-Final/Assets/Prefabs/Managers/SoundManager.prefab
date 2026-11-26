@@ -561,6 +561,22 @@ MonoBehaviour:
     loop: 0
     mute: 0
     audioSource: {fileID: 0}
+  - name: Player_Spell_Cooldown
+    clip: {fileID: 8300000, guid: f051ac0fbd8f47d58e90d7e62bedf317, type: 3}
+    volume: 0.3
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
+  - name: Player_Teleport_Cooldown
+    clip: {fileID: 8300000, guid: d5c0aa94b6b2419297f114e02c0b33e4, type: 3}
+    volume: 0.3
+    pitch: 1
+    playOnAwake: 0
+    loop: 0
+    mute: 0
+    audioSource: {fileID: 0}
   - name: UI_Prompt_Show
     clip: {fileID: 8300000, guid: cf05e1d897b2dd3418a56e7c6343f68d, type: 3}
     volume: 0.4
