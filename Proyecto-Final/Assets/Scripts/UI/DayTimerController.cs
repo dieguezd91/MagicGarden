@@ -159,6 +159,6 @@ public class DayTimerController : MonoBehaviour
         if (timerText == null)
             return;
 
-        timerText.text = $"Remainig Actions: {remainingActions}";
+        timerText.text = $"Remaining Actions: {remainingActions}";
     }
 }
