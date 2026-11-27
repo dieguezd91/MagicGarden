@@ -571,6 +571,21 @@ public class TooltipUIController : UIControllerBase
                 "<color=#9B59B6>Big area damage</color>\n" +
                 $"<color=#3498DB>Mana Cost: {spell.manaCost}</color>",
 
+            "Piercing" =>
+            "Shoot a fast fire projectile that pierces through the enemies\n" +
+            "<color=#9B59B6>Deals damage at long range</color>\n" +
+            $"<color=#3498DB>Mana Cost: {spell.manaCost}</color>",
+
+            "Hammer" =>
+            "Perform a close-range hammer attack.\n" +
+            "<color=#9B59B6>Deals damage to enemies hit and pushes them back</color>\n" +
+            $"<color=#3498DB>Mana Cost: {spell.manaCost}</color>",
+
+            "Fire" =>
+            "Shoot fire like a flamethrower\n" +
+            "<color=#9B59B6>Deals big damage at long range</color>\n" +
+            $"<color=#3498DB>Mana Cost: {spell.manaCost}</color>",
+
             _ =>
                 "An unknown spell.\n" +
                 $"<color=#3498DB>Mana Cost: {spell.manaCost}</color>",
