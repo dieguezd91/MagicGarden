@@ -40,6 +40,9 @@ public class HouseDoor : MonoBehaviour
     private bool hasEnteredOnce = false;
     private Coroutine tutorialCoroutine;
 
+    private bool pendingDoorVisualAnimation = false;
+    private bool pendingDoorVisualState = false;
+
 
 
     private bool pendingLockUpdate = false;
@@ -73,23 +76,48 @@ public class HouseDoor : MonoBehaviour
 
         UpdateDoorColliders();
 
-        if (levelManager != null && doorLockAnimator != null)
+        if (GameFlowController.Instance != null)
         {
-            bool shouldBeLocked = GameFlowController.Instance.CurrentPhase == GamePhase.Night;
-            doorLockAnimator.SetVisualState(shouldBeLocked);
+            bool shouldBeLocked =
+                GameFlowController.Instance.CurrentPhase == GamePhase.Night;
+
+            canEnterAtNight = !shouldBeLocked;
+
+            if (doorLockAnimator != null)
+                doorLockAnimator.SetVisualState(shouldBeLocked);
         }
     }
 
 
     private void Update()
     {
+        if (pendingDoorVisualAnimation &&
+            doorLockAnimator != null &&
+            doorLockAnimator.isActiveAndEnabled)
+        {
+            pendingDoorVisualAnimation = false;
+
+            doorLockAnimator.SetVisualStateAnimated(
+                pendingDoorVisualState
+            );
+        }
+
         // Day gameplay is already active under black; show the exterior opening only after the wake is visible.
-        if (pendingLockUpdate && (worldTransition == null || !worldTransition.IsInInterior) &&
+        if (pendingLockUpdate &&
+            (worldTransition == null || !worldTransition.IsInInterior) &&
             (nightTransition == null || !nightTransition.IsTransitioning))
         {
             pendingLockUpdate = false;
+
             if (GameFlowController.Instance != null)
-                UpdateLockVisual(GameFlowController.Instance.WorldPhase == GamePhase.Night);
+            {
+                bool shouldBeLocked =
+                    GameFlowController.Instance.CurrentPhase == GamePhase.Night;
+
+                canEnterAtNight = !shouldBeLocked;
+
+                UpdateLockVisual(shouldBeLocked);
+            }
         }
         if (!waitingForPlayerToClearDoor || player == null || interactionTrigger == null)
             return;
@@ -126,21 +154,14 @@ public class HouseDoor : MonoBehaviour
 
     private void OnPhaseChanged(GamePhase newPhase)
     {
-        bool shouldBeLocked = false;
+        bool shouldBeLocked = newPhase == GamePhase.Night;
 
-        if (newPhase == GamePhase.Day)
-        {
-            canEnterAtNight = true;
-            shouldBeLocked = false;
-        }
-        else if (newPhase == GamePhase.Night)
-        {
-            canEnterAtNight = false;
-            shouldBeLocked = true;
-        }
+        canEnterAtNight = !shouldBeLocked;
 
         if ((worldTransition != null && worldTransition.IsInInterior) ||
-            (newPhase == GamePhase.Day && nightTransition != null && nightTransition.IsTransitioning))
+            (newPhase == GamePhase.Day &&
+             nightTransition != null &&
+             nightTransition.IsTransitioning))
         {
             pendingLockUpdate = true;
         }
@@ -153,36 +174,25 @@ public class HouseDoor : MonoBehaviour
     private void UpdateLockVisual(bool shouldBeLocked)
     {
         if (doorLockAnimator == null)
+            return;
+
+        if (!doorLockAnimator.isActiveAndEnabled)
         {
+            pendingDoorVisualAnimation = true;
+            pendingDoorVisualState = shouldBeLocked;
             return;
         }
 
-        bool currentlyShowingClosed = doorLockAnimator.IsShowingClosedState();
+        pendingDoorVisualAnimation = false;
 
-        if (currentlyShowingClosed != shouldBeLocked)
-        {
-            doorLockAnimator.TriggerAnimation();
-        }
+        doorLockAnimator.SetVisualStateAnimated(shouldBeLocked);
     }
 
     private void OnWorldStateChanged(WorldState newWorldState)
     {
-        bool isInInterior = (newWorldState == WorldState.Interior);
+        bool isInInterior = newWorldState == WorldState.Interior;
+
         UpdateDoorColliders(isInInterior);
-
-        if (!isInInterior)
-        {
-            if (pendingLockUpdate && (nightTransition == null || !nightTransition.IsTransitioning))
-            {
-                pendingLockUpdate = false;
-
-                if (levelManager != null)
-                {
-                    bool shouldBeLocked = GameFlowController.Instance.CurrentPhase == GamePhase.Night;
-                    StartCoroutine(UpdateLockAfterExitDelay(shouldBeLocked));
-                }
-            }
-        }
 
         if (!isInInterior && tutorialCoroutine != null)
         {

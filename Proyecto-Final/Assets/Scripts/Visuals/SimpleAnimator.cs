@@ -1,3 +1,4 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,66 +15,126 @@ public class SimpleAnimator : MonoBehaviour
     public Collider2D targetCollider;
 
     private SpriteRenderer spriteRenderer;
+
     private bool isAnimating = false;
-    private bool isForward = true;
+    private bool targetClosedState = false;
+
+    private int currentFrameIndex = 0;
     private Coroutine currentCoroutine;
+
+    public bool IsAnimating => isAnimating;
 
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
 
         if (sprites.Count > 0)
+        {
+            currentFrameIndex = 0;
             spriteRenderer.sprite = sprites[0];
+        }
     }
 
     public void SetVisualState(bool showClosedState)
     {
-        if (sprites.Count == 0 || spriteRenderer == null) return;
+        StopCurrentAnimation();
 
-        if (showClosedState)
+        if (sprites.Count == 0 || spriteRenderer == null)
+            return;
+
+        targetClosedState = showClosedState;
+
+        currentFrameIndex = showClosedState
+            ? sprites.Count - 1
+            : 0;
+
+        spriteRenderer.sprite = sprites[currentFrameIndex];
+
+        ApplyColliderState(showClosedState);
+    }
+
+    public void SetVisualStateAnimated(bool showClosedState)
+    {
+        if (sprites.Count == 0 || spriteRenderer == null)
+            return;
+
+        int targetIndex = showClosedState
+            ? sprites.Count - 1
+            : 0;
+
+        
+        if (targetClosedState == showClosedState &&
+            (isAnimating || currentFrameIndex == targetIndex))
         {
-            spriteRenderer.sprite = sprites[sprites.Count - 1];
-            isForward = false;
+            return;
         }
-        else
+
+        StopCurrentAnimation();
+
+        targetClosedState = showClosedState;
+
+        ApplyColliderState(showClosedState);
+
+        if (currentFrameIndex == targetIndex)
+            return;
+
+        currentCoroutine = StartCoroutine(
+            PlayAnimationToState(targetIndex)
+        );
+    }
+
+    private IEnumerator PlayAnimationToState(int targetIndex)
+    {
+        isAnimating = true;
+
+        int direction = targetIndex > currentFrameIndex ? 1 : -1;
+
+        while (currentFrameIndex != targetIndex)
         {
-            spriteRenderer.sprite = sprites[0];
-            isForward = true;
+            currentFrameIndex += direction;
+
+            spriteRenderer.sprite = sprites[currentFrameIndex];
+
+            if (frameDelay > 0f)
+                yield return new WaitForSeconds(frameDelay);
+            else
+                yield return null;
         }
+
+        isAnimating = false;
+        currentCoroutine = null;
+    }
+
+    private void StopCurrentAnimation()
+    {
+        if (currentCoroutine != null)
+        {
+            StopCoroutine(currentCoroutine);
+            currentCoroutine = null;
+        }
+
+        isAnimating = false;
+    }
+
+    private void ApplyColliderState(bool showClosedState)
+    {
+        if (!enableColliderToggle || targetCollider == null)
+            return;
+
+        
+        targetCollider.enabled = showClosedState;
     }
 
     public void TriggerAnimation()
     {
-        if (currentCoroutine != null)
-            StopCoroutine(currentCoroutine);
-
-        currentCoroutine = StartCoroutine(PlayAnimation());
-    }
-
-    private IEnumerator PlayAnimation()
-    {
-        isAnimating = true;
-
-        int startIndex = isForward ? 0 : sprites.Count - 1;
-        int endIndex = isForward ? sprites.Count - 1 : 0;
-        int direction = isForward ? 1 : -1;
-
-        if (enableColliderToggle && targetCollider != null)
-            targetCollider.enabled = !targetCollider.enabled;
-
-        for (int i = startIndex; isForward ? i <= endIndex : i >= endIndex; i += direction)
-        {
-            spriteRenderer.sprite = sprites[i];
-            yield return new WaitForSeconds(frameDelay);
-        }
-
-        isForward = !isForward;
-        isAnimating = false;
+        SetVisualStateAnimated(!targetClosedState);
     }
 
     public bool IsShowingClosedState()
     {
-        if (sprites.Count == 0 || spriteRenderer == null) return false;
-        return spriteRenderer.sprite == sprites[sprites.Count - 1];
+        if (sprites.Count == 0 || spriteRenderer == null)
+            return false;
+
+        return currentFrameIndex == sprites.Count - 1;
     }
 }
