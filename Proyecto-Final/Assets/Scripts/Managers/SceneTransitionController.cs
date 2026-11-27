@@ -190,11 +190,12 @@ public class SceneTransitionController : MonoBehaviour
         }
     }
 
-    public void LoadScene(int sceneIndex, Action onSceneLoaded = null)
+    /// <param name="onCovered">Runs once the screen is fully covered, before the scene starts loading.</param>
+    public void LoadScene(int sceneIndex, Action onSceneLoaded = null, Action onCovered = null)
     {
         if (!isTransitioning)
         {
-            StartCoroutine(TransitionToScene(sceneIndex, onSceneLoaded));
+            StartCoroutine(TransitionToScene(sceneIndex, onSceneLoaded, onCovered));
         }
     }
 
@@ -339,13 +340,15 @@ public class SceneTransitionController : MonoBehaviour
         isTransitioning = false;
     }
 
-    private IEnumerator TransitionToScene(int sceneIndex, Action onSceneLoaded = null)
+    private IEnumerator TransitionToScene(int sceneIndex, Action onSceneLoaded = null, Action onCovered = null)
     {
         isTransitioning = true;
         FadeOutMusicWhileCovering(SceneNameForIndex(sceneIndex));
         float startTime = Time.realtimeSinceStartup;
 
         yield return StartCoroutine(FadeOut());
+
+        onCovered?.Invoke();
 
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneIndex);
         asyncLoad.allowSceneActivation = false;

@@ -161,35 +161,36 @@ public class GameOverController : MonoBehaviour
 
     public void GameOverRestart()
     {
-        if (pauseController != null)
-        {
-            pauseController.Resume();
-        }
-        else
-        {
-            Debug.LogError("PauseController missing on GameOverController.");
-        }
-
-        if (GameFlowController.Instance != null)
-            GameFlowController.Instance.SetPhase(GamePhase.Day);
-            
-        if (gameResetController != null)
-        {
-            gameResetController.ResetGame();
-        }
-        else
+        if (gameResetController == null)
         {
             Debug.LogError("GameResetController missing on GameOverController.");
             return;
         }
-        
+
+        // Reset only once the transition covers the screen: resetting hides the game-over panel and
+        // switching to Day re-shows the HUD, so doing it on click would flash the game view before the fade.
         if (SceneLoaderManager.Instance != null)
-        {
-            SceneLoaderManager.Instance.LoadGameScene();
-        }
+            SceneLoaderManager.Instance.LoadGameScene(ResetAfterGameOver);
+        else
+            ResetAfterGameOver();
     }
 
     public void GameOverMainMenu()
+    {
+        if (gameResetController == null)
+        {
+            Debug.LogError("GameResetController missing on GameOverController.");
+            return;
+        }
+
+        // See GameOverRestart: reset behind the transition, not on click.
+        if (SceneLoaderManager.Instance != null)
+            SceneLoaderManager.Instance.LoadMenuScene(ResetAfterGameOver);
+        else
+            ResetAfterGameOver();
+    }
+
+    private void ResetAfterGameOver()
     {
         if (pauseController != null)
         {
@@ -202,20 +203,8 @@ public class GameOverController : MonoBehaviour
 
         if (GameFlowController.Instance != null)
             GameFlowController.Instance.SetPhase(GamePhase.Day);
-            
+
         if (gameResetController != null)
-        {
             gameResetController.ResetGame();
-        }
-        else
-        {
-            Debug.LogError("GameResetController missing on GameOverController.");
-            return;
-        }
-        
-        if (SceneLoaderManager.Instance != null)
-        {
-            SceneLoaderManager.Instance.LoadMenuScene();
-        }
     }
 }

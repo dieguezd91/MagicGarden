@@ -23,17 +23,24 @@ public class SceneLoaderManager : MonoBehaviour
 
     #region Public API con Fade
 
+    // Parameterless overloads stay: buttons call LoadMenuScene() through Inspector UnityEvents.
     public void LoadMenuScene() => LoadSceneByIndexWithTransition(0);
     public void LoadGameScene() => LoadSceneByIndexWithTransition(1);
 
-    public void LoadSceneByIndexWithTransition(int sceneIndex, System.Action onLoaded = null)
+    /// <param name="onCovered">Runs once the transition fully covers the screen, before the scene loads.</param>
+    public void LoadMenuScene(System.Action onCovered) => LoadSceneByIndexWithTransition(0, null, onCovered);
+    /// <param name="onCovered">Runs once the transition fully covers the screen, before the scene loads.</param>
+    public void LoadGameScene(System.Action onCovered) => LoadSceneByIndexWithTransition(1, null, onCovered);
+
+    public void LoadSceneByIndexWithTransition(int sceneIndex, System.Action onLoaded = null, System.Action onCovered = null)
     {
         if (useFadeTransitions && SceneTransitionController.Instance != null)
         {
-            SceneTransitionController.Instance.LoadScene(sceneIndex, onLoaded);
+            SceneTransitionController.Instance.LoadScene(sceneIndex, onLoaded, onCovered);
         }
         else
         {
+            onCovered?.Invoke();
             LoadSceneByIndex(sceneIndex);
             onLoaded?.Invoke();
         }
