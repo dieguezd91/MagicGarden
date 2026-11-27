@@ -56,6 +56,8 @@ public class PlayerSpellController : MonoBehaviour
     [SerializeField, Min(0f)] private float cooldownBlockedFeedbackInterval = 0.4f;
 
     private SpellType currentSpellType = SpellType.Range;
+    private int currentSelectedSlotIndex = -1;
+    private GameObject currentSpellPrefab;
     private InputReader input;
     private bool fireSpellActive = false;
 
@@ -132,14 +134,30 @@ public class PlayerSpellController : MonoBehaviour
 
     private void CheckForSpellTypeChange()
     {
-        if (SpellInventory.Instance == null || handAnimator == null) return;
+        if (SpellInventory.Instance == null || handAnimator == null)
+            return;
 
         SpellSlot selectedSpell = SpellInventory.Instance.GetSelectedSpellSlot();
-        if (selectedSpell == null) return;
 
-        if (selectedSpell.spellType != currentSpellType)
+        int selectedIndex = SpellInventory.Instance.GetSelectedSlotIndex();
+
+        if (selectedSpell == null)
         {
-            currentSpellType = selectedSpell.spellType;
+            if (currentSpellPrefab != null)
+            {
+                ResetHandSpellAnimations();
+                currentSpellPrefab = null;
+                currentSpellType = SpellType.None;
+                currentSelectedSlotIndex = selectedIndex;
+            }
+
+            return;
+        }
+
+        if (selectedIndex != currentSelectedSlotIndex ||
+            selectedSpell.spellType != currentSpellType ||
+            selectedSpell.spellPrefab != currentSpellPrefab)
+        {
             UpdateHandAnimationForSpell();
         }
     }
@@ -286,29 +304,53 @@ public class PlayerSpellController : MonoBehaviour
 
     private void UpdateHandAnimationForSpell()
     {
-        if (SpellInventory.Instance == null || handAnimator == null) return;
+        if (SpellInventory.Instance == null || handAnimator == null)
+            return;
 
         SpellSlot selectedSpell = SpellInventory.Instance.GetSelectedSpellSlot();
-        if (selectedSpell == null) return;
+
+        if (selectedSpell == null || !selectedSpell.isUnlocked)
+        {
+            ResetHandSpellAnimations();
+            return;
+        }
 
         ResetHandSpellAnimations();
 
         currentSpellType = selectedSpell.spellType;
+        currentSelectedSlotIndex = SpellInventory.Instance.GetSelectedSlotIndex();
+        currentSpellPrefab = selectedSpell.spellPrefab;
 
         switch (selectedSpell.spellType)
         {
             case SpellType.Range:
                 handAnimator.SetBool("BaseSpell", true);
                 break;
+
             case SpellType.Melee:
-                handAnimator.SetBool("MeleeSpell", true);
+
+                bool isHammer = selectedSpell.spellPrefab != null &&
+                    selectedSpell.spellPrefab.GetComponent<HammerSpell>() != null;
+
+                if (isHammer)
+                {
+                    handAnimator.SetBool("Melee2Spell", true);
+                }
+                else
+                {
+                    handAnimator.SetBool("MeleeSpell", true);
+                }
+
                 break;
+
             case SpellType.Area:
                 handAnimator.SetBool("AreaSpell", true);
                 break;
+
             case SpellType.Teleport:
                 handAnimator.SetBool("BaseSpell", true);
                 break;
+
             default:
                 handAnimator.SetBool("BaseSpell", true);
                 break;
@@ -321,6 +363,7 @@ public class PlayerSpellController : MonoBehaviour
 
         handAnimator.SetBool("BaseSpell", false);
         handAnimator.SetBool("MeleeSpell", false);
+        handAnimator.SetBool("Melee2Spell", false);
         handAnimator.SetBool("AreaSpell", false);
     }
 
