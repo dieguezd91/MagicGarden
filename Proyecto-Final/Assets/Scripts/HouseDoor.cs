@@ -335,6 +335,13 @@ public class HouseDoor : MonoBehaviour
 
         if (goingInside)
         {
+            if (doorLockAnimator != null && doorLockAnimator.IsAnimating)
+            {
+                bool shouldBeLocked = GameFlowController.Instance != null &&
+                    GameFlowController.Instance.CurrentPhase == GamePhase.Night;
+                doorLockAnimator.SetVisualState(shouldBeLocked);
+            }
+
             worldTransition.EnterHouse();
             if (UIManager.Instance != null)
                 UIManager.Instance.ShowInteriorHUD();

@@ -62,10 +62,14 @@ public class SimpleAnimator : MonoBehaviour
             ? sprites.Count - 1
             : 0;
 
-        
-        if (targetClosedState == showClosedState &&
-            (isAnimating || currentFrameIndex == targetIndex))
+        if (targetClosedState == showClosedState && isAnimating)
+            return;
+
+        if (targetClosedState == showClosedState && !isAnimating)
         {
+            currentFrameIndex = targetIndex;
+            spriteRenderer.sprite = sprites[currentFrameIndex];
+            ApplyColliderState(showClosedState);
             return;
         }
 
@@ -76,7 +80,10 @@ public class SimpleAnimator : MonoBehaviour
         ApplyColliderState(showClosedState);
 
         if (currentFrameIndex == targetIndex)
+        {
+            spriteRenderer.sprite = sprites[currentFrameIndex];
             return;
+        }
 
         currentCoroutine = StartCoroutine(
             PlayAnimationToState(targetIndex)
