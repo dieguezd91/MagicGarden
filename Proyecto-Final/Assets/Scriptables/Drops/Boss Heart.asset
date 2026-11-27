@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: Boss Heart
   m_EditorClassIdentifier: 
   materialName: Boss Heart
-  materialIcon: {fileID: 2061505305, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
+  materialIcon: {fileID: 168219291, guid: f16b0a7a1ebc60749ab490e1f12b6e1a, type: 3}
   materialType: 14
-  materialDescription: 
+  materialDescription: Item dropped by Golem. Material used to buy new upgrades at
+    the cauldron
   rarity: 3
   isDropped: 1
   isProduct: 1
