@@ -132,6 +132,28 @@ public class PlayerSpellController : MonoBehaviour
         }
     }
 
+
+    private bool IsSwordSpellSelected()
+    {
+        if (SpellInventory.Instance == null) return false;
+        SpellSlot slot = SpellInventory.Instance.GetSelectedSpellSlot();
+        if (slot == null || slot.spellType != SpellType.Melee) return false;
+
+        bool isHammer = slot.spellPrefab != null && slot.spellPrefab.GetComponent<HammerSpell>() != null;
+        return !isHammer;
+    }
+
+    private void LateUpdate()
+    {
+        if (handRenderer == null) return;
+
+        if (IsSwordSpellSelected())
+        {
+            handRenderer.flipX = false;
+        }
+    }
+
+
     private void CheckForSpellTypeChange()
     {
         if (SpellInventory.Instance == null || handAnimator == null)
