@@ -492,9 +492,9 @@ MonoBehaviour:
   icon: {fileID: 2072989829985112912}
   nameLabel: {fileID: 5677174541880348818}
   stateLabel: {fileID: 8155511440087037827}
-  normalSprite: {fileID: 1525330790, guid: 6b876b38e4597704b84b5e76e54d27a1, type: 3}
-  hoverSprite: {fileID: 1525330790, guid: 6b876b38e4597704b84b5e76e54d27a1, type: 3}
-  pressedSprite: {fileID: 1525330790, guid: 6b876b38e4597704b84b5e76e54d27a1, type: 3}
+  normalSprite: {fileID: 891020259, guid: 6b876b38e4597704b84b5e76e54d27a1, type: 3}
+  hoverSprite: {fileID: -1585463610, guid: 6b876b38e4597704b84b5e76e54d27a1, type: 3}
+  pressedSprite: {fileID: -1585463610, guid: 6b876b38e4597704b84b5e76e54d27a1, type: 3}
   selectedColor: {r: 1, g: 0.88, b: 0.55, a: 1}
   invalidColor: {r: 1, g: 0.4, b: 0.4, a: 1}
   disabledColor: {r: 0.45, g: 0.45, b: 0.45, a: 1}
