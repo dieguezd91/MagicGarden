@@ -5006,6 +5006,12 @@ MonoBehaviour:
   lifeTime: 5
   floatingDamagePrefab: {fileID: 8011744024934345175, guid: b18d5e020de9918429f62b516be2ef30, type: 3}
   impactParticlesPrefab: {fileID: 491567316690014037, guid: b4718f9f977adb740a54a6ea904ae4f7, type: 3}
+  impactShakeIntensity: 0
+  impactShakeDuration: 0
+  hitStopDuration: 0
+  killShakeIntensity: 0
+  killShakeDuration: 0
+  killHitStopDuration: 0
   castSound:
     clips: []
     volume: 1

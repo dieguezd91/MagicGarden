@@ -55,7 +55,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 6d5204eb7bf37224686f402032879c57, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -175,11 +175,20 @@ MonoBehaviour:
   lifeTime: 10
   floatingDamagePrefab: {fileID: 8011744024934345175, guid: b18d5e020de9918429f62b516be2ef30, type: 3}
   impactParticlesPrefab: {fileID: 491567316690014037, guid: b4718f9f977adb740a54a6ea904ae4f7, type: 3}
-  speed: 10
-  returnSpeed: 14
-  gripPointName: PlantGripPoint
-  fallbackAttachOffset: {x: 0, y: 0, z: 0}
-  attackParticles: {fileID: 0}
+  impactShakeIntensity: 0.3
+  impactShakeDuration: 0.25
+  hitStopDuration: 0.05
+  killShakeIntensity: 0.5
+  killShakeDuration: 0.3
+  killHitStopDuration: 0.09
+  castSound:
+    clips: []
+    volume: 1
+    pitch: 1
+    pitchVariation: 0.1
+    loop: 0
+    randomizeClip: 1
+    cooldownTime: 0
   impactSound:
     clips:
     - {fileID: 8300000, guid: 9e7c37f9d47bb044d87f2ae2daa24500, type: 3}
@@ -189,7 +198,12 @@ MonoBehaviour:
     pitchVariation: 0.08
     loop: 0
     randomizeClip: 1
-    cooldownTime: 0.0
+    cooldownTime: 0
+  speed: 10
+  returnSpeed: 14
+  gripPointName: PlantGripPoint
+  fallbackAttachOffset: {x: 0, y: 0, z: 0}
+  attackParticles: {fileID: 0}
   grindLoopSound:
     clips:
     - {fileID: 8300000, guid: 42752e55a3ef0c947a56a1989fb4b16a, type: 3}
@@ -198,4 +212,5 @@ MonoBehaviour:
     pitchVariation: 0.05
     loop: 1
     randomizeClip: 1
-    cooldownTime: 0.0
+    cooldownTime: 0
+  biteInterval: 0.6
